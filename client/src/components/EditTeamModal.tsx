@@ -33,7 +33,7 @@ const EditTeamModal: React.FC<EditTeamModalProps> = ({ team, isOpen, onClose, on
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData((prev: any) => ({ ...prev, [name]: value }));
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

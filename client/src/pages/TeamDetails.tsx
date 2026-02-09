@@ -5,7 +5,7 @@ import PlayerCard from '../components/PlayerCard';
 import TacticalPitch from '../components/TacticalPitch';
 import EditTeamModal from '../components/EditTeamModal';
 import EditPlayerModal from '../components/EditPlayerModal';
-import { FaList, FaTh, FaFutbol, FaChartBar, FaTimes, FaStar, FaEdit, FaShareAlt } from 'react-icons/fa';
+import { FaEdit, FaStar } from 'react-icons/fa';
 import ShareTeamModal from '../components/ShareTeamModal';
 
 interface Player {

@@ -7,7 +7,7 @@ import { FaTrophy, FaCalendarAlt, FaUpload, FaListOl, FaCheckCircle, FaArrowRigh
 const CreateChampionship: React.FC = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
-    const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
+    const { register, handleSubmit, watch, setValue } = useForm();
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 

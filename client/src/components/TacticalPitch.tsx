@@ -18,7 +18,7 @@ const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick })
 
     // Helper to determine position on pitch (0-100%)
     // Simple logic for 5-a-side / 7-a-side distribution
-    const getPositionStyle = (index: number, total: number, position: string) => {
+    const getPositionStyle = (index: number, _total: number, position: string) => {
         if (position === 'GOALKEEPER') {
             return { bottom: '5%', left: '50%', transform: 'translateX(-50%)' };
         }
@@ -26,13 +26,12 @@ const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick })
         // Distribute field players
         // Simple distinct positions for demo visual
         const isDefender = index % 2 === 0; // Mock logic
-        const yPos = isDefender ? '30%' : '60%';
-        const xPos = isDefender ? (index % 3 === 0 ? '30%' : '70%') : (index % 3 === 0 ? '40%' : '60%');
+
 
         // Spread logic manually for better aesthetics if small number
         // This is a naive implementation, can be improved with real tactical formations later
         const fieldPlayers = players.filter(p => p.position !== 'GOALKEEPER');
-        const fieldIndex = fieldPlayers.findIndex(p => p.id === players[index].id); // This won't work directly inside map of all players easily without robust logic.
+
 
         // Quick hardcoded slots for up to 7 players to look good
         const slots = [

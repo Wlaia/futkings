@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import api from '../services/api';
 import PlayerCard from '../components/PlayerCard';
 import PublicPlayerModal from '../components/PublicPlayerModal';

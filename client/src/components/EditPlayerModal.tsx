@@ -34,7 +34,7 @@ const EditPlayerModal: React.FC<EditPlayerModalProps> = ({ player, isOpen, onClo
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+        setFormData((prev: any) => ({
             ...prev,
             [name]: name === 'name' || name === 'position' || name === 'birthDate' ? value : parseInt(value) || 0
         }));

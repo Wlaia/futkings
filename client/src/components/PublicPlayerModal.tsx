@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
+import { FaTrash, FaSave, FaTimes } from 'react-icons/fa';
 
 interface PublicPlayerModalProps {
     isOpen: boolean;
