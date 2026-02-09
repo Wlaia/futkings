@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  PLAYER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(PLAYER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  managedTeam Team?
+  playerProfile Player?
+}
+
+model Championship {
+  id          String   @id @default(uuid())
+  name        String
+  type        ChampionshipType
+  teamsCount  Int
+  gameDuration Int
+  startDate   DateTime?
+  endDate     DateTime?
+  logoUrl     String?
+  groupsCount Int?      // Number of groups (e.g. 4, 8)
+  qualifiersPerGroup Int? // Number of teams qualifying per group (e.g. 2)
+  rules       Json?    // Special rules like goal doubled in final, shootout
+  status      ChampionshipStatus @default(DRAFT)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teams       Team[]
+  matches     Match[]
+}
+
+enum ChampionshipType {
+  GROUPS_KNOCKOUT
+  KNOCKOUT_ONLY
+}
+
+enum ChampionshipStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+}
+
+model Team {
+  id             String   @id @default(uuid())
+  name           String
+  logoUrl        String?
+  coachName      String?
+  directorName   String?
+  championshipId String?
+  championship   Championship? @relation(fields: [championshipId], references: [id])
+  
+  // Public Link Settings
+  isPublicLinkActive    Boolean @default(false)
+  publicCanAddPlayer    Boolean @default(false)
+  publicCanEditPlayer   Boolean @default(false) // Covers edit and remove
+  publicCanImportPlayer Boolean @default(false)
+  publicCanPrintPlayer  Boolean @default(false)
+
+  managerId      String? @unique
+  manager        User?   @relation(fields: [managerId], references: [id])
+
+  players        Player[]
+  
+  // Stats
+  matchesPlayed  Int @default(0)
+  wins           Int @default(0)
+  draws          Int @default(0)
+  losses         Int @default(0)
+  goalsFor       Int @default(0)
+  goalsAgainst   Int @default(0)
+  
+  homeMatches    Match[] @relation("HomeTeam")
+  awayMatches    Match[] @relation("AwayTeam")
+}
+
+model Player {
+  id        String   @id @default(uuid())
+  name      String
+  number    Int
+  position  PlayerPosition
+  avatarUrl String? // AI Generated
+  teamId    String
+  team      Team    @relation(fields: [teamId], references: [id])
+
+  userId    String? @unique
+  user      User?   @relation(fields: [userId], references: [id])
+
+  birthDate DateTime? // For age calculation
+
+  // Cumulative Stats
+  goals     Int @default(0)
+  assists   Int @default(0)
+  yellowCards Int @default(0)
+  redCards    Int @default(0)
+  saves       Int @default(0) // Goalkeeper
+  goalsConceded Int @default(0) // Goalkeeper
+
+  matchStats PlayerMatchStat[]
+  fouls       Int @default(0)
+}
+
+enum PlayerPosition {
+  GOALKEEPER
+  FIELD
+}
+
+model Match {
+  id             String   @id @default(uuid())
+  championshipId String
+  championship   Championship @relation(fields: [championshipId], references: [id])
+  homeTeamId     String?
+  homeTeam       Team?    @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeamId     String?
+  awayTeam       Team?    @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  
+  homeScore      Int?
+  awayScore      Int?
+  
+  round          String   // e.g., "Group A", "Quarter-final", "Final"
+  startTime      DateTime?
+  status         MatchStatus @default(SCHEDULED)
+
+  playerStats    PlayerMatchStat[]
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  COMPLETED
+}
+
+model PlayerMatchStat {
+  id        String @id @default(uuid())
+  matchId   String
+  match     Match  @relation(fields: [matchId], references: [id])
+  playerId  String
+  player    Player @relation(fields: [playerId], references: [id])
+
+  goals     Int @default(0)
+  assists   Int @default(0)
+  yellowCards Int @default(0)
+  redCards    Int @default(0)
+  saves       Int @default(0)
+  goalsConceded Int @default(0)
+  fouls       Int @default(0)
+}
