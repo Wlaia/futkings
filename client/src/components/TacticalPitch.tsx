@@ -25,12 +25,12 @@ const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick })
 
         // Distribute field players
         // Simple distinct positions for demo visual
-        const isDefender = index % 2 === 0; // Mock logic
+
 
 
         // Spread logic manually for better aesthetics if small number
         // This is a naive implementation, can be improved with real tactical formations later
-        const fieldPlayers = players.filter(p => p.position !== 'GOALKEEPER');
+
 
 
         // Quick hardcoded slots for up to 7 players to look good
