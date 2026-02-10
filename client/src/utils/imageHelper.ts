@@ -14,11 +14,14 @@ export const getLogoUrl = (url?: string) => {
             // Construct new URL using current API base
             // Ideally use VITE_API_URL, or current origin if API is on same domain
             const apiUrl = import.meta.env.VITE_API_URL;
+            const apiHost = import.meta.env.VITE_API_HOST;
 
             if (apiUrl) {
                 // Remove '/api' from the end of apiUrl if present, since uploads are usually at root
                 const apiOrigin = apiUrl.replace(/\/api\/?$/, '');
                 return `${apiOrigin}${path}`;
+            } else if (apiHost) {
+                return `https://${apiHost}${path}`;
             } else {
                 // Fallback: Assume API is at the same origin
                 return `${window.location.protocol}//${window.location.host}${path}`;

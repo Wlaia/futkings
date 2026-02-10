@@ -26,8 +26,8 @@ services:
         source: /*
         destination: /index.html
     envVars:
-      - key: VITE_API_URL
+      - key: VITE_API_HOST
         fromService:
           type: web
           name: futkings-api
-          property: url
+          property: host
