@@ -15,7 +15,7 @@ services:
         value: 10000
 
   # Frontend Service (Static Site)
-  - type: static
+  - type: web
     name: futkings-client
     env: static
     rootDir: client
