@@ -378,28 +378,38 @@ const MatchSheet: React.FC = () => {
         return "5 vs 5 (COMPLETO)";
     };
 
+    const getDiffEvents = () => {
+        const diffEvents: any[] = [];
+
+        [...(match?.homeTeam.players || []), ...(match?.awayTeam.players || [])].forEach(p => {
+            const current = stats[p.id];
+            const originalStat = match?.playerStats?.find((ps: any) => ps.playerId === p.id);
+
+            const original = originalStat ? {
+                goals: originalStat.goals,
+                assists: originalStat.assists,
+                yellow: originalStat.yellowCards,
+                red: originalStat.redCards,
+                fouls: originalStat.fouls || 0,
+                saves: originalStat.saves || 0,
+                conceded: originalStat.goalsConceded || 0
+            } : { goals: 0, assists: 0, yellow: 0, red: 0, fouls: 0, saves: 0, conceded: 0 };
+
+            if (current.goals !== original.goals) diffEvents.push({ playerId: p.id, type: 'GOAL', value: current.goals - original.goals });
+            if (current.assists !== original.assists) diffEvents.push({ playerId: p.id, type: 'ASSIST', value: current.assists - original.assists });
+            if (current.yellow !== original.yellow) diffEvents.push({ playerId: p.id, type: 'YELLOW', value: current.yellow - original.yellow });
+            if (current.red !== original.red) diffEvents.push({ playerId: p.id, type: 'RED', value: current.red - original.red });
+            if (current.fouls !== original.fouls) diffEvents.push({ playerId: p.id, type: 'FOUL', value: current.fouls - original.fouls });
+            if (current.saves !== original.saves) diffEvents.push({ playerId: p.id, type: 'SAVE', value: current.saves - original.saves });
+            if (current.conceded !== original.conceded) diffEvents.push({ playerId: p.id, type: 'GOAL_CONCEDED', value: current.conceded - original.conceded });
+        });
+
+        return diffEvents;
+    };
+
     const handleSave = async () => {
         try {
-            const diffEvents: any[] = [];
-
-            [...(match?.homeTeam.players || []), ...(match?.awayTeam.players || [])].forEach(p => {
-                const current = stats[p.id];
-                const originalStat = match?.playerStats?.find((ps: any) => ps.playerId === p.id);
-
-                const original = originalStat ? {
-                    goals: originalStat.goals,
-                    assists: originalStat.assists,
-                    yellow: originalStat.yellowCards,
-                    red: originalStat.redCards,
-                    fouls: originalStat.fouls || 0,
-                    saves: originalStat.saves || 0,
-                    conceded: originalStat.goalsConceded || 0
-                } : { goals: 0, assists: 0, yellow: 0, red: 0, fouls: 0, saves: 0, conceded: 0 };
-
-                if (current.goals !== original.goals) diffEvents.push({ playerId: p.id, type: 'GOAL', value: current.goals - original.goals });
-                if (current.assists !== original.assists) diffEvents.push({ playerId: p.id, type: 'ASSIST', value: current.assists - original.assists });
-                // ... other stats
-            });
+            const diffEvents = getDiffEvents();
 
             await api.put(`/matches/${id}`, {
                 homeScore,
@@ -421,11 +431,13 @@ const MatchSheet: React.FC = () => {
         if (!window.confirm('Tem certeza que deseja FINALIZAR a partida? Isso encerrará o jogo e contabilizará as estatísticas.')) return;
 
         try {
+            const diffEvents = getDiffEvents();
+
             await api.put(`/matches/${id}`, {
                 homeScore,
                 awayScore,
                 status: 'COMPLETED',
-                events: []
+                events: diffEvents
             });
 
             alert('Partida finalizada com sucesso!');

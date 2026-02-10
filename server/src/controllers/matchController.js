@@ -37,17 +37,24 @@ const getMatch = async (req, res) => {
 const updateMatchResult = async (req, res) => {
     try {
         const { id } = req.params;
-        const { homeScore, awayScore, status, events } = req.body;
+        const { homeScore, awayScore, status, events, startTime } = req.body;
         // events: array of { playerId, type: 'GOAL'|'ASSIST'|'YELLOW'|'RED'|'SAVE'|'GOAL_CONCEDED' }
+
+        // Prepare update data
+        const updateData = {
+            homeScore,
+            awayScore,
+            status: status || 'COMPLETED'
+        };
+
+        if (startTime) {
+            updateData.startTime = new Date(startTime);
+        }
 
         // Update Match Score
         const match = await prisma.match.update({
             where: { id },
-            data: {
-                homeScore,
-                awayScore,
-                status: status || 'COMPLETED'
-            }
+            data: updateData
         });
 
         // Process Player Stats (if provided)

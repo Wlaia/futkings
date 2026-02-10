@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { FaTrophy, FaCalendarCheck, FaUsers, FaArrowLeft, FaShareAlt, FaPlus, FaDiceD20, FaFutbol } from 'react-icons/fa';
+import { FaTrophy, FaCalendarCheck, FaUsers, FaArrowLeft, FaShareAlt, FaPlus, FaDiceD20, FaFutbol, FaEdit, FaTimes, FaSave } from 'react-icons/fa';
 
 interface Team {
     id: string;
@@ -17,6 +17,7 @@ interface Match {
     homeScore: number | null;
     awayScore: number | null;
     status: string;
+    startTime?: string;
 }
 
 interface Championship {
@@ -39,6 +40,22 @@ interface PlayerStat {
     assists?: number;
 }
 
+interface StandingsTeam {
+    id: string;
+    rank: number;
+    name: string;
+    logoUrl?: string;
+    points: number;
+    matchesPlayed: number;
+    wins: number;
+    draws: number;
+    losses: number;
+    goalsFor: number;
+    goalsAgainst: number;
+    goalDiff: number;
+    cards: number;
+}
+
 const ChampionshipDetails: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -46,12 +63,20 @@ const ChampionshipDetails: React.FC = () => {
     const [allTeams, setAllTeams] = useState<Team[]>([]);
     const [selectedTeam, setSelectedTeam] = useState('');
     const [stats, setStats] = useState<{ topScorers: PlayerStat[], topGoalkeepers: PlayerStat[], topAssists: PlayerStat[] }>({ topScorers: [], topGoalkeepers: [], topAssists: [] });
+    const [standings, setStandings] = useState<StandingsTeam[]>([]);
     const [loading, setLoading] = useState(true);
+
+
+    // Schedule Modal State
+    const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+    const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+    const [scheduleDate, setScheduleDate] = useState('');
 
     useEffect(() => {
         fetchChampionship();
         fetchTeams();
         fetchStats();
+        fetchStandings();
     }, [id]);
 
     const fetchChampionship = async () => {
@@ -82,6 +107,15 @@ const ChampionshipDetails: React.FC = () => {
             setStats(response.data);
         } catch (error) {
             console.error("Error fetching stats:", error);
+        }
+    };
+
+    const fetchStandings = async () => {
+        try {
+            const response = await api.get(`/championships/${id}/standings`);
+            setStandings(response.data);
+        } catch (error) {
+            console.error("Error fetching standings:", error);
         }
     };
 
@@ -117,6 +151,37 @@ const ChampionshipDetails: React.FC = () => {
         const url = `${window.location.origin}/c/${id}`;
         navigator.clipboard.writeText(url);
         alert('Link copiado para a área de transferência!');
+    };
+
+    const openScheduleModal = (match: Match) => {
+        setSelectedMatch(match);
+        // Format date for datetime-local input (YYYY-MM-DDTHH:MM)
+        if (match.startTime) {
+            const date = new Date(match.startTime);
+            const offset = date.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(date.getTime() - offset)).toISOString().slice(0, 16);
+            setScheduleDate(localISOTime);
+        } else {
+            setScheduleDate('');
+        }
+        setIsScheduleModalOpen(true);
+    };
+
+    const handleScheduleSave = async () => {
+        if (!selectedMatch || !scheduleDate) return;
+
+        try {
+            await api.put(`/matches/${selectedMatch.id}`, {
+                startTime: new Date(scheduleDate).toISOString(),
+                status: 'SCHEDULED' // Ensure it's scheduled
+            });
+            alert('Partida agendada com sucesso!');
+            setIsScheduleModalOpen(false);
+            fetchChampionship();
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao agendar partida.');
+        }
     };
 
     if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white"><div className="animate-spin h-8 w-8 border-4 border-yellow-500 rounded-full border-t-transparent"></div></div>;
@@ -236,6 +301,70 @@ const ChampionshipDetails: React.FC = () => {
 
                     {/* Right Column: Matches & Bracket */}
                     <div className="lg:col-span-2 space-y-8">
+
+                        {/* Standings Table (Only for LEAGUE_WITH_FINAL) */}
+                        {championship.type === 'LEAGUE_WITH_FINAL' && (
+                            <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden animate-fade-in">
+                                <div className="p-6 border-b border-gray-700">
+                                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <FaTrophy className="text-yellow-500" /> Tabela de Classificação
+                                    </h2>
+                                </div>
+                                <div className="p-4 overflow-x-auto">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="text-xs text-gray-400 uppercase tracking-wider border-b border-gray-700">
+                                                <th className="p-3 text-center">Pos</th>
+                                                <th className="p-3">Time</th>
+                                                <th className="p-3 text-center font-bold text-white">PTS</th>
+                                                <th className="p-3 text-center">J</th>
+                                                <th className="p-3 text-center">V</th>
+                                                <th className="p-3 text-center">E</th>
+                                                <th className="p-3 text-center">D</th>
+                                                <th className="p-3 text-center">GP</th>
+                                                <th className="p-3 text-center">GC</th>
+                                                <th className="p-3 text-center">SG</th>
+                                                <th className="p-3 text-center text-red-400" title="Cartões (Amarelos + Vermelhos)">
+                                                    <span className="flex items-center justify-center gap-1">🟥🟨</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {standings.map((team) => (
+                                                <tr key={team.id} className="border-b border-gray-700 hover:bg-gray-700/30 transition-colors">
+                                                    <td className="p-3 text-center">
+                                                        <span className={`inline-block w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center ${team.rank <= 2 ? 'bg-green-500 text-white' : 'text-gray-500'}`}>
+                                                            {team.rank}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-3 font-bold flex items-center gap-2">
+                                                        {team.logoUrl && <img src={team.logoUrl} alt={team.name} className="w-5 h-5 object-contain" />}
+                                                        {team.name}
+                                                    </td>
+                                                    <td className="p-3 text-center font-bold text-yellow-500 text-lg">{team.points}</td>
+                                                    <td className="p-3 text-center">{team.matchesPlayed}</td>
+                                                    <td className="p-3 text-center text-gray-300">{team.wins}</td>
+                                                    <td className="p-3 text-center text-gray-300">{team.draws}</td>
+                                                    <td className="p-3 text-center text-gray-300">{team.losses}</td>
+                                                    <td className="p-3 text-center text-gray-400 text-xs">{team.goalsFor}</td>
+                                                    <td className="p-3 text-center text-gray-400 text-xs">{team.goalsAgainst}</td>
+                                                    <td className="p-3 text-center font-bold">{team.goalDiff}</td>
+                                                    <td className="p-3 text-center font-bold text-gray-400">{team.cards}</td>
+                                                </tr>
+                                            ))}
+                                            {standings.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={11} className="p-4 text-center text-gray-500">
+                                                        Nenhuma classificação disponível.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Matches List */}
                         <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden">
                             <div className="p-6 border-b border-gray-700">
@@ -264,11 +393,26 @@ const ChampionshipDetails: React.FC = () => {
                                             >
                                                 <div className="flex justify-between items-center mb-3">
                                                     <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{match.round}</span>
-                                                    {match.status === 'COMPLETED' ? (
-                                                        <span className="text-xs bg-green-900/30 text-green-500 px-2 py-0.5 rounded border border-green-500/20">Finalizado</span>
-                                                    ) : (
-                                                        <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded border border-gray-700">Agendado</span>
-                                                    )}
+                                                    <div className="flex items-center gap-2">
+                                                        {match.startTime && (
+                                                            <span className="text-xs bg-blue-900/30 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 flex items-center gap-1">
+                                                                <FaCalendarCheck size={10} />
+                                                                {new Date(match.startTime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                        )}
+                                                        {match.status === 'COMPLETED' ? (
+                                                            <span className="text-xs bg-green-900/30 text-green-500 px-2 py-0.5 rounded border border-green-500/20">Finalizado</span>
+                                                        ) : (
+                                                            <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded border border-gray-700">Agendado</span>
+                                                        )}
+                                                        <button
+                                                            onClick={() => openScheduleModal(match)}
+                                                            className="text-gray-500 hover:text-yellow-500 transition p-1"
+                                                            title="Agendar Partida"
+                                                        >
+                                                            <FaEdit />
+                                                        </button>
+                                                    </div>
                                                 </div>
 
                                                 <div className="flex items-center justify-between">
@@ -397,6 +541,55 @@ const ChampionshipDetails: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Schedule Modal */}
+            {isScheduleModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+                    <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-2xl w-full max-w-md relative">
+                        <button
+                            onClick={() => setIsScheduleModalOpen(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+                        >
+                            <FaTimes size={20} />
+                        </button>
+
+                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                            <FaCalendarCheck className="text-yellow-500" /> Agendar Partida
+                        </h2>
+
+                        <div className="mb-6">
+                            <div className="flex justify-between items-center mb-4 bg-gray-900 p-3 rounded-lg">
+                                <span className="font-bold text-gray-300">{selectedMatch?.homeTeam?.name || 'A Definir'}</span>
+                                <span className="text-xs font-bold text-gray-600">VS</span>
+                                <span className="font-bold text-gray-300">{selectedMatch?.awayTeam?.name || 'A Definir'}</span>
+                            </div>
+
+                            <label className="block text-sm font-bold text-gray-400 mb-2">Data e Hora</label>
+                            <input
+                                type="datetime-local"
+                                value={scheduleDate}
+                                onChange={(e) => setScheduleDate(e.target.value)}
+                                className="w-full bg-gray-900 border border-gray-600 rounded-xl p-3 text-white focus:border-yellow-500 focus:outline-none"
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setIsScheduleModalOpen(false)}
+                                className="text-gray-400 hover:text-white px-4 py-2 font-bold transition"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleScheduleSave}
+                                className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-6 py-2 rounded-xl font-bold shadow-lg shadow-yellow-500/20 transition flex items-center gap-2"
+                            >
+                                <FaSave /> Salvar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };

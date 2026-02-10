@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Layout from './components/Layout';
+import Footer from './components/Footer';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
@@ -235,7 +236,9 @@ function App() {
           <Route path="/c/:id" element={<PublicChampionshipDetails />} />
           <Route path="/t/:id" element={<PublicTeamDetails />} />
           <Route path="/public/teams/:id" element={<PublicTeamDetails />} />
+          <Route path="/public/teams/:id" element={<PublicTeamDetails />} />
         </Routes>
+        <Footer />
       </Router>
     </AuthProvider>
   );

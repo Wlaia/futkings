@@ -145,6 +145,35 @@ const generateDraw = async (req, res) => {
                     }
                 }
             });
+        } else if (championship.type === 'LEAGUE_WITH_FINAL') {
+            // Round Robin Logic (Todos contra Todos)
+            const teams = [...shuffledTeams];
+            if (teams.length % 2 !== 0) {
+                teams.push(null); // Add dummy team for odd number of teams
+            }
+
+            const numRounds = teams.length - 1;
+            const halfSize = teams.length / 2;
+
+            for (let round = 0; round < numRounds; round++) {
+                for (let i = 0; i < halfSize; i++) {
+                    const teamA = teams[i];
+                    const teamB = teams[teams.length - 1 - i];
+
+                    if (teamA && teamB) {
+                        matchesData.push({
+                            championshipId: id,
+                            homeTeamId: round % 2 === 0 ? teamA.id : teamB.id, // Swap home/away for balance
+                            awayTeamId: round % 2 === 0 ? teamB.id : teamA.id,
+                            round: `Rodada ${round + 1}`,
+                            status: 'SCHEDULED'
+                        });
+                    }
+                }
+
+                // Rotate teams array (keep first fixed, rotate rest)
+                teams.splice(1, 0, teams.pop());
+            }
         }
 
         // Delete existing matches? For now, let's assume clean slate or append.
@@ -298,4 +327,116 @@ const getDashboardData = async (req, res) => {
     }
 };
 
-module.exports = { createChampionship, listChampionships, getChampionship, addTeamToChampionship, generateDraw, getChampionshipStats, getDashboardData };
+const getChampionshipStandings = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Fetch teams and all completed league matches
+        const championship = await prisma.championship.findUnique({
+            where: { id },
+            include: { teams: true }
+        });
+
+        if (!championship) return res.status(404).json({ message: 'Championship not found' });
+
+        const leagueMatches = await prisma.match.findMany({
+            where: {
+                championshipId: id,
+                round: { startsWith: 'Rodada' },
+                status: 'COMPLETED'
+            },
+            include: {
+                playerStats: {
+                    include: { player: true }
+                }
+            }
+        });
+
+        const standings = {};
+
+        // Initialize all teams
+        championship.teams.forEach(team => {
+            standings[team.id] = {
+                id: team.id,
+                name: team.name,
+                logoUrl: team.logoUrl,
+                points: 0,
+                matchesPlayed: 0,
+                wins: 0,
+                draws: 0,
+                losses: 0,
+                goalsFor: 0,
+                goalsAgainst: 0,
+                goalDiff: 0,
+                cards: 0
+            };
+        });
+
+        // Calculate Stats
+        leagueMatches.forEach(m => {
+            const { homeTeamId, awayTeamId, homeScore, awayScore, playerStats } = m;
+            if (!homeTeamId || !awayTeamId) return;
+
+            // Update Matches Played
+            standings[homeTeamId].matchesPlayed += 1;
+            standings[awayTeamId].matchesPlayed += 1;
+
+            // Update Goals
+            standings[homeTeamId].goalsFor += homeScore;
+            standings[homeTeamId].goalsAgainst += awayScore;
+            standings[homeTeamId].goalDiff += (homeScore - awayScore);
+
+            standings[awayTeamId].goalsFor += awayScore;
+            standings[awayTeamId].goalsAgainst += homeScore;
+            standings[awayTeamId].goalDiff += (awayScore - homeScore);
+
+            // Update Points/W/D/L
+            if (homeScore > awayScore) {
+                standings[homeTeamId].points += 3;
+                standings[homeTeamId].wins += 1;
+                standings[awayTeamId].losses += 1;
+            } else if (awayScore > homeScore) {
+                standings[awayTeamId].points += 3;
+                standings[awayTeamId].wins += 1;
+                standings[homeTeamId].losses += 1;
+            } else {
+                standings[homeTeamId].points += 1;
+                standings[awayTeamId].points += 1;
+                standings[homeTeamId].draws += 1;
+                standings[awayTeamId].draws += 1;
+            }
+
+            // Count Cards
+            playerStats.forEach(stat => {
+                const cardCount = stat.yellowCards + stat.redCards;
+                if (stat.player.teamId === homeTeamId) {
+                    standings[homeTeamId].cards += cardCount;
+                } else if (stat.player.teamId === awayTeamId) {
+                    standings[awayTeamId].cards += cardCount;
+                }
+            });
+        });
+
+        const rankedTeams = Object.values(standings).sort((a, b) => {
+            if (b.points !== a.points) return b.points - a.points;
+            if (b.wins !== a.wins) return b.wins - a.wins;
+            if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff;
+            if (a.cards !== b.cards) return a.cards - b.cards;
+            return b.goalsFor - a.goalsFor;
+        });
+
+        // Add Rank
+        const finalStandings = rankedTeams.map((team, index) => ({
+            rank: index + 1,
+            ...team
+        }));
+
+        res.json(finalStandings);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching standings' });
+    }
+};
+
+module.exports = { createChampionship, listChampionships, getChampionship, addTeamToChampionship, generateDraw, getChampionshipStats, getDashboardData, getChampionshipStandings };

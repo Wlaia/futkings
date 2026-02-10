@@ -138,6 +138,11 @@ const CreateChampionship: React.FC = () => {
                                         <div className="font-bold text-lg mb-1">Só Mata-mata</div>
                                         <div className="text-xs text-gray-400">Torneio eliminatório direto. Quem perder sai.</div>
                                     </label>
+                                    <label className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${formData.type === 'LEAGUE_WITH_FINAL' ? 'border-yellow-500 bg-yellow-900/20' : 'border-gray-700 bg-gray-900 hover:border-gray-500'}`}>
+                                        <input type="radio" value="LEAGUE_WITH_FINAL" {...register('type', { required: true })} className="hidden" />
+                                        <div className="font-bold text-lg mb-1">Liga + Final</div>
+                                        <div className="text-xs text-gray-400">Todos contra todos. Os 2 melhores fazem a Final.</div>
+                                    </label>
                                 </div>
                             </div>
 
@@ -183,6 +188,12 @@ const CreateChampionship: React.FC = () => {
                                         </select>
                                     </div>
                                 </div>
+                            ) : formData.type === 'LEAGUE_WITH_FINAL' ? (
+                                <div className="text-center py-12">
+                                    <div className="text-gray-500 mb-4 text-6xl">🔄</div>
+                                    <h3 className="text-xl font-bold text-white">Pontos Corridos + Final</h3>
+                                    <p className="text-gray-400">Todos os times se enfrentam. Os 2 melhores classificados disputam a final.</p>
+                                </div>
                             ) : (
                                 <div className="text-center py-12">
                                     <div className="text-gray-500 mb-4 text-6xl">🏆</div>
@@ -208,7 +219,7 @@ const CreateChampionship: React.FC = () => {
                                     <div>
                                         <h3 className="text-2xl font-bold text-white">{formData.name}</h3>
                                         <p className="text-gray-400 text-sm">
-                                            {formData.type === 'GROUPS_KNOCKOUT' ? 'Grupos + Mata-mata' : 'Mata-mata Direto'} • {formData.teamsCount} Times
+                                            {formData.type === 'GROUPS_KNOCKOUT' ? 'Grupos + Mata-mata' : formData.type === 'LEAGUE_WITH_FINAL' ? 'Liga + Final' : 'Mata-mata Direto'} • {formData.teamsCount} Times
                                         </p>
                                     </div>
                                 </div>
@@ -263,8 +274,8 @@ const CreateChampionship: React.FC = () => {
                     </div>
 
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

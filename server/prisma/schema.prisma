@@ -49,6 +49,7 @@ model Championship {
 enum ChampionshipType {
   GROUPS_KNOCKOUT
   KNOCKOUT_ONLY
+  LEAGUE_WITH_FINAL
 }
 
 enum ChampionshipStatus {
