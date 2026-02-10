@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getLogoUrl } from '../utils/imageHelper';
 import api from '../services/api';
 import { FaSave, FaArrowLeft, FaFlag, FaPlay, FaPause, FaPlus, FaCrown, FaBan, FaStar, FaBolt, FaTimes, FaHandPaper, FaUsers, FaExpand, FaRedo } from 'react-icons/fa';
 
@@ -560,7 +561,7 @@ const MatchSheet: React.FC = () => {
             <div className={`bg-gray-800 rounded-xl p-4 border-t-4 h-full flex flex-col ${isHome ? 'border-yellow-500' : 'border-blue-500'}`}>
                 <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-700 shrink-0">
                     <div className="flex items-center gap-3">
-                        <img src={team.logoUrl || '/placeholder-shield.png'} className="w-10 h-10 rounded-full bg-gray-700" alt={team.name} />
+                        <img src={getLogoUrl(team.logoUrl) || '/placeholder-shield.png'} className="w-10 h-10 rounded-full bg-gray-700" alt={team.name} />
                         <div>
                             <h3 className="font-bold text-lg leading-none">{team.name}</h3>
 

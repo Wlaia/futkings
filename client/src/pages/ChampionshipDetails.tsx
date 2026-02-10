@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { getLogoUrl } from '../utils/imageHelper';
 import api from '../services/api';
 import { FaTrophy, FaCalendarCheck, FaUsers, FaArrowLeft, FaShareAlt, FaPlus, FaDiceD20, FaFutbol, FaEdit, FaTimes, FaSave } from 'react-icons/fa';
 
@@ -285,9 +286,13 @@ const ChampionshipDetails: React.FC = () => {
                                 <ul className="space-y-2">
                                     {championship.teams.map((team, index) => (
                                         <li key={team.id} className="bg-gray-700/50 p-3 rounded-xl flex items-center gap-3 hover:bg-gray-700 transition-colors">
-                                            <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs font-bold text-gray-400">
-                                                {index + 1}
-                                            </div>
+                                            {team.logoUrl ? (
+                                                <img src={getLogoUrl(team.logoUrl)} alt={team.name} className="w-8 h-8 rounded-full object-cover" />
+                                            ) : (
+                                                <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs font-bold text-gray-400">
+                                                    {index + 1}
+                                                </div>
+                                            )}
                                             <span className="font-bold flex-1">{team.name}</span>
                                         </li>
                                     ))}
@@ -338,7 +343,7 @@ const ChampionshipDetails: React.FC = () => {
                                                         </span>
                                                     </td>
                                                     <td className="p-3 font-bold flex items-center gap-2">
-                                                        {team.logoUrl && <img src={team.logoUrl} alt={team.name} className="w-5 h-5 object-contain" />}
+                                                        {team.logoUrl && <img src={getLogoUrl(team.logoUrl)} alt={team.name} className="w-5 h-5 object-contain" />}
                                                         {team.name}
                                                     </td>
                                                     <td className="p-3 text-center font-bold text-yellow-500 text-lg">{team.points}</td>
