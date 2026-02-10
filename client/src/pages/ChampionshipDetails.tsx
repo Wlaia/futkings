@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getLogoUrl } from '../utils/imageHelper';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { FaTrophy, FaCalendarCheck, FaUsers, FaArrowLeft, FaShareAlt, FaPlus, FaDiceD20, FaFutbol, FaEdit, FaTimes, FaSave } from 'react-icons/fa';
 
 interface Team {
@@ -60,6 +61,7 @@ interface StandingsTeam {
 const ChampionshipDetails: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [championship, setChampionship] = useState<Championship | null>(null);
     const [allTeams, setAllTeams] = useState<Team[]>([]);
     const [selectedTeam, setSelectedTeam] = useState('');
@@ -219,7 +221,7 @@ const ChampionshipDetails: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2 w-full md:w-auto">
-                    {championship.status === 'DRAFT' && (
+                    {championship.status === 'DRAFT' && user?.role === 'ADMIN' && (
                         <button
                             onClick={handleDraw}
                             className="flex-1 md:flex-none items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-green-500/20 flex"
@@ -240,8 +242,8 @@ const ChampionshipDetails: React.FC = () => {
 
                 {/* Left Column: Teams & Info */}
                 <div className="space-y-8">
-                    {/* Add Team Widget */}
-                    {championship.status === 'DRAFT' && (
+                    {/* Add Team Widget (ADMIN ONLY) */}
+                    {championship.status === 'DRAFT' && user?.role === 'ADMIN' && (
                         <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-xl">
                             <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                                 <FaPlus className="text-yellow-500" /> Adicionar Time
@@ -410,13 +412,15 @@ const ChampionshipDetails: React.FC = () => {
                                                         ) : (
                                                             <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded border border-gray-700">Agendado</span>
                                                         )}
-                                                        <button
-                                                            onClick={() => openScheduleModal(match)}
-                                                            className="text-gray-500 hover:text-yellow-500 transition p-1"
-                                                            title="Agendar Partida"
-                                                        >
-                                                            <FaEdit />
-                                                        </button>
+                                                        {user?.role === 'ADMIN' && (
+                                                            <button
+                                                                onClick={() => openScheduleModal(match)}
+                                                                className="text-gray-500 hover:text-yellow-500 transition p-1"
+                                                                title="Agendar Partida"
+                                                            >
+                                                                <FaEdit />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
 
@@ -452,12 +456,14 @@ const ChampionshipDetails: React.FC = () => {
                                                 </div>
 
                                                 <div className="flex justify-center mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Link
-                                                        to={`/matches/${match.id}/sheet`}
-                                                        className="text-xs font-bold text-yellow-500 hover:text-white bg-yellow-900/20 hover:bg-yellow-600/50 px-4 py-2 rounded-lg border border-yellow-500/30 transition-all uppercase tracking-wide"
-                                                    >
-                                                        {match.status === 'COMPLETED' ? 'Ver Súmula' : 'Gerenciar Partida'}
-                                                    </Link>
+                                                    {(user?.role === 'ADMIN' || match.status === 'COMPLETED') && (
+                                                        <Link
+                                                            to={`/matches/${match.id}/sheet`}
+                                                            className="text-xs font-bold text-yellow-500 hover:text-white bg-yellow-900/20 hover:bg-yellow-600/50 px-4 py-2 rounded-lg border border-yellow-500/30 transition-all uppercase tracking-wide"
+                                                        >
+                                                            {match.status === 'COMPLETED' ? 'Ver Súmula' : 'Gerenciar Partida'}
+                                                        </Link>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}

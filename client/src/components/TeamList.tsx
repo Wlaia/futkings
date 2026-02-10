@@ -3,6 +3,7 @@ import { getLogoUrl } from '../utils/imageHelper';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { FaShieldAlt, FaUserTie, FaPlus, FaArrowRight, FaUsers } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
 
 interface Team {
     id: string;
@@ -17,6 +18,7 @@ interface Team {
 const TeamList: React.FC = () => {
     const [teams, setTeams] = useState<Team[]>([]);
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     useEffect(() => {
         api.get('/teams').then(response => {
@@ -34,12 +36,14 @@ const TeamList: React.FC = () => {
                 <div>
                     <p className="text-gray-400 text-sm">Gerencie seus elencos</p>
                 </div>
-                <Link
-                    to="/teams/new"
-                    className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-bold shadow-lg shadow-yellow-500/20 transition-all transform hover:scale-105"
-                >
-                    <FaPlus /> Novo Time
-                </Link>
+                {user?.role === 'ADMIN' && (
+                    <Link
+                        to="/teams/new"
+                        className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-bold shadow-lg shadow-yellow-500/20 transition-all transform hover:scale-105"
+                    >
+                        <FaPlus /> Novo Time
+                    </Link>
+                )}
             </div>
 
             {teams.length === 0 ? (

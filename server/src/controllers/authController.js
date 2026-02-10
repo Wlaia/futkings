@@ -22,7 +22,7 @@ const register = async (req, res) => {
             },
         });
 
-        res.status(201).json({ message: 'User registered successfully', userId: user.id });
+        res.status(201).json({ message: 'User registered successfully', userId: user.id, email: user.email });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -49,7 +49,7 @@ const login = async (req, res) => {
             { expiresIn: '1d' }
         );
 
-        res.json({ token, user: { id: user.id, name: user.name, role: user.role } });
+        res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
     } catch (error) {
         console.error(error);
         console.error('Login error:', error);

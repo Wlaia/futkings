@@ -58,6 +58,16 @@ const joinChampionship = async (req, res) => {
     try {
         const { teamId, championshipId } = req.body;
 
+        // Authorization Check
+        if (req.user.role !== 'ADMIN') {
+            const teamCheck = await prisma.team.findUnique({ where: { id: teamId } });
+            if (!teamCheck) return res.status(404).json({ message: 'Team not found' });
+
+            if (teamCheck.managerId !== req.user.userId) {
+                return res.status(403).json({ message: 'Permission denied: You do not manage this team' });
+            }
+        }
+
         const team = await prisma.team.update({
             where: { id: teamId },
             data: { championshipId }
@@ -73,6 +83,17 @@ const joinChampionship = async (req, res) => {
 const updateTeam = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Authorization Check: If not ADMIN, user must be the manager of the team
+        if (req.user.role !== 'ADMIN') {
+            const teamCheck = await prisma.team.findUnique({ where: { id } });
+            if (!teamCheck) return res.status(404).json({ message: 'Team not found' });
+
+            if (teamCheck.managerId !== req.user.userId) {
+                return res.status(403).json({ message: 'Permission denied: You do not manage this team' });
+            }
+        }
+
         const {
             name, logoUrl, coachName, directorName,
             isPublicLinkActive, publicCanAddPlayer, publicCanEditPlayer,

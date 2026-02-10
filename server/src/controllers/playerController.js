@@ -4,6 +4,15 @@ const createPlayer = async (req, res) => {
     try {
         const { name, number, position, teamId, birthDate } = req.body;
 
+        // Authorization Check
+        if (req.user.role !== 'ADMIN') {
+            const teamCheck = await prisma.team.findUnique({ where: { id: teamId } });
+            if (!teamCheck) return res.status(404).json({ message: 'Team not found' });
+            if (teamCheck.managerId !== req.user.userId) {
+                return res.status(403).json({ message: 'Permission denied: You do not manage this team' });
+            }
+        }
+
         const player = await prisma.player.create({
             data: {
                 name,
@@ -69,6 +78,18 @@ const updatePlayer = async (req, res) => {
             data.birthDate = data.birthDate ? new Date(data.birthDate) : null;
         }
 
+        if (req.user.role !== 'ADMIN') {
+            const playerCheck = await prisma.player.findUnique({
+                where: { id },
+                include: { team: true }
+            });
+            if (!playerCheck) return res.status(404).json({ message: 'Player not found' });
+
+            if (playerCheck.team.managerId !== req.user.userId) {
+                return res.status(403).json({ message: 'Permission denied: You do not manage this team' });
+            }
+        }
+
         const player = await prisma.player.update({
             where: { id },
             data
@@ -93,11 +114,18 @@ const updatePlayerAvatar = async (req, res) => {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        const player = await prisma.player.findUnique({ where: { id } });
+        const player = await prisma.player.findUnique({ where: { id }, include: { team: true } });
         if (!player) {
             // Clean up if player not found
             fs.unlinkSync(req.file.path);
             return res.status(404).json({ message: 'Player not found' });
+        }
+
+        if (req.user.role !== 'ADMIN') {
+            if (player.team.managerId !== req.user.userId) {
+                fs.unlinkSync(req.file.path); // Clean up uploaded file
+                return res.status(403).json({ message: 'Permission denied: You do not manage this team' });
+            }
         }
 
         // Construct Local URL

@@ -11,6 +11,6 @@ router.get('/:id', authenticateToken, getPlayer);
 router.put('/:id', authenticateToken, authorizeRole(['ADMIN', 'MANAGER']), updatePlayer);
 
 // Avatar Upload Route
-router.post('/:id/avatar', authenticateToken, upload.single('photo'), updatePlayerAvatar);
+router.post('/:id/avatar', authenticateToken, authorizeRole(['ADMIN', 'MANAGER']), upload.single('photo'), updatePlayerAvatar);
 
 module.exports = router;

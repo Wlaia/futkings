@@ -26,6 +26,28 @@ const Dashboard: React.FC = () => {
     fetchDashboardData();
   }, []);
 
+  useEffect(() => {
+    if (user?.role === 'MANAGER') {
+      const findAndRedirect = async () => {
+        try {
+          // Fetch all teams to find which one matches user.id
+          // Optimization: Backend should have an endpoint for this, but current listTeams includes manager info.
+          const response = await api.get('/teams');
+          const myTeam = response.data.find((t: any) => t.manager?.email === user.email || t.managerId === user.id);
+          // Note: user.id might be stored differently depending on login response. 
+          // Let's assume listTeams returns manager object.
+
+          if (myTeam) {
+            navigate(`/teams/${myTeam.id}`, { replace: true });
+          }
+        } catch (e) {
+          console.error("Failed to find manager team", e);
+        }
+      };
+      findAndRedirect();
+    }
+  }, [user, navigate]);
+
   const fetchDashboardData = async () => {
     try {
       const response = await api.get('/championships/dashboard');
@@ -36,6 +58,11 @@ const Dashboard: React.FC = () => {
   };
 
   const { activeChampionships, lastChampion } = dashboardData;
+
+  // Don't show regular dashboard for Manager while redirecting
+  if (user?.role === 'MANAGER') {
+    return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-yellow-500">Redirecionando para seu time...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8 font-sans">

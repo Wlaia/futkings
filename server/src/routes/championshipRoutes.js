@@ -6,7 +6,7 @@ const upload = require('../config/uploadConfig');
 const router = express.Router();
 
 router.get('/dashboard', authenticateToken, getDashboardData); // Must be before /:id
-router.post('/', authenticateToken, authorizeRole(['ADMIN', 'MANAGER']), upload.single('logo'), createChampionship);
+router.post('/', authenticateToken, authorizeRole(['ADMIN']), upload.single('logo'), createChampionship);
 router.get('/', authenticateToken, listChampionships);
 router.get('/:id', authenticateToken, getChampionship);
 router.get('/:id/standings', authenticateToken, getChampionshipStandings);

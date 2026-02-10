@@ -5,8 +5,10 @@ import PlayerCard from '../components/PlayerCard';
 import TacticalPitch from '../components/TacticalPitch';
 import EditTeamModal from '../components/EditTeamModal';
 import EditPlayerModal from '../components/EditPlayerModal';
-import { FaEdit, FaStar } from 'react-icons/fa';
+import { FaEdit, FaStar, FaUserShield } from 'react-icons/fa';
 import ShareTeamModal from '../components/ShareTeamModal';
+import { useAuth } from '../context/AuthContext';
+import CreateManagerModal from '../components/CreateManagerModal';
 
 interface Player {
     id: string;
@@ -43,11 +45,15 @@ interface Team {
     publicCanEditPlayer: boolean;
     publicCanImportPlayer: boolean;
     publicCanPrintPlayer: boolean;
+    // Manager
+    managerId?: string;
+    manager?: { name: string; email: string };
 }
 
 const TeamDetails: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [team, setTeam] = useState<Team | null>(null);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<'CARDS' | 'PITCH' | 'LIST'>('CARDS');
@@ -57,15 +63,13 @@ const TeamDetails: React.FC = () => {
     const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
     const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [isManagerModalOpen, setIsManagerModalOpen] = useState(false);
 
     // Initial load
     useEffect(() => {
         fetchTeamAndPlayers();
     }, [id]);
 
-    // ... (fetchTeamAndPlayers)
-
-    // Update Team Logic
     const handleUpdateTeam = async (updatedData: any) => {
         if (!team) return;
         try {
@@ -85,7 +89,7 @@ const TeamDetails: React.FC = () => {
             // 1. Get Players
             const playersResponse = await api.get(`/players?teamId=${id}`);
 
-            // 2. Get Team Info (Mocking 'getOne' with list for now if endpoint missing)
+            // 2. Get Team Info
             try {
                 const teamRes = await api.get(`/teams/${id}`);
                 setTeam({ ...teamRes.data, players: playersResponse.data });
@@ -195,9 +199,18 @@ const TeamDetails: React.FC = () => {
 
                 {/* Team Info */}
                 <div className="flex-grow text-center md:text-left">
-                    <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-sm">
-                        {team.name}
-                    </h1>
+                    <div className="flex items-center gap-4 justify-center md:justify-start">
+                        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-400 drop-shadow-sm">
+                            {team.name}
+                        </h1>
+                        {/* Manager Badge if exists */}
+                        {team.manager && (
+                            <span className="bg-purple-900/50 text-purple-400 text-xs px-2 py-1 rounded border border-purple-500/30 flex items-center gap-1" title={`Gerenciado por: ${team.manager.name}`}>
+                                <FaUserShield /> Gerenciado
+                            </span>
+                        )}
+                    </div>
+
                     <div className="flex flex-col md:flex-row justify-center md:justify-start items-center gap-4 mt-2">
                         <div className="bg-black/40 px-3 py-1 rounded border border-white/10 flex items-center gap-2">
                             <span className="text-yellow-500 font-bold text-sm">OVR</span>
@@ -237,23 +250,37 @@ const TeamDetails: React.FC = () => {
                     >
                         📊 Estatísticas
                     </button>
-                    <button
-                        onClick={() => setIsEditTeamModalOpen(true)}
-                        className="bg-yellow-600/20 border border-yellow-500/30 text-yellow-500 px-4 py-3 rounded-lg font-bold uppercase hover:bg-yellow-600/40 transition flex items-center gap-2"
-                    >
-                        <FaEdit /> Editar
-                    </button>
+                    {(user?.role === 'ADMIN' || (user?.role === 'MANAGER' && user.id === team.managerId)) && (
+                        <>
+                            <button
+                                onClick={() => setIsEditTeamModalOpen(true)}
+                                className="bg-yellow-600/20 border border-yellow-500/30 text-yellow-500 px-4 py-3 rounded-lg font-bold uppercase hover:bg-yellow-600/40 transition flex items-center gap-2"
+                            >
+                                <FaEdit /> Editar
+                            </button>
+                            <button
+                                onClick={handleQuickAdd}
+                                className="bg-gray-800 border border-white/20 text-white px-4 py-3 rounded-lg font-bold uppercase hover:bg-gray-700 transition"
+                            >
+                                + Jogador
+                            </button>
+                        </>
+                    )}
+
+                    {user?.role === 'ADMIN' && !team.managerId && (
+                        <button
+                            onClick={() => setIsManagerModalOpen(true)}
+                            className="bg-purple-600/20 border border-purple-500/30 text-purple-400 px-4 py-3 rounded-lg font-bold uppercase hover:bg-purple-600/40 transition flex items-center gap-2"
+                        >
+                            <FaUserShield /> Criar Gerente
+                        </button>
+                    )}
+
                     <button
                         onClick={() => setIsShareModalOpen(true)}
                         className="btn-game-primary px-6 py-3 rounded-lg font-bold text-black uppercase tracking-wider flex items-center gap-2 hover:brightness-110"
                     >
                         🔗 Compartilhar
-                    </button>
-                    <button
-                        onClick={handleQuickAdd}
-                        className="bg-gray-800 border border-white/20 text-white px-4 py-3 rounded-lg font-bold uppercase hover:bg-gray-700 transition"
-                    >
-                        + Jogador
                     </button>
                     <button
                         onClick={() => navigate('/dashboard')}
@@ -300,22 +327,26 @@ const TeamDetails: React.FC = () => {
                                     onUpload={(file) => handleAvatarUpload(player.id, file)}
                                     uploading={uploadingPlayerId === player.id}
                                 />
-                                <button
-                                    onClick={() => setEditingPlayer(player)}
-                                    className="absolute -top-2 -right-2 z-50 bg-white text-black w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg opacity-0 group-hover/cardwrapper:opacity-100 transition-opacity hover:scale-110 cursor-pointer"
-                                    title="Editar Jogador"
-                                >
-                                    ✎
-                                </button>
+                                {(user?.role === 'ADMIN' || (user?.role === 'MANAGER' && user.id === team.managerId)) && (
+                                    <button
+                                        onClick={() => setEditingPlayer(player)}
+                                        className="absolute -top-2 -right-2 z-50 bg-white text-black w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg opacity-0 group-hover/cardwrapper:opacity-100 transition-opacity hover:scale-110 cursor-pointer"
+                                        title="Editar Jogador"
+                                    >
+                                        ✎
+                                    </button>
+                                )}
                             </div>
                         ))}
-                        <div
-                            onClick={handleQuickAdd}
-                            className="w-[300px] h-[460px] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 hover:border-yellow-500/50 transition opacity-60 hover:opacity-100"
-                        >
-                            <span className="text-4xl text-yellow-500 mb-2">+</span>
-                            <span className="text-gray-400 font-bold uppercase">Novo Jogador</span>
-                        </div>
+                        {(user?.role === 'ADMIN' || (user?.role === 'MANAGER' && user.id === team.managerId)) && (
+                            <div
+                                onClick={handleQuickAdd}
+                                className="w-[300px] h-[460px] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 hover:border-yellow-500/50 transition opacity-60 hover:opacity-100"
+                            >
+                                <span className="text-4xl text-yellow-500 mb-2">+</span>
+                                <span className="text-gray-400 font-bold uppercase">Novo Jogador</span>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -324,8 +355,10 @@ const TeamDetails: React.FC = () => {
                         <TacticalPitch
                             players={team.players}
                             onPlayerClick={(p) => {
-                                const fullPlayer = team.players.find(tp => tp.id === p.id);
-                                if (fullPlayer) setEditingPlayer(fullPlayer);
+                                if (user?.role === 'ADMIN' || (user?.role === 'MANAGER' && user.id === team.managerId)) {
+                                    const fullPlayer = team.players.find(tp => tp.id === p.id);
+                                    if (fullPlayer) setEditingPlayer(fullPlayer);
+                                }
                             }}
                         />
                     </div>
@@ -381,12 +414,14 @@ const TeamDetails: React.FC = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <button
-                                                    onClick={() => setEditingPlayer(player)}
-                                                    className="text-gray-400 hover:text-white transition"
-                                                >
-                                                    Editar
-                                                </button>
+                                                {(user?.role === 'ADMIN' || (user?.role === 'MANAGER' && user.id === team.managerId)) && (
+                                                    <button
+                                                        onClick={() => setEditingPlayer(player)}
+                                                        className="text-gray-400 hover:text-white transition"
+                                                    >
+                                                        Editar
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
@@ -475,6 +510,16 @@ const TeamDetails: React.FC = () => {
                     isOpen={isShareModalOpen}
                     onClose={() => setIsShareModalOpen(false)}
                     onUpdate={handleUpdateTeam}
+                />
+            )}
+
+            {/* Create Manager Modal */}
+            {team && (
+                <CreateManagerModal
+                    teamId={team.id}
+                    isOpen={isManagerModalOpen}
+                    onClose={() => setIsManagerModalOpen(false)}
+                    onSuccess={fetchTeamAndPlayers}
                 />
             )}
 

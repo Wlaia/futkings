@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { FaTrophy, FaCalendarCheck, FaUsers, FaArrowRight, FaPlus, FaMedal } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
 
 interface Championship {
     id: string;
@@ -14,6 +15,7 @@ interface Championship {
 const ChampionshipsList: React.FC = () => {
     const [championships, setChampionships] = useState<Championship[]>([]);
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     useEffect(() => {
         api.get('/championships').then(response => {
@@ -40,12 +42,14 @@ const ChampionshipsList: React.FC = () => {
                 <div>
                     <p className="text-gray-400 text-sm">Gerencie seus campeonatos</p>
                 </div>
-                <Link
-                    to="/championships/new"
-                    className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-bold shadow-lg shadow-yellow-500/20 transition-all transform hover:scale-105"
-                >
-                    <FaPlus /> Novo Campeonato
-                </Link>
+                {user?.role === 'ADMIN' && (
+                    <Link
+                        to="/championships/new"
+                        className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-bold shadow-lg shadow-yellow-500/20 transition-all transform hover:scale-105"
+                    >
+                        <FaPlus /> Novo Campeonato
+                    </Link>
+                )}
             </div>
 
             {championships.length === 0 ? (
