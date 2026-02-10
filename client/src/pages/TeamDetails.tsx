@@ -6,7 +6,7 @@ import TacticalPitch from '../components/TacticalPitch';
 import EditTeamModal from '../components/EditTeamModal';
 import EditPlayerModal from '../components/EditPlayerModal';
 import { FaEdit, FaStar, FaUserShield } from 'react-icons/fa';
-import ShareTeamModal from '../components/ShareTeamModal';
+
 import { useAuth } from '../context/AuthContext';
 import CreateManagerModal from '../components/CreateManagerModal';
 
@@ -62,7 +62,6 @@ const TeamDetails: React.FC = () => {
     // Edit Modal State
     const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
     const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
-    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isManagerModalOpen, setIsManagerModalOpen] = useState(false);
 
     // Initial load
@@ -157,6 +156,23 @@ const TeamDetails: React.FC = () => {
             alert("Erro ao criar jogador");
         }
     }
+
+    // Delete Team (Admin Only)
+    const handleDeleteTeam = async () => {
+        if (!team) return;
+        if (!window.confirm(`Tem certeza que deseja excluir o time "${team.name}"? Esta ação não pode ser desfeita e excluirá todos os jogadores associados.`)) {
+            return;
+        }
+
+        try {
+            await api.delete(`/teams/${team.id}`);
+            alert('Time excluído com sucesso!');
+            navigate('/teams');
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao excluir time.');
+        }
+    };
 
     if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-yellow-500 font-bold">CARREGANDO...</div>;
     if (!team) return <div className="text-white">Time não encontrado.</div>;
@@ -276,12 +292,16 @@ const TeamDetails: React.FC = () => {
                         </button>
                     )}
 
-                    <button
-                        onClick={() => setIsShareModalOpen(true)}
-                        className="btn-game-primary px-6 py-3 rounded-lg font-bold text-black uppercase tracking-wider flex items-center gap-2 hover:brightness-110"
-                    >
-                        🔗 Compartilhar
-                    </button>
+
+                    {user?.role === 'ADMIN' && (
+                        <button
+                            onClick={handleDeleteTeam}
+                            className="bg-red-900/20 border border-red-500/30 text-red-500 px-4 py-3 rounded-lg font-bold uppercase hover:bg-red-900/40 transition flex items-center gap-2"
+                        >
+                            🗑️ Excluir Time
+                        </button>
+                    )}
+
                     <button
                         onClick={() => navigate('/dashboard')}
                         className="bg-gray-800 border border-white/20 text-white px-4 py-3 rounded-lg font-bold hover:bg-gray-700 transition"
@@ -503,15 +523,7 @@ const TeamDetails: React.FC = () => {
                 onSave={handleUpdateTeam}
             />
 
-            {/* Share Modal */}
-            {team && (
-                <ShareTeamModal
-                    team={team}
-                    isOpen={isShareModalOpen}
-                    onClose={() => setIsShareModalOpen(false)}
-                    onUpdate={handleUpdateTeam}
-                />
-            )}
+
 
             {/* Create Manager Modal */}
             {team && (

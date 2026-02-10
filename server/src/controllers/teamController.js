@@ -137,4 +137,33 @@ const updateTeam = async (req, res) => {
     }
 };
 
-module.exports = { createTeam, listTeams, getTeam, joinChampionship, updateTeam };
+const deleteTeam = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Authorization Check: Only ADMIN can delete teams
+        // (Middleware should handle this, but double check doesn't hurt if logic changes)
+        if (req.user.role !== 'ADMIN') {
+            return res.status(403).json({ message: 'Permission denied: Only ADMIN can delete teams' });
+        }
+
+        // Check if team exists
+        const team = await prisma.team.findUnique({ where: { id } });
+        if (!team) return res.status(404).json({ message: 'Team not found' });
+
+        // Delete team (Cascade delete should handle players if configured in schema, 
+        // otherwise we might need to delete players first. Assuming Prisma schema handles relations or we want hard delete)
+        // Ideally, we should delete players first to be safe if cascade isn't set up.
+        await prisma.player.deleteMany({ where: { teamId: id } });
+
+        // Remove manager association from team if necessary or just delete the team row
+        await prisma.team.delete({ where: { id } });
+
+        res.json({ message: 'Team deleted successfully' });
+    } catch (error) {
+        console.error("Error deleting team:", error);
+        res.status(500).json({ message: 'Error deleting team' });
+    }
+};
+
+module.exports = { createTeam, listTeams, getTeam, joinChampionship, updateTeam, deleteTeam };

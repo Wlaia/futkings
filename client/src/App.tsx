@@ -16,9 +16,10 @@ import Teams from './pages/Teams';
 import Championships from './pages/Championships';
 import api from './services/api';
 import { FaTrophy, FaUsers, FaPlusCircle, FaArrowRight, FaCalendarCheck } from 'react-icons/fa';
+import { getLogoUrl } from './utils/imageHelper';
 
 const Dashboard: React.FC = () => {
-  const { signOut, user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState<{ activeChampionships: any[], lastChampion: any }>({ activeChampionships: [], lastChampion: null });
 
@@ -68,22 +69,10 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8 font-sans">
 
       {/* Header */}
-      <header className="flex flex-col md:flex-row justify-between items-center mb-12 border-b border-gray-800 pb-6 gap-4">
-        <div className="flex items-center gap-4">
-          <img src="/logo.png" alt="Futkings Logo" className="h-16 w-auto drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
-          <div>
-            <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 uppercase tracking-tighter">Futkings Manager</h1>
-            <p className="text-gray-400 text-sm">Painel de Controle</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right hidden md:block">
-            <p className="font-bold text-white">{user?.name}</p>
-            <span className="text-xs bg-yellow-900/50 text-yellow-500 px-2 py-1 rounded border border-yellow-500/20">{user?.role}</span>
-          </div>
-          <button onClick={signOut} className="bg-red-900/20 hover:bg-red-900/40 text-red-500 border border-red-500/30 px-4 py-2 rounded-lg font-bold transition">Sair</button>
-        </div>
-      </header>
+      <div className="mb-8">
+        <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Painel de Controle</h2>
+        <p className="text-gray-400 text-sm">Bem-vindo, {user?.name}</p>
+      </div>
 
       {/* Last Champion Spotlight */}
       {lastChampion && (
@@ -110,7 +99,7 @@ const Dashboard: React.FC = () => {
                 <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-gradient-to-b from-yellow-400 to-yellow-700 p-1 shadow-[0_0_50px_rgba(234,179,8,0.4)] animate-pulse-slow">
                   <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center overflow-hidden border-4 border-gray-900">
                     {lastChampion.logoUrl ? (
-                      <img src={lastChampion.logoUrl} alt={lastChampion.name} className="w-full h-full object-cover" />
+                      <img src={getLogoUrl(lastChampion.logoUrl)} alt={lastChampion.name} className="w-full h-full object-cover" />
                     ) : (
                       <FaTrophy size={80} className="text-yellow-500" />
                     )}
@@ -213,7 +202,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500 overflow-hidden">
-                    {champ.logoUrl ? <img src={champ.logoUrl} className="w-full h-full object-cover" /> : <FaTrophy />}
+                    {champ.logoUrl ? <img src={getLogoUrl(champ.logoUrl)} className="w-full h-full object-cover" /> : <FaTrophy />}
                   </div>
                   <h4 className="font-bold text-lg truncate">{champ.name}</h4>
                 </div>

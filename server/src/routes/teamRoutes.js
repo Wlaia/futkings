@@ -1,5 +1,5 @@
 const express = require('express');
-const { createTeam, listTeams, getTeam, joinChampionship, updateTeam } = require('../controllers/teamController');
+const { createTeam, listTeams, getTeam, joinChampionship, updateTeam, deleteTeam } = require('../controllers/teamController');
 const { authenticateToken, authorizeRole } = require('../middleware/authMiddleware');
 
 const upload = require('../config/uploadConfig');
@@ -14,5 +14,6 @@ router.get('/', authenticateToken, listTeams);
 router.get('/:id', authenticateToken, getTeam);
 router.put('/join-championship', authenticateToken, authorizeRole(['ADMIN', 'MANAGER']), joinChampionship);
 router.put('/:id', authenticateToken, authorizeRole(['ADMIN', 'MANAGER']), upload.single('logo'), updateTeam);
+router.delete('/:id', authenticateToken, authorizeRole(['ADMIN']), deleteTeam);
 
 module.exports = router;

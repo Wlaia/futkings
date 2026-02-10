@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
             <p>
                 Desenvolvido por: <a href="https://www.snappage.com.br" target="_blank" rel="noopener noreferrer" className="text-yellow-600 hover:text-yellow-500 font-bold transition-colors">SnapPage</a>
                 <span className="mx-2">|</span>
-                v1.1.0
+                v1.1.1
             </p>
         </footer>
     );
