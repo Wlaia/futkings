@@ -52,7 +52,13 @@ const login = async (req, res) => {
         res.json({ token, user: { id: user.id, name: user.name, role: user.role } });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error('Login error:', error);
+        // Log masked DB URL and JWT Secret presence for debugging (do not log actual secrets)
+        const dbUrl = process.env.DATABASE_URL ? 'Defined' : 'Undefined';
+        const jwtSecret = process.env.JWT_SECRET ? 'Defined' : 'Undefined';
+        console.error(`Debug Info - DB_URL: ${dbUrl}, JWT_SECRET: ${jwtSecret}`);
+
+        res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };
 
