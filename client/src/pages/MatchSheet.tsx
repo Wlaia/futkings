@@ -1012,8 +1012,8 @@ const MatchSheet: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Finalize Match Button - Only visible after 2nd Half ends */}
-                        {matchStatus !== 'COMPLETED' && !isRunning && period >= 2 && time >= ((20 + extraTime) * 60) && (
+                        {/* Finalize Match Button - Visible whenever paused and not completed */}
+                        {matchStatus !== 'COMPLETED' && !isRunning && (
                             <div className="mt-8 animate-in fade-in duration-500">
                                 <button
                                     onClick={handleMatchFinalize}
