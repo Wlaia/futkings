@@ -10,11 +10,19 @@ const advanceTournamentRound = async (matchId) => {
         if (!match || !match.championshipId || match.status !== 'COMPLETED') return;
 
         // Logic for KNOCKOUT_ONLY (4 teams -> 2 Semis -> 1 Final)
-        // User specific rule: "Teve os dois jogos eliminatórios, os dois vencedores fazem a final"
         if (match.championship.type === 'KNOCKOUT_ONLY') {
             await handleKnockoutProgression(match);
         } else if (match.championship.type === 'LEAGUE_WITH_FINAL') {
             await handleLeagueProgression(match);
+        }
+
+        // Global: If the match was the "Final", mark championship as COMPLETED
+        if (match.round === 'Final') {
+            await prisma.championship.update({
+                where: { id: match.championshipId },
+                data: { status: 'COMPLETED' }
+            });
+            console.log(`Championship ${match.championshipId} marked as COMPLETED after Final.`);
         }
 
     } catch (error) {
@@ -25,7 +33,7 @@ const advanceTournamentRound = async (matchId) => {
 const handleLeagueProgression = async (match) => {
     const { championshipId } = match;
 
-    // 1. Check if all "League" matches are completed
+    // 1. Check if all "League" matches (Rodada X) are completed
     const activeLeagueMatches = await prisma.match.count({
         where: {
             championshipId,
@@ -34,16 +42,9 @@ const handleLeagueProgression = async (match) => {
         }
     });
 
-    if (activeLeagueMatches > 0) return; // League not finished
+    if (activeLeagueMatches > 0) return; // League not finished yet
 
-    // 2. Check if Final already exists
-    const existingFinal = await prisma.match.findFirst({
-        where: { championshipId, round: 'Final' }
-    });
-
-    if (existingFinal) return; // Final already created
-
-    // 3. Calculate Standings
+    // 2. Calculate Standings
     const leagueMatches = await prisma.match.findMany({
         where: {
             championshipId,
@@ -82,7 +83,6 @@ const handleLeagueProgression = async (match) => {
             standings[awayTeamId].points += 1;
         }
 
-        // Count Cards
         playerStats.forEach(stat => {
             const cardCount = stat.yellowCards + stat.redCards;
             if (stat.player.teamId === homeTeamId) {
@@ -97,12 +97,33 @@ const handleLeagueProgression = async (match) => {
         if (b.points !== a.points) return b.points - a.points;
         if (b.wins !== a.wins) return b.wins - a.wins;
         if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff;
-        if (a.cards !== b.cards) return a.cards - b.cards; // Less cards is better
+        if (a.cards !== b.cards) return a.cards - b.cards;
         return b.goalsFor - a.goalsFor;
     });
 
-    // 4. Create Final (Top 2)
-    if (rankedTeams.length >= 2) {
+    if (rankedTeams.length < 2) return;
+
+    // 3. Find or Create Final Match
+    const existingFinal = await prisma.match.findFirst({
+        where: { championshipId, round: 'Final' }
+    });
+
+    if (existingFinal) {
+        // If Final is already COMPLETED, don't touch it.
+        // If it's SCHEDULED or LIVE, update it with the latest top 2 teams
+        if (existingFinal.status !== 'COMPLETED') {
+            await prisma.match.update({
+                where: { id: existingFinal.id },
+                data: {
+                    homeTeamId: rankedTeams[0].id,
+                    awayTeamId: rankedTeams[1].id,
+                    status: 'SCHEDULED' // Ensure it's ready to play
+                }
+            });
+            console.log(`Final updated for championship ${championshipId}: ${rankedTeams[0].id} vs ${rankedTeams[1].id}`);
+        }
+    } else {
+        // Create new Final
         await prisma.match.create({
             data: {
                 championshipId,

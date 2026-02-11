@@ -220,6 +220,28 @@ const ChampionshipDetails: React.FC = () => {
     if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white"><div className="animate-spin h-8 w-8 border-4 border-yellow-500 rounded-full border-t-transparent"></div></div>;
     if (!championship) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Campeonato não encontrado.</div>;
 
+    // Group and Sort Matches
+    const groupedMatches = championship.matches.reduce((acc: { [key: string]: Match[] }, match) => {
+        if (!acc[match.round]) acc[match.round] = [];
+        acc[match.round].push(match);
+        return acc;
+    }, {});
+
+    const getRoundPriority = (round: string) => {
+        const lower = round.toLowerCase();
+        if (lower === 'final') return 1000;
+        if (lower.includes('terceiro') || lower.includes('3º')) return 900;
+        if (lower.includes('semi')) return 800;
+        if (lower.includes('quarta')) return 700;
+        if (round.startsWith('Rodada') || round.startsWith('Round')) {
+            const num = parseInt(round.replace(/^\D+/g, ''));
+            return isNaN(num) ? 100 : num;
+        }
+        return 50;
+    };
+
+    const sortedRounds = Object.keys(groupedMatches).sort((a, b) => getRoundPriority(a) - getRoundPriority(b));
+
     const availableTeams = allTeams.filter(t => !championship.teams.find(ct => ct.id === t.id));
 
     return (
@@ -444,78 +466,97 @@ const ChampionshipDetails: React.FC = () => {
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="space-y-4">
-                                        {championship.matches.map(match => (
-                                            <div
-                                                key={match.id}
-                                                className="bg-gray-900/80 p-4 rounded-xl border border-gray-700 hover:border-yellow-500/50 transition-all group"
-                                            >
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{match.round}</span>
-                                                    <div className="flex items-center gap-2">
-                                                        {match.startTime && (
-                                                            <span className="text-xs bg-blue-900/30 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 flex items-center gap-1">
-                                                                <FaCalendarCheck size={10} />
-                                                                {new Date(match.startTime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                                                            </span>
-                                                        )}
-                                                        {match.status === 'COMPLETED' ? (
-                                                            <span className="text-xs bg-green-900/30 text-green-500 px-2 py-0.5 rounded border border-green-500/20">Finalizado</span>
-                                                        ) : (
-                                                            <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded border border-gray-700">Agendado</span>
-                                                        )}
-                                                        {user?.role === 'ADMIN' && (
-                                                            <button
-                                                                onClick={() => openScheduleModal(match)}
-                                                                className="text-gray-500 hover:text-yellow-500 transition p-1"
-                                                                title="Agendar Partida"
-                                                            >
-                                                                <FaEdit />
-                                                            </button>
-                                                        )}
-                                                    </div>
+                                    <div className="space-y-8">
+                                        {sortedRounds.map(roundName => (
+                                            <div key={roundName} className="space-y-4">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-px bg-gray-700 flex-1"></div>
+                                                    <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] whitespace-nowrap">
+                                                        {roundName}
+                                                    </h3>
+                                                    <div className="h-px bg-gray-700 flex-1"></div>
                                                 </div>
 
-                                                <div className="flex items-center justify-between">
-                                                    {/* Home Team */}
-                                                    <div className="flex-1 text-right">
-                                                        <span className={`font-bold text-lg md:text-xl block truncate ${!match.homeTeam ? 'text-gray-600 italic' : ''}`}>
-                                                            {match.homeTeam?.name || 'A Definir'}
-                                                        </span>
-                                                    </div>
-
-                                                    {/* Score / VS */}
-                                                    <div className="flex flex-col items-center px-4 md:px-8">
-                                                        {match.status === 'COMPLETED' || (match.homeScore !== null) ? (
-                                                            <div className="flex items-center gap-3 font-mono text-2xl md:text-3xl font-bold text-yellow-500">
-                                                                <span>{match.homeScore}</span>
-                                                                <span className="text-gray-600 text-lg">X</span>
-                                                                <span>{match.awayScore}</span>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 font-bold text-xs border border-gray-700">
-                                                                VS
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Away Team */}
-                                                    <div className="flex-1 text-left">
-                                                        <span className={`font-bold text-lg md:text-xl block truncate ${!match.awayTeam ? 'text-gray-600 italic' : ''}`}>
-                                                            {match.awayTeam?.name || 'A Definir'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex justify-center mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    {(user?.role === 'ADMIN' || match.status === 'COMPLETED') && (
-                                                        <Link
-                                                            to={`/matches/${match.id}/sheet`}
-                                                            className="text-xs font-bold text-yellow-500 hover:text-white bg-yellow-900/20 hover:bg-yellow-600/50 px-4 py-2 rounded-lg border border-yellow-500/30 transition-all uppercase tracking-wide"
+                                                <div className="space-y-4">
+                                                    {groupedMatches[roundName].map(match => (
+                                                        <div
+                                                            key={match.id}
+                                                            className="bg-gray-900/80 p-4 rounded-xl border border-gray-700 hover:border-yellow-500/50 transition-all group"
                                                         >
-                                                            {match.status === 'COMPLETED' ? 'Ver Súmula' : 'Gerenciar Partida'}
-                                                        </Link>
-                                                    )}
+                                                            <div className="flex justify-between items-center mb-3">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`w-2 h-2 rounded-full ${match.status === 'COMPLETED' ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'}`}></div>
+                                                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Partida #{match.id.slice(0, 4)}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    {match.startTime && (
+                                                                        <span className="text-xs bg-blue-900/30 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 flex items-center gap-1">
+                                                                            <FaCalendarCheck size={10} />
+                                                                            {new Date(match.startTime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                                        </span>
+                                                                    )}
+                                                                    {match.status === 'COMPLETED' ? (
+                                                                        <span className="text-xs bg-green-900/30 text-green-500 px-2 py-0.5 rounded border border-green-500/20">Finalizado</span>
+                                                                    ) : (
+                                                                        <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded border border-gray-700">Agendado</span>
+                                                                    )}
+                                                                    {user?.role === 'ADMIN' && (
+                                                                        <button
+                                                                            onClick={() => openScheduleModal(match)}
+                                                                            className="text-gray-500 hover:text-yellow-500 transition p-1"
+                                                                            title="Agendar Partida"
+                                                                        >
+                                                                            <FaEdit />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex items-center justify-between">
+                                                                {/* Home Team */}
+                                                                <div className="flex-1 text-right flex items-center justify-end gap-3">
+                                                                    <span className={`font-bold text-base md:text-xl truncate ${!match.homeTeam ? 'text-gray-600 italic' : ''}`}>
+                                                                        {match.homeTeam?.name || 'A Definir'}
+                                                                    </span>
+                                                                    {match.homeTeam?.logoUrl && <img src={getLogoUrl(match.homeTeam.logoUrl)} alt="" className="w-8 h-8 object-contain" />}
+                                                                </div>
+
+                                                                {/* Score / VS */}
+                                                                <div className="flex flex-col items-center px-4 md:px-8 shrink-0">
+                                                                    {match.status === 'COMPLETED' || (match.homeScore !== null) ? (
+                                                                        <div className="flex items-center gap-3 font-mono text-xl md:text-3xl font-bold text-white bg-gray-800 px-4 py-1 rounded-lg border border-gray-700">
+                                                                            <span className={match.homeScore! > match.awayScore! ? 'text-yellow-500' : ''}>{match.homeScore}</span>
+                                                                            <span className="text-gray-600 text-lg">X</span>
+                                                                            <span className={match.awayScore! > match.homeScore! ? 'text-yellow-500' : ''}>{match.awayScore}</span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 font-bold text-xs border border-gray-700">
+                                                                            VS
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Away Team */}
+                                                                <div className="flex-1 text-left flex items-center justify-start gap-3">
+                                                                    {match.awayTeam?.logoUrl && <img src={getLogoUrl(match.awayTeam.logoUrl)} alt="" className="w-8 h-8 object-contain" />}
+                                                                    <span className={`font-bold text-base md:text-xl truncate ${!match.awayTeam ? 'text-gray-600 italic' : ''}`}>
+                                                                        {match.awayTeam?.name || 'A Definir'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex justify-center mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                {(user?.role === 'ADMIN' || match.status === 'COMPLETED') && (
+                                                                    <Link
+                                                                        to={`/matches/${match.id}/sheet`}
+                                                                        className="text-xs font-bold text-yellow-500 hover:text-white bg-yellow-900/20 hover:bg-yellow-600/50 px-4 py-2 rounded-lg border border-yellow-500/30 transition-all uppercase tracking-wide"
+                                                                    >
+                                                                        {match.status === 'COMPLETED' ? 'Ver Súmula' : 'Gerenciar Partida'}
+                                                                    </Link>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
                                         ))}
