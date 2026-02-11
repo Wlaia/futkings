@@ -12,6 +12,7 @@ interface Player {
     redCards: number;
     saves: number;
     goalsConceded: number;
+    isStarter?: boolean;
 }
 
 interface EditPlayerModalProps {
@@ -19,9 +20,10 @@ interface EditPlayerModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (updatedPlayer: any) => void;
+    startersCount: number;
 }
 
-const EditPlayerModal: React.FC<EditPlayerModalProps> = ({ player, isOpen, onClose, onSave }) => {
+const EditPlayerModal: React.FC<EditPlayerModalProps> = ({ player, isOpen, onClose, onSave, startersCount }) => {
     const [formData, setFormData] = useState<any>({});
 
     useEffect(() => {
@@ -33,10 +35,17 @@ const EditPlayerModal: React.FC<EditPlayerModalProps> = ({ player, isOpen, onClo
     if (!isOpen || !player) return null;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
+        const { name, value, type } = e.target;
+        const checked = (e.target as HTMLInputElement).checked;
+
+        if (name === 'isStarter' && checked && !player?.isStarter && startersCount >= 5) {
+            alert("Máximo de 5 titulares permitidos!");
+            return;
+        }
+
         setFormData((prev: any) => ({
             ...prev,
-            [name]: name === 'name' || name === 'position' || name === 'birthDate' ? value : parseInt(value) || 0
+            [name]: type === 'checkbox' ? checked : (name === 'name' || name === 'position' || name === 'birthDate' ? value : parseInt(value) || 0)
         }));
     };
 
@@ -104,6 +113,21 @@ const EditPlayerModal: React.FC<EditPlayerModalProps> = ({ player, isOpen, onClo
                                 onChange={handleChange}
                                 className="w-full bg-black/40 border border-white/10 rounded p-2 text-white focus:border-yellow-500 outline-none"
                             />
+                        </div>
+                        <div className={`col-span-2 flex items-center gap-3 bg-black/40 p-3 rounded border ${!formData.isStarter && startersCount >= 5 ? 'border-red-500/30 opacity-50' : 'border-white/10'}`}>
+                            <input
+                                type="checkbox"
+                                name="isStarter"
+                                id="isStarter"
+                                checked={formData.isStarter || false}
+                                onChange={handleChange}
+                                disabled={!formData.isStarter && startersCount >= 5}
+                                className="w-5 h-5 accent-yellow-500 cursor-pointer disabled:cursor-not-allowed"
+                            />
+                            <label htmlFor="isStarter" className={`text-sm font-bold cursor-pointer select-none ${!formData.isStarter && startersCount >= 5 ? 'text-gray-500' : 'text-white'}`}>
+                                Jogador Titular? <span className="text-yellow-500 ml-1">★</span>
+                                {!formData.isStarter && startersCount >= 5 && <span className="text-red-400 text-xs ml-2">(Máx. 5 atingido)</span>}
+                            </label>
                         </div>
                     </div>
 

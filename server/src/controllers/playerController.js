@@ -2,7 +2,7 @@ const prisma = require('../utils/prismaClient');
 
 const createPlayer = async (req, res) => {
     try {
-        const { name, number, position, teamId, birthDate } = req.body;
+        const { name, number, position, teamId, birthDate, isStarter } = req.body;
 
         // Authorization Check
         if (req.user.role !== 'ADMIN') {
@@ -18,6 +18,7 @@ const createPlayer = async (req, res) => {
                 name,
                 number: parseInt(number),
                 position,
+                isStarter: req.body.isStarter === 'true' || req.body.isStarter === true,
                 teamId,
                 birthDate: birthDate ? new Date(birthDate) : null,
                 avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(/\s+/g, '')}` // Temporary default avatar
@@ -76,6 +77,11 @@ const updatePlayer = async (req, res) => {
         // Ensure birthDate is Date if present (handle empty string as null)
         if (data.birthDate !== undefined) {
             data.birthDate = data.birthDate ? new Date(data.birthDate) : null;
+        }
+
+        // Ensure isStarter is boolean if present
+        if (data.isStarter !== undefined) {
+            data.isStarter = data.isStarter === 'true' || data.isStarter === true;
         }
 
         if (req.user.role !== 'ADMIN') {

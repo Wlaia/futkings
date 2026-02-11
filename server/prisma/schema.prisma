@@ -96,6 +96,7 @@ model Player {
   name      String
   number    Int
   position  PlayerPosition
+  isStarter Boolean        @default(false)
   avatarUrl String? // AI Generated
   teamId    String
   team      Team    @relation(fields: [teamId], references: [id])
