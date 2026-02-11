@@ -52,9 +52,7 @@ const Login: React.FC = () => {
                         Entrar
                     </button>
                 </form>
-                <p className="mt-4 text-center text-sm text-gray-400">
-                    Não tem conta? <Link to="/register" className="text-yellow-500 hover:underline">Cadastre-se</Link>
-                </p>
+
                 <div className="mt-8 pt-6 border-t border-gray-700">
                     <Link
                         to="/hub"
