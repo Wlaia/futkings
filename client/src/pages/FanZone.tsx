@@ -326,13 +326,13 @@ const FanZone: React.FC = () => {
                     <h4 className="text-xs font-bold text-gray-600 uppercase tracking-[0.2em]">Patrocinadores Oficiais</h4>
                 </div>
 
-                <div className="flex justify-center flex-wrap gap-8 md:gap-16">
+                <div className="flex justify-center flex-wrap gap-8 md:gap-12 lg:gap-16">
                     {sponsors.map((s, i) => (
-                        <div key={i} className="w-32 h-20 flex items-center justify-center bg-white/5 rounded-xl p-4 hover:bg-white/10 transition-colors">
+                        <div key={i} className="w-40 h-24 md:w-56 md:h-32 flex items-center justify-center bg-white/5 rounded-2xl p-6 hover:bg-white/10 transition-all hover:scale-105 border border-white/5">
                             <img
                                 src={s.logo}
                                 alt={s.name}
-                                className="max-w-full max-h-full object-contain hover:scale-110 transition-transform"
+                                className="max-w-full max-h-full object-contain filter brightness-110"
                                 onError={handleImageError}
                             />
                         </div>
@@ -342,11 +342,20 @@ const FanZone: React.FC = () => {
 
             {/* Virtual Store Section */}
             <section className="max-w-7xl mx-auto px-6 mb-24">
-                <div className="flex items-center justify-between mb-12">
-                    <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter flex items-center gap-3">
-                        <span className="text-yellow-500">🛍️</span> Loja Oficial
-                    </h2>
-                    <button className="text-gray-400 hover:text-yellow-500 transition font-bold text-sm">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-4">
+                    <div className="flex flex-col md:flex-row md:items-center gap-4">
+                        <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter flex items-center gap-3">
+                            <span className="text-yellow-500">🛍️</span> Loja Oficial
+                        </h2>
+                        <span className="inline-flex items-center gap-1.5 bg-yellow-500/20 text-yellow-500 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-yellow-500/20 animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+                            Em Construção
+                        </span>
+                    </div>
+                    <button
+                        onClick={() => navigate('/store')}
+                        className="text-gray-400 hover:text-yellow-500 transition font-bold text-sm text-left md:text-right"
+                    >
                         Ver Coleção Completa
                     </button>
                 </div>
@@ -356,18 +365,20 @@ const FanZone: React.FC = () => {
                     <div className="group relative">
                         <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-8 relative overflow-hidden h-80 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                             <div className="absolute inset-0 bg-yellow-500/5 group-hover:bg-yellow-500/10 transition-colors"></div>
-                            {/* Mockup Placeholder - Shirt */}
-                            <div className="relative z-10 text-center">
-                                <div className="text-6xl mb-4 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">👕</div>
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-yellow-500/50 uppercase tracking-widest rotate-6">Futkings</div>
+                            {/* Real Image - Shirt */}
+                            <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
+                                <img src="/products/jersey.png" alt="Camisa Oficial" className="w-full h-full object-contain filter drop-shadow-2xl" onError={handleImageError} />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] rounded-2xl">
+                                    <span className="bg-yellow-500 text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg">EM BREVE</span>
+                                </div>
                             </div>
                         </div>
                         <div className="mt-4">
                             <h3 className="font-bold text-lg text-white group-hover:text-yellow-500 transition-colors">Camisa Oficial Black Edition</h3>
                             <p className="text-gray-500 text-sm mb-2">Edição de Colecionador</p>
                             <div className="flex items-center justify-between">
-                                <span className="font-mono text-xl font-bold text-white">R$ 129,90</span>
-                                <button className="bg-white/10 hover:bg-yellow-500 hover:text-black text-white p-2 rounded-full transition-colors">
+                                <span className="font-mono text-xl font-bold text-white">R$ 149,90</span>
+                                <button onClick={() => navigate('/store')} className="bg-white/10 hover:bg-yellow-500 hover:text-black text-white p-2 rounded-full transition-colors">
                                     <FaSignInAlt className="rotate-[-90deg]" />
                                 </button>
                             </div>
@@ -378,16 +389,19 @@ const FanZone: React.FC = () => {
                     <div className="group relative">
                         <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-8 relative overflow-hidden h-80 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                             <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors"></div>
-                            <div className="relative z-10 text-center">
-                                <div className="text-6xl mb-4 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">🧴</div>
+                            <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
+                                <img src="/products/bottle.png" alt="Garrafa" className="w-full h-full object-contain filter drop-shadow-2xl" onError={handleImageError} />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] rounded-2xl">
+                                    <span className="bg-yellow-500 text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg">EM BREVE</span>
+                                </div>
                             </div>
                         </div>
                         <div className="mt-4">
                             <h3 className="font-bold text-lg text-white group-hover:text-blue-500 transition-colors">Squeeze Térmica Futkings</h3>
                             <p className="text-gray-500 text-sm mb-2">Mantenha-se hidratado</p>
                             <div className="flex items-center justify-between">
-                                <span className="font-mono text-xl font-bold text-white">R$ 49,90</span>
-                                <button className="bg-white/10 hover:bg-blue-500 hover:text-white text-white p-2 rounded-full transition-colors">
+                                <span className="font-mono text-xl font-bold text-white">R$ 59,90</span>
+                                <button onClick={() => navigate('/store')} className="bg-white/10 hover:bg-blue-500 hover:text-white text-white p-2 rounded-full transition-colors">
                                     <FaSignInAlt className="rotate-[-90deg]" />
                                 </button>
                             </div>
@@ -398,16 +412,19 @@ const FanZone: React.FC = () => {
                     <div className="group relative">
                         <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-8 relative overflow-hidden h-80 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                             <div className="absolute inset-0 bg-red-500/5 group-hover:bg-red-500/10 transition-colors"></div>
-                            <div className="relative z-10 text-center">
-                                <div className="text-6xl mb-4 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">🧢</div>
+                            <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
+                                <img src="/products/cap.png" alt="Boné" className="w-full h-full object-contain filter drop-shadow-2xl" onError={handleImageError} />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] rounded-2xl">
+                                    <span className="bg-yellow-500 text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg">EM BREVE</span>
+                                </div>
                             </div>
                         </div>
                         <div className="mt-4">
-                            <h3 className="font-bold text-lg text-white group-hover:text-red-500 transition-colors">Boné Snapback</h3>
+                            <h3 className="font-bold text-lg text-white group-hover:text-red-500 transition-colors">Boné Oficial Snapback</h3>
                             <p className="text-gray-500 text-sm mb-2">Estilo fora de campo</p>
                             <div className="flex items-center justify-between">
-                                <span className="font-mono text-xl font-bold text-white">R$ 79,90</span>
-                                <button className="bg-white/10 hover:bg-red-500 hover:text-white text-white p-2 rounded-full transition-colors">
+                                <span className="font-mono text-xl font-bold text-white">R$ 89,90</span>
+                                <button onClick={() => navigate('/store')} className="bg-white/10 hover:bg-red-500 hover:text-white text-white p-2 rounded-full transition-colors">
                                     <FaSignInAlt className="rotate-[-90deg]" />
                                 </button>
                             </div>
@@ -418,16 +435,19 @@ const FanZone: React.FC = () => {
                     <div className="group relative">
                         <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-8 relative overflow-hidden h-80 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                             <div className="absolute inset-0 bg-purple-500/5 group-hover:bg-purple-500/10 transition-colors"></div>
-                            <div className="relative z-10 text-center">
-                                <div className="text-6xl mb-4 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">🎒</div>
+                            <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
+                                <img src="/products/kit.png" alt="Kit" className="w-full h-full object-contain filter drop-shadow-2xl" onError={handleImageError} />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] rounded-2xl">
+                                    <span className="bg-yellow-500 text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg">EM BREVE</span>
+                                </div>
                             </div>
                         </div>
                         <div className="mt-4">
-                            <h3 className="font-bold text-lg text-white group-hover:text-purple-500 transition-colors">Mochila Esportiva</h3>
+                            <h3 className="font-bold text-lg text-white group-hover:text-purple-500 transition-colors">Kit Treino Completo</h3>
                             <p className="text-gray-500 text-sm mb-2">Para todo o equipamento</p>
                             <div className="flex items-center justify-between">
-                                <span className="font-mono text-xl font-bold text-white">R$ 199,90</span>
-                                <button className="bg-white/10 hover:bg-purple-500 hover:text-white text-white p-2 rounded-full transition-colors">
+                                <span className="font-mono text-xl font-bold text-white">R$ 299,90</span>
+                                <button onClick={() => navigate('/store')} className="bg-white/10 hover:bg-purple-500 hover:text-white text-white p-2 rounded-full transition-colors">
                                     <FaSignInAlt className="rotate-[-90deg]" />
                                 </button>
                             </div>
