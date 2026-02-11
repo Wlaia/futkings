@@ -229,12 +229,16 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   return <Layout>{children}</Layout>;
 };
 
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <PWAInstallPrompt />
         <Routes>
           <Route path="/" element={<Login />} />
+
 
 
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
