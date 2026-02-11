@@ -14,6 +14,8 @@ import TeamDetails from './pages/TeamDetails';
 import PublicTeamDetails from './pages/PublicTeamDetails';
 import Teams from './pages/Teams';
 import Championships from './pages/Championships';
+import FanZone from './pages/FanZone';
+import Store from './pages/Store';
 import api from './services/api';
 import { FaTrophy, FaUsers, FaPlusCircle, FaArrowRight, FaCalendarCheck } from 'react-icons/fa';
 import { getLogoUrl } from './utils/imageHelper';
@@ -253,6 +255,8 @@ function App() {
           <Route path="/t/:id" element={<PublicTeamDetails />} />
           <Route path="/public/teams/:id" element={<PublicTeamDetails />} />
           <Route path="/public/teams/:id" element={<PublicTeamDetails />} />
+          <Route path="/hub" element={<FanZone />} />
+          <Route path="/store" element={<PrivateRoute><Store /></PrivateRoute>} />
         </Routes>
         <Footer />
       </Router>

@@ -1,13 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaHome, FaTrophy, FaUsers, /* FaCog */ } from 'react-icons/fa';
+import { FaHome, FaTrophy, FaUsers, FaShoppingBag, /* FaCog */ } from 'react-icons/fa';
 
 const BottomMenu: React.FC = () => {
     const navItems = [
         { path: '/dashboard', icon: <FaHome size={20} />, label: 'Início' },
         { path: '/championships', icon: <FaTrophy size={20} />, label: 'Campeonatos' },
         { path: '/teams', icon: <FaUsers size={20} />, label: 'Times' },
-        // { path: '/profile', icon: <FaCog size={20} />, label: 'Perfil' }, // Future
+        { path: '/store', icon: <FaShoppingBag size={20} />, label: 'Loja' },
     ];
 
     return (

@@ -4,6 +4,7 @@ const { authenticateToken, authorizeRole } = require('../middleware/authMiddlewa
 
 const router = express.Router();
 
+router.get('/public-list', require('../controllers/matchController').getPublicMatches);
 router.get('/', authenticateToken, listMatches);
 router.get('/:id', authenticateToken, getMatch);
 router.put('/:id', authenticateToken, authorizeRole(['ADMIN']), updateMatchResult);

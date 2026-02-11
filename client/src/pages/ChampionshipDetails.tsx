@@ -187,6 +187,36 @@ const ChampionshipDetails: React.FC = () => {
         }
     };
 
+    const handleDelete = async () => {
+        if (!window.confirm('TEM CERTEZA? Esta ação excluirá permanentemente o campeonato e todos os seus jogos. Esta ação não pode ser desfeita.')) return;
+
+        try {
+            await api.delete(`/championships/${id}`);
+            alert('Campeonato excluído com sucesso.');
+            navigate('/championships');
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao excluir campeonato.');
+        }
+    };
+
+    const handleToggleStatus = async () => {
+        const newStatus = championship?.status === 'DEACTIVATED' ? 'ACTIVE' : 'DEACTIVATED';
+        const confirmMsg = newStatus === 'DEACTIVATED'
+            ? 'Deseja bloquear este campeonato? Ele não aparecerá mais como ativo.'
+            : 'Deseja reativar este campeonato?';
+
+        if (!window.confirm(confirmMsg)) return;
+
+        try {
+            await api.patch(`/championships/${id}/status`, { status: newStatus });
+            fetchChampionship();
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao atualizar status.');
+        }
+    };
+
     if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white"><div className="animate-spin h-8 w-8 border-4 border-yellow-500 rounded-full border-t-transparent"></div></div>;
     if (!championship) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Campeonato não encontrado.</div>;
 
@@ -235,6 +265,28 @@ const ChampionshipDetails: React.FC = () => {
                     >
                         <FaShareAlt /> Compartilhar
                     </button>
+
+                    {user?.role === 'ADMIN' && (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleToggleStatus}
+                                className={`flex-1 md:flex-none items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all shadow-lg border ${championship.status === 'DEACTIVATED'
+                                    ? 'bg-yellow-600 text-black border-yellow-500 hover:bg-yellow-500 shadow-yellow-500/10'
+                                    : 'bg-gray-800 text-yellow-500 border-yellow-500/30 hover:bg-gray-700 shadow-black/20'
+                                    } flex`}
+                                title={championship.status === 'DEACTIVATED' ? 'Reativar' : 'Bloquear/Desativar'}
+                            >
+                                <FaTimes /> {championship.status === 'DEACTIVATED' ? 'Reativar' : 'Bloquear'}
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="flex-1 md:flex-none items-center justify-center gap-2 bg-red-600/20 text-red-500 border border-red-500/30 hover:bg-red-600 hover:text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-red-500/20 flex"
+                                title="Excluir Definitivamente"
+                            >
+                                <FaTimes /> Excluir
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 

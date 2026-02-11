@@ -157,16 +157,27 @@ const MatchSheet: React.FC = () => {
         return () => stopTimer();
     }, [isRunning, extraTime]); // Added extraTime dependency
 
-    const toggleTimer = () => {
+    const toggleTimer = async () => {
         if (matchStatus === 'COMPLETED') return; // Prevent unlocking
 
         // Check if time is already at max
         const maxTime = (20 + extraTime) * 60;
         if (time >= maxTime) return;
 
-        setIsRunning(!isRunning);
-        if (!isRunning && matchStatus === 'SCHEDULED') {
+        const newIsRunning = !isRunning;
+        setIsRunning(newIsRunning);
+
+        if (newIsRunning && matchStatus === 'SCHEDULED') {
             setMatchStatus('LIVE');
+            try {
+                await api.put(`/matches/${id}`, {
+                    status: 'LIVE',
+                    homeScore,
+                    awayScore
+                });
+            } catch (error) {
+                console.error("Error starting match:", error);
+            }
         }
     };
 
@@ -453,7 +464,18 @@ const MatchSheet: React.FC = () => {
         return diffEvents;
     };
 
-    const handleSave = async () => {
+    // Auto-Save Effect (Debounced)
+    useEffect(() => {
+        if (!unsavedChanges) return;
+
+        const timeoutId = setTimeout(() => {
+            handleSave(true); // Silent save
+        }, 2000); // 2 seconds debounce
+
+        return () => clearTimeout(timeoutId);
+    }, [stats, directorGoals]); // Trigger on stats change
+
+    const handleSave = async (silent = false) => {
         try {
             const diffEvents = getDiffEvents();
 
@@ -464,12 +486,12 @@ const MatchSheet: React.FC = () => {
                 events: diffEvents
             });
 
-            alert('Súmula salva com sucesso!');
+            if (!silent) alert('Súmula salva com sucesso!');
             setUnsavedChanges(false);
-            fetchMatch();
+            // fetchMatch(); // Don't re-fetch on auto-save to avoid UI flicker
         } catch (error) {
             console.error(error);
-            alert('Erro ao salvar. Tente novamente.');
+            if (!silent) alert('Erro ao salvar. Tente novamente.');
         }
     };
 

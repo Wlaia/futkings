@@ -40,6 +40,33 @@ const listChampionships = async (req, res) => {
     }
 };
 
+const listPublicChampionships = async (req, res) => {
+    try {
+        const championships = await prisma.championship.findMany({
+            where: {
+                status: { in: ['ACTIVE', 'COMPLETED', 'DRAFT'] } // Show all relevant for public
+            },
+            orderBy: { updatedAt: 'desc' },
+            include: {
+                teams: {
+                    select: { id: true }
+                }
+            }
+        });
+
+        // Transform to include teamsCount based on actual teams or config
+        const formatted = championships.map(c => ({
+            ...c,
+            teamsCount: c.teams.length > 0 ? c.teams.length : c.teamsCount
+        }));
+
+        res.json(formatted);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error listing public championships' });
+    }
+};
+
 const getChampionship = async (req, res) => {
     try {
         const { id } = req.params;
@@ -439,4 +466,71 @@ const getChampionshipStandings = async (req, res) => {
     }
 };
 
-module.exports = { createChampionship, listChampionships, getChampionship, addTeamToChampionship, generateDraw, getChampionshipStats, getDashboardData, getChampionshipStandings };
+const deleteChampionship = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Verify if championship exists
+        const championship = await prisma.championship.findUnique({
+            where: { id },
+            include: { matches: true }
+        });
+
+        if (!championship) {
+            return res.status(404).json({ message: 'Championship not found' });
+        }
+
+        // Delete associated matches first (if any)
+        // Note: In a production app, we might want to cascade or just deactivate.
+        // But for "excluir", we'll do a hard delete of matches and the championship.
+        await prisma.match.deleteMany({
+            where: { championshipId: id }
+        });
+
+        // Dissociate teams
+        await prisma.team.updateMany({
+            where: { championshipId: id },
+            data: { championshipId: null }
+        });
+
+        await prisma.championship.delete({
+            where: { id }
+        });
+
+        res.json({ message: 'Championship deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error deleting championship' });
+    }
+};
+
+const updateChampionshipStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        const championship = await prisma.championship.update({
+            where: { id },
+            data: { status }
+        });
+
+        res.json(championship);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error updating status' });
+    }
+};
+
+module.exports = {
+    createChampionship,
+    listChampionships,
+    listPublicChampionships,
+    getChampionship,
+    addTeamToChampionship,
+    generateDraw,
+    getChampionshipStats,
+    getDashboardData,
+    getChampionshipStandings,
+    deleteChampionship,
+    updateChampionshipStatus
+};

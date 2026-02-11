@@ -55,6 +55,14 @@ const Login: React.FC = () => {
                 <p className="mt-4 text-center text-sm text-gray-400">
                     Não tem conta? <Link to="/register" className="text-yellow-500 hover:underline">Cadastre-se</Link>
                 </p>
+                <div className="mt-8 pt-6 border-t border-gray-700">
+                    <Link
+                        to="/hub"
+                        className="block w-full bg-gray-700 hover:bg-gray-600 text-yellow-500 font-bold py-3 rounded-lg text-center transition-all border border-yellow-500/20 hover:border-yellow-500 hover:shadow-[0_0_15px_rgba(234,179,8,0.2)]"
+                    >
+                        ⚽ Acessar Área do Torcedor
+                    </Link>
+                </div>
             </div>
         </div>
     );

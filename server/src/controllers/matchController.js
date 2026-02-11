@@ -8,7 +8,51 @@ const listMatches = async (req, res) => {
         });
         res.json(matches);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Error listing matches' });
+    }
+};
+
+const getPublicMatches = async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Fetch matches for today OR live matches
+        const matches = await prisma.match.findMany({
+            where: {
+                OR: [
+                    {
+                        startTime: {
+                            gte: today,
+                            lt: tomorrow
+                        }
+                    },
+                    { status: 'LIVE' }
+                ]
+            },
+            include: {
+                homeTeam: { select: { id: true, name: true, logoUrl: true } },
+                awayTeam: { select: { id: true, name: true, logoUrl: true } },
+                championship: { select: { name: true } },
+                playerStats: {
+                    include: {
+                        player: { select: { id: true, name: true, teamId: true } }
+                    }
+                }
+            },
+            orderBy: [
+                { status: 'asc' }, // LIVE first (if alphabetical L comes before S? No. LIVE vs SCHEDULED. L < S. So LIVE first.)
+                { startTime: 'asc' }
+            ]
+        });
+
+        res.json(matches);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching public matches' });
     }
 };
 
@@ -139,4 +183,4 @@ const updateMatchResult = async (req, res) => {
     }
 };
 
-module.exports = { listMatches, getMatch, updateMatchResult };
+module.exports = { listMatches, getMatch, updateMatchResult, getPublicMatches };
