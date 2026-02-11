@@ -9,6 +9,7 @@ interface Player {
     name: string;
     number: number;
     position: 'GOALKEEPER' | 'FIELD';
+    isStarter?: boolean;
 }
 
 interface Team {
@@ -101,13 +102,19 @@ const MatchSheet: React.FC = () => {
     const [cardStep, setCardStep] = useState<'SELECT_CARD' | 'SELECT_PLAYER'>('SELECT_CARD');
     const [selectedCardType, setSelectedCardType] = useState<SecretCard | null>(null);
 
+    // Director Goals State
+    const [directorGoals, setDirectorGoals] = useState<Record<string, number>>({});
+    const [isDirectorModalOpen, setIsDirectorModalOpen] = useState(false);
+    const [selectedDirectorTeamId, setSelectedDirectorTeamId] = useState<string | null>(null);
+
     // Derived State for Scores
-    const calculateTeamScore = (teamPlayers: Player[]) => {
-        return teamPlayers.reduce((acc, p) => acc + (stats[p.id]?.goals || 0), 0);
+    const calculateTeamScore = (teamPlayers: Player[], teamId: string) => {
+        const playerGoals = teamPlayers.reduce((acc, p) => acc + (stats[p.id]?.goals || 0), 0);
+        return playerGoals + (directorGoals[teamId] || 0);
     };
 
-    const homeScore = match ? calculateTeamScore(match.homeTeam.players) : 0;
-    const awayScore = match ? calculateTeamScore(match.awayTeam.players) : 0;
+    const homeScore = match ? calculateTeamScore(match.homeTeam.players, match.homeTeam.id) : 0;
+    const awayScore = match ? calculateTeamScore(match.awayTeam.players, match.awayTeam.id) : 0;
 
     useEffect(() => {
         fetchMatch();
@@ -221,6 +228,9 @@ const MatchSheet: React.FC = () => {
                     initialStats[p.id] = { goals: 0, assists: 0, yellow: 0, red: 0, fouls: 0, saves: 0, conceded: 0 };
                 });
 
+                let totalPlayerGoalsHome = 0;
+                let totalPlayerGoalsAway = 0;
+
                 if (Array.isArray(m.playerStats)) {
                     m.playerStats.forEach((s: any) => {
                         if (initialStats[s.playerId]) {
@@ -233,15 +243,50 @@ const MatchSheet: React.FC = () => {
                                 saves: s.saves || 0,
                                 conceded: s.goalsConceded || 0
                             };
+
+                            // Count player goals to determine director goals residue
+                            const player = m.homeTeam.players.find((p: Player) => p.id === s.playerId);
+                            if (player) {
+                                totalPlayerGoalsHome += s.goals;
+                            } else {
+                                totalPlayerGoalsAway += s.goals;
+                            }
                         }
                     });
                 }
                 setStats(initialStats);
+
+                // Initialize Director Goals (Residue)
+                const homeDirectorGoals = (m.homeScore || 0) - totalPlayerGoalsHome;
+                const awayDirectorGoals = (m.awayScore || 0) - totalPlayerGoalsAway;
+
+                setDirectorGoals({
+                    [m.homeTeam.id]: Math.max(0, homeDirectorGoals),
+                    [m.awayTeam.id]: Math.max(0, awayDirectorGoals)
+                });
             }
         } catch (error) {
             console.error("Error fetching match:", error);
             alert("Erro ao carregar partida.");
         }
+    };
+
+    // Director Penalty Logic
+    const openDirectorModal = (teamId: string) => {
+        if (matchStatus === 'COMPLETED') return;
+        setSelectedDirectorTeamId(teamId);
+        setIsDirectorModalOpen(true);
+    };
+
+    const handleDirectorGoal = () => {
+        if (!selectedDirectorTeamId) return;
+
+        setDirectorGoals(prev => ({
+            ...prev,
+            [selectedDirectorTeamId]: (prev[selectedDirectorTeamId] || 0) + 1
+        }));
+        setUnsavedChanges(true);
+        setIsDirectorModalOpen(false);
     };
 
     // Card Activation Logic
@@ -603,7 +648,14 @@ const MatchSheet: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col gap-1 overflow-y-auto flex-1 h-0 pr-1 custom-scrollbar">
-                    {team.players.map(player => {
+                    {[...team.players].sort((a, b) => {
+                        // 1. Starters first
+                        if (a.isStarter !== b.isStarter) return a.isStarter ? -1 : 1;
+                        // 2. Goalkeepers first (within group)
+                        if (a.position !== b.position) return a.position === 'GOALKEEPER' ? -1 : 1;
+                        // 3. Number ascending
+                        return a.number - b.number;
+                    }).map(player => {
                         const s = stats[player.id] || { goals: 0, assists: 0, yellow: 0, red: 0, fouls: 0, saves: 0, conceded: 0 };
                         // Check if player is target of active King Card
                         const isKing = activeCards.some(c => c.type === 'KING_PLAYER' && c.targetPlayerId === player.id && c.teamId === team.id);
@@ -678,6 +730,40 @@ const MatchSheet: React.FC = () => {
                             </div>
                         );
                     })}
+
+                    {/* Director Row */}
+                    {team.directorName && (
+                        <div className="group bg-purple-900/20 hover:bg-purple-900/40 p-2 rounded flex flex-col gap-2 border-b border-purple-500/30 transition-all mt-2 border-l-4 border-l-purple-500">
+                            <div
+                                className="flex items-center gap-2 w-full cursor-pointer"
+                                onClick={() => openDirectorModal(team.id)}
+                            >
+                                <span className="font-mono font-bold text-base min-w-[24px] text-center text-purple-400">
+                                    <FaStar />
+                                </span>
+                                <span className="truncate font-black text-base text-purple-200 group-hover:text-purple-100 flex-1 uppercase tracking-wider">
+                                    DIRETOR: {team.directorName}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center justify-between w-full pl-8 pr-2">
+                                <span className="text-[10px] text-purple-400 font-bold uppercase">PÊNALTI DO DIRETOR</span>
+                                <div className="flex items-center gap-1 bg-black/20 rounded px-1" title="Gols do Diretor">
+                                    <button disabled={matchStatus === 'COMPLETED'} onClick={() => {
+                                        setDirectorGoals(prev => {
+                                            if ((prev[team.id] || 0) <= 0) return prev;
+                                            return { ...prev, [team.id]: (prev[team.id] - 1) };
+                                        });
+                                        setUnsavedChanges(true);
+                                    }} className="text-gray-500 hover:text-red-500 disabled:opacity-30 text-xs px-1 font-bold">-</button>
+                                    <span className="font-bold text-sm min-w-[16px] text-center text-purple-400">{directorGoals[team.id] || 0}</span>
+                                    <button disabled={matchStatus === 'COMPLETED'} onClick={() => {
+                                        openDirectorModal(team.id);
+                                    }} className="text-gray-500 hover:text-green-500 disabled:opacity-30 text-xs px-1 font-bold">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -836,11 +922,35 @@ const MatchSheet: React.FC = () => {
                             <div className="text-center">
                                 <img src={match.homeTeam.logoUrl || '/placeholder-shield.png'} className="w-24 h-24 mx-auto mb-3 filter drop-shadow-lg" />
                                 <h2 className="font-bold text-2xl leading-none">{match.homeTeam.name}</h2>
+                                <div className="flex flex-col mt-2 gap-1 items-center">
+                                    {match.homeTeam.directorName && (
+                                        <span className="text-xs text-yellow-500 font-bold uppercase tracking-wider flex items-center gap-1">
+                                            <FaStar size={10} /> {match.homeTeam.directorName}
+                                        </span>
+                                    )}
+                                    {match.homeTeam.coachName && (
+                                        <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                                            Téc: {match.homeTeam.coachName}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                             <span className="text-gray-600 font-bold text-2xl opacity-50">VS</span>
                             <div className="text-center">
                                 <img src={match.awayTeam.logoUrl || '/placeholder-shield.png'} className="w-24 h-24 mx-auto mb-3 filter drop-shadow-lg" />
                                 <h2 className="font-bold text-2xl leading-none">{match.awayTeam.name}</h2>
+                                <div className="flex flex-col mt-2 gap-1 items-center">
+                                    {match.awayTeam.directorName && (
+                                        <span className="text-xs text-yellow-500 font-bold uppercase tracking-wider flex items-center gap-1">
+                                            <FaStar size={10} /> {match.awayTeam.directorName}
+                                        </span>
+                                    )}
+                                    {match.awayTeam.coachName && (
+                                        <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                                            Téc: {match.awayTeam.coachName}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -911,6 +1021,39 @@ const MatchSheet: React.FC = () => {
                 </div>
             </div>
 
+
+            {/* Director Penalty Modal */}
+            {isDirectorModalOpen && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
+                    <div className="w-full max-w-lg relative bg-transparent text-center">
+                        <div className="animate-pulse mb-8">
+                            <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 drop-shadow-[0_0_25px_rgba(236,72,153,0.6)] uppercase italic transform -skew-x-12">
+                                PÊNALTI <br /> DO DIRETOR
+                            </h1>
+                            <div className="flex justify-center mt-4">
+                                <FaStar className="text-yellow-400 text-6xl animate-spin-slow drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]" />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 justify-center">
+                            <button
+                                onClick={() => setIsDirectorModalOpen(false)}
+                                className="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-4 px-8 rounded-2xl text-xl shadow-lg border-2 border-gray-600 transition-all hover:scale-105"
+                            >
+                                PERDEU
+                                <span className="block text-xs font-normal opacity-60 mt-1">Cancelar</span>
+                            </button>
+                            <button
+                                onClick={handleDirectorGoal}
+                                className="bg-gradient-to-r from-green-600 to-green-400 hover:from-green-500 hover:to-green-300 text-white font-black py-4 px-12 rounded-2xl text-3xl shadow-[0_0_30px_rgba(34,197,94,0.4)] border-4 border-green-400 transition-all hover:scale-110 hover:rotate-2"
+                            >
+                                GOL !!!
+                                <span className="block text-sm font-bold opacity-80 mt-1 uppercase tracking-widest">+1 Ponto</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {renderCardModal()}
         </div >
