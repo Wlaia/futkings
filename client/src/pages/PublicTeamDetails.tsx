@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
+import { getLogoUrl } from '../utils/imageHelper';
+
 import PlayerCard from '../components/PlayerCard';
 import PublicPlayerModal from '../components/PublicPlayerModal';
 import { FaEdit, FaPlus, FaLock, FaPrint } from 'react-icons/fa';
@@ -112,7 +114,7 @@ const PublicTeamDetails: React.FC = () => {
             {/* Header */}
             <header className="flex flex-col md:flex-row items-center gap-6 mb-12 border-b border-gray-800 pb-8">
                 {team.logoUrl ? (
-                    <img src={team.logoUrl} alt={team.name} className="w-24 h-24 rounded-full object-cover border-4 border-yellow-500 shadow-xl shadow-yellow-900/20" />
+                    <img src={getLogoUrl(team.logoUrl)} alt={team.name} className="w-24 h-24 rounded-full object-cover border-4 border-yellow-500 shadow-xl shadow-yellow-900/20" />
                 ) : (
                     <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center text-4xl font-bold text-gray-600 border-4 border-yellow-500/50">
                         {team.name.charAt(0)}

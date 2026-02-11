@@ -136,7 +136,7 @@ const updatePlayerAvatar = async (req, res) => {
 
         // Construct Local URL
         // Assuming server serves 'uploads' folder statically at /uploads
-        const avatarUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        const avatarUrl = `/uploads/${req.file.filename}`;
 
         // Update Player in DB
         const updatedPlayer = await prisma.player.update({

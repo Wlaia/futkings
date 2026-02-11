@@ -112,7 +112,7 @@ const updateTeam = async (req, res) => {
             // const host = req.get('host');
             // finalLogoUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
             // Simpler for now (assuming client handles base URL or relative):
-            finalLogoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+            finalLogoUrl = `/uploads/${req.file.filename}`;
         }
 
         const team = await prisma.team.update({
