@@ -942,7 +942,7 @@ const MatchSheet: React.FC = () => {
 
                         <div className="flex justify-between items-center mb-4">
                             <div className="text-center">
-                                <img src={match.homeTeam.logoUrl || '/placeholder-shield.png'} className="w-24 h-24 mx-auto mb-3 filter drop-shadow-lg" />
+                                <img src={getLogoUrl(match.homeTeam.logoUrl) || '/placeholder-shield.png'} className="w-24 h-24 mx-auto mb-3 filter drop-shadow-lg" />
                                 <h2 className="font-bold text-2xl leading-none">{match.homeTeam.name}</h2>
                                 <div className="flex flex-col mt-2 gap-1 items-center">
                                     {match.homeTeam.directorName && (
@@ -959,7 +959,7 @@ const MatchSheet: React.FC = () => {
                             </div>
                             <span className="text-gray-600 font-bold text-2xl opacity-50">VS</span>
                             <div className="text-center">
-                                <img src={match.awayTeam.logoUrl || '/placeholder-shield.png'} className="w-24 h-24 mx-auto mb-3 filter drop-shadow-lg" />
+                                <img src={getLogoUrl(match.awayTeam.logoUrl) || '/placeholder-shield.png'} className="w-24 h-24 mx-auto mb-3 filter drop-shadow-lg" />
                                 <h2 className="font-bold text-2xl leading-none">{match.awayTeam.name}</h2>
                                 <div className="flex flex-col mt-2 gap-1 items-center">
                                     {match.awayTeam.directorName && (
