@@ -810,7 +810,7 @@ const MatchSheet: React.FC = () => {
                         <FaExpand /> <span className="hidden md:inline">TV Mode</span>
                     </button>
                     <button
-                        onClick={handleSave}
+                        onClick={() => handleSave()}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all ${unsavedChanges
                             ? 'bg-yellow-500 text-black hover:bg-yellow-400 animate-pulse'
                             : 'bg-green-600 text-white hover:bg-green-500'

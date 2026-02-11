@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FaHardHat, FaShoppingBag, FaClock, FaExclamationTriangle } from 'react-icons/fa';
 
 interface Product {
@@ -41,7 +41,7 @@ const Store: React.FC = () => {
         }
     ];
 
-    const [products, setProducts] = useState<Product[]>(defaultProducts);
+    const [products] = useState<Product[]>(defaultProducts);
 
     return (
         <div className="min-h-screen pb-24 px-4 md:px-8 pt-8">
