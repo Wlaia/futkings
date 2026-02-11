@@ -4,7 +4,7 @@ import Footer from './components/Footer';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
-import Register from './pages/Register';
+
 import ChampionshipDetails from './pages/ChampionshipDetails';
 import CreateChampionship from './pages/CreateChampionship';
 import CreateTeam from './pages/CreateTeam';
