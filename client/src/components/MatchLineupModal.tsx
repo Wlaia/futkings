@@ -76,9 +76,9 @@ const MatchLineupModal: React.FC<MatchLineupModalProps> = ({ isOpen, onClose, ho
                             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent to-yellow-500/30"></div>
                         </div>
                         <div className="overflow-x-auto pb-4 custom-scrollbar lg:overflow-x-visible">
-                            <div className="flex gap-2 md:gap-4 px-4 justify-center min-w-max animate-in slide-in-from-left-12 duration-700">
+                            <div className="flex gap-0 md:gap-0 px-4 justify-center min-w-max animate-in slide-in-from-left-12 duration-700">
                                 {homeStarters.map((player) => (
-                                    <div key={player.id} className="scale-[0.55] sm:scale-[0.65] md:scale-[0.75] lg:scale-[0.8] transform transition-all duration-500 hover:scale-[0.85] hover:z-20">
+                                    <div key={player.id} className="scale-[0.55] sm:scale-[0.65] md:scale-[0.7] lg:scale-[0.75] transform transition-all duration-500 hover:scale-[0.8] hover:z-20 -mx-8 sm:-mx-6 md:-mx-4 lg:-mx-2">
                                         <PlayerCard
                                             player={{ ...player, goals: 0, assists: 0, yellowCards: 0, redCards: 0, saves: 0, goalsConceded: 0 }}
                                             teamLogo={homeTeam.logoUrl}
@@ -103,9 +103,9 @@ const MatchLineupModal: React.FC<MatchLineupModalProps> = ({ isOpen, onClose, ho
                             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent to-blue-500/30"></div>
                         </div>
                         <div className="overflow-x-auto pb-4 custom-scrollbar lg:overflow-x-visible">
-                            <div className="flex gap-2 md:gap-4 px-4 justify-center min-w-max animate-in slide-in-from-right-12 duration-700">
+                            <div className="flex gap-0 md:gap-0 px-4 justify-center min-w-max animate-in slide-in-from-right-12 duration-700">
                                 {awayStarters.map((player) => (
-                                    <div key={player.id} className="scale-[0.55] sm:scale-[0.65] md:scale-[0.75] lg:scale-[0.8] transform transition-all duration-500 hover:scale-[0.85] hover:z-20">
+                                    <div key={player.id} className="scale-[0.55] sm:scale-[0.65] md:scale-[0.7] lg:scale-[0.75] transform transition-all duration-500 hover:scale-[0.8] hover:z-20 -mx-8 sm:-mx-6 md:-mx-4 lg:-mx-2">
                                         <PlayerCard
                                             player={{ ...player, goals: 0, assists: 0, yellowCards: 0, redCards: 0, saves: 0, goalsConceded: 0 }}
                                             teamLogo={awayTeam.logoUrl}
