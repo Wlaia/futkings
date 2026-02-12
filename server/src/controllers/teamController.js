@@ -122,15 +122,20 @@ const updateTeam = async (req, res) => {
         };
 
         let finalLogoUrl = logoUrl;
-        console.log('Update Team - req.file:', req.file ? req.file.originalname : 'no file');
-        console.log('Update Team - body.logoUrl:', logoUrl);
+        console.log(`[DEBUG] Update Team ${id} - req.file:`, req.file ? req.file.originalname : 'no file');
+        console.log(`[DEBUG] Update Team ${id} - body.logoUrl:`, logoUrl);
 
         if (req.file) {
             try {
-                finalLogoUrl = await uploadToSupabase(req.file, 'teams');
-                console.log('Update Team - Supabase URL:', finalLogoUrl);
+                const uploadedUrl = await uploadToSupabase(req.file, 'teams');
+                if (uploadedUrl) {
+                    finalLogoUrl = uploadedUrl;
+                    console.log(`[DEBUG] Update Team ${id} - Supabase Upload Success: ${finalLogoUrl}`);
+                } else {
+                    console.warn(`[DEBUG] Update Team ${id} - uploadToSupabase returned null`);
+                }
             } catch (uploadError) {
-                console.error('Failed to upload team logo:', uploadError);
+                console.error(`[DEBUG] Update Team ${id} - Failed to upload to Supabase:`, uploadError);
             }
         }
 
@@ -148,6 +153,8 @@ const updateTeam = async (req, res) => {
                 publicCanPrintPlayer: parseBool(publicCanPrintPlayer),
             }
         });
+
+        console.log(`[DEBUG] Update Team ${id} - DB Update Success. New logoUrl:`, team.logoUrl);
 
         res.json(team);
     } catch (error) {
