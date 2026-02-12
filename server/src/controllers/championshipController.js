@@ -1,9 +1,18 @@
 const prisma = require('../utils/prismaClient');
+const { uploadToSupabase } = require('../services/storageService');
 
 const createChampionship = async (req, res) => {
     try {
         const { name, type, teamsCount, gameDuration, startDate, endDate, groupsCount, qualifiersPerGroup, rules } = req.body;
-        const logoUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+        let logoUrl = null;
+        if (req.file) {
+            try {
+                logoUrl = await uploadToSupabase(req.file, 'championships');
+            } catch (uploadError) {
+                console.error('Failed to upload championship logo:', uploadError);
+            }
+        }
 
         const championship = await prisma.championship.create({
             data: {

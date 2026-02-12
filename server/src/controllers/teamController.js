@@ -1,4 +1,5 @@
 const prisma = require('../utils/prismaClient');
+const { uploadToSupabase } = require('../services/storageService');
 
 const createTeam = async (req, res) => {
     try {
@@ -107,12 +108,12 @@ const updateTeam = async (req, res) => {
 
         let finalLogoUrl = logoUrl;
         if (req.file) {
-            // If checking for existing file hosting, we assume express serves 'uploads' statically
-            // const protocol = req.protocol;
-            // const host = req.get('host');
-            // finalLogoUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
-            // Simpler for now (assuming client handles base URL or relative):
-            finalLogoUrl = `/uploads/${req.file.filename}`;
+            try {
+                finalLogoUrl = await uploadToSupabase(req.file, 'teams');
+            } catch (uploadError) {
+                console.error('Failed to upload team logo:', uploadError);
+                // Continue with existing logo if upload fails, or handle as error
+            }
         }
 
         const team = await prisma.team.update({

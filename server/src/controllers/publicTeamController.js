@@ -1,4 +1,5 @@
 const prisma = require('../utils/prismaClient');
+const { uploadToSupabase } = require('../services/storageService');
 
 const checkPublicPermission = async (teamId, permissionField) => {
     const team = await prisma.team.findUnique({
@@ -18,7 +19,12 @@ const publicAddPlayer = async (req, res) => {
     // Optional: Avatar URL logic
     let avatarUrl = req.body.avatarUrl || null;
     if (req.file) {
-        avatarUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        try {
+            avatarUrl = await uploadToSupabase(req.file, 'players');
+        } catch (uploadError) {
+            console.error('Failed to upload player avatar (public):', uploadError);
+            // Fallback or handle error
+        }
     }
 
     try {
@@ -50,7 +56,11 @@ const publicUpdatePlayer = async (req, res) => {
 
     let avatarUrl = req.body.avatarUrl || undefined;
     if (req.file) {
-        avatarUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        try {
+            avatarUrl = await uploadToSupabase(req.file, 'players');
+        } catch (uploadError) {
+            console.error('Failed to update player avatar (public):', uploadError);
+        }
     }
 
     try {

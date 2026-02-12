@@ -1,4 +1,5 @@
 const prisma = require('../utils/prismaClient');
+const { uploadToSupabase } = require('../services/storageService');
 
 const createPlayer = async (req, res) => {
     try {
@@ -108,9 +109,7 @@ const updatePlayer = async (req, res) => {
     }
 };
 
-const upload = require('../config/uploadConfig');
 const { generateAvatarFromPhoto } = require('../services/aiService');
-const fs = require('fs');
 
 const updatePlayerAvatar = async (req, res) => {
     try {
@@ -129,14 +128,18 @@ const updatePlayerAvatar = async (req, res) => {
 
         if (req.user.role !== 'ADMIN') {
             if (player.team.managerId !== req.user.userId) {
-                fs.unlinkSync(req.file.path); // Clean up uploaded file
                 return res.status(403).json({ message: 'Permission denied: You do not manage this team' });
             }
         }
 
-        // Construct Local URL
-        // Assuming server serves 'uploads' folder statically at /uploads
-        const avatarUrl = `/uploads/${req.file.filename}`;
+        // Upload to Supabase
+        let avatarUrl;
+        try {
+            avatarUrl = await uploadToSupabase(req.file, 'players');
+        } catch (uploadError) {
+            console.error('Failed to upload player avatar:', uploadError);
+            return res.status(500).json({ message: 'Error uploading avatar' });
+        }
 
         // Update Player in DB
         const updatedPlayer = await prisma.player.update({
