@@ -3,6 +3,8 @@ const { uploadToSupabase } = require('../services/storageService');
 
 const createTeam = async (req, res) => {
     try {
+        const { name, logoUrl, managerId, coachName, directorName } = req.body;
+
         let finalLogoUrl = logoUrl;
         if (req.file) {
             try {
