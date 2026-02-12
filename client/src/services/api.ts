@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const getBaseUrl = () => {
+export const getBaseUrl = () => {
     if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
     if (import.meta.env.VITE_API_HOST) return `https://${import.meta.env.VITE_API_HOST}/api`;
     return `http://${window.location.hostname}:3000/api`;

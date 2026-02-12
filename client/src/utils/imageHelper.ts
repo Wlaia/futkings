@@ -1,15 +1,14 @@
+import { getBaseUrl } from '../services/api';
+
 export const getLogoUrl = (url?: string) => {
     if (!url) return undefined;
 
-    const apiUrl = import.meta.env.VITE_API_URL;
-    const apiHost = import.meta.env.VITE_API_HOST;
-    const apiOrigin = apiUrl ? apiUrl.replace(/\/api\/?$/, '') : (apiHost ? `https://${apiHost}` : '');
+    const apiBaseUrl = getBaseUrl();
+    const apiOrigin = apiBaseUrl.replace(/\/api\/?$/, '');
 
     // Handle relative paths (e.g., /uploads/...)
     if (url.startsWith('/')) {
-        if (apiOrigin) return `${apiOrigin}${url}`;
-        // Fallback to current host if no API info
-        return `${window.location.protocol}//${window.location.hostname}:3000${url}`;
+        return `${apiOrigin}${url}`;
     }
 
     // Check if running in production (not localhost)
@@ -20,13 +19,14 @@ export const getLogoUrl = (url?: string) => {
         try {
             const urlObj = new URL(url);
             const path = urlObj.pathname;
-            if (apiOrigin) return `${apiOrigin}${path}`;
-            return `${window.location.protocol}//${window.location.host}${path}`;
+            return `${apiOrigin}${path}`;
         } catch (e) {
             console.error("Error parsing logo URL:", e);
             return url;
         }
     }
 
+    // Ensure cross-protocol compatibility if possible, or just return as is if it's already a full URL
     return url;
 };
+
