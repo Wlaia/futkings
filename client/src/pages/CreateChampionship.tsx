@@ -38,9 +38,7 @@ const CreateChampionship: React.FC = () => {
             if (data.groupsCount) formData.append('groupsCount', data.groupsCount);
             if (data.qualifiersPerGroup) formData.append('qualifiersPerGroup', data.qualifiersPerGroup);
 
-            await api.post('/championships', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await api.post('/championships', formData);
             alert('Campeonato criado com sucesso!');
             navigate('/dashboard');
         } catch (error) {
