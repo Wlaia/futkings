@@ -15,7 +15,11 @@ const SPONSORS: Sponsor[] = [
     { id: 5, image: '/sponsors/publicidade5.png', name: 'Patrocinador 5' },
 ];
 
-const SponsorCarousel: React.FC = () => {
+interface SponsorCarouselProps {
+    onClose: () => void;
+}
+
+const SponsorCarousel: React.FC<SponsorCarouselProps> = ({ onClose }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [progress, setProgress] = useState(0);
 
@@ -38,76 +42,97 @@ const SponsorCarousel: React.FC = () => {
                 }
                 return prev + 1;
             });
-        }, 50); // 5 seconds total (100 * 50ms)
+        }, 50);
 
         return () => clearInterval(interval);
     }, [currentIndex]);
 
     return (
-        <div className="relative w-full overflow-hidden rounded-2xl bg-gray-900/50 backdrop-blur-md border border-white/10 shadow-2xl animate-in zoom-in duration-500">
-            {/* Header Overlay */}
-            <div className="absolute top-0 left-0 right-0 z-20 p-4 bg-gradient-to-b from-black/80 to-transparent">
-                <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-500 animate-pulse">
+        <div className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-center p-4 md:p-12 animate-in fade-in zoom-in duration-500">
+            {/* Ambient Background Glow */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-blue-500/10 blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-yellow-500/10 blur-[120px] rounded-full animate-pulse " />
+            </div>
+
+            {/* Top Label */}
+            <div className="absolute top-12 left-0 right-0 z-20 px-8 flex justify-between items-center max-w-[1400px] mx-auto w-full">
+                <div className="flex flex-col">
+                    <span className="text-yellow-500 font-black uppercase tracking-[0.5em] text-sm md:text-xl italic animate-pulse">
                         Espaço Publicitário
                     </span>
-                    <div className="flex gap-1">
-                        {SPONSORS.map((_, idx) => (
-                            <div
-                                key={idx}
-                                className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-6 bg-yellow-500' : 'w-2 bg-white/20'}`}
-                            />
-                        ))}
-                    </div>
+                    <div className="h-1 w-24 bg-yellow-500 mt-2" />
+                </div>
+                <div className="flex gap-2">
+                    {SPONSORS.map((_, idx) => (
+                        <div
+                            key={idx}
+                            className={`h-2 rounded-full transition-all duration-500 ${idx === currentIndex ? 'w-12 bg-yellow-500' : 'w-3 bg-white/10'}`}
+                        />
+                    ))}
                 </div>
             </div>
 
-            {/* Slides */}
-            <div className="relative aspect-[16/9] md:aspect-[21/9] flex items-center justify-center p-8">
+            {/* Main Stage */}
+            <div className="relative w-full max-w-[1400px] aspect-video flex items-center justify-center">
                 {SPONSORS.map((sponsor, index) => (
                     <div
                         key={sponsor.id}
-                        className={`absolute inset-0 transition-all duration-700 ease-in-out transform flex items-center justify-center p-6 ${index === currentIndex
-                                ? 'opacity-100 scale-100 translate-x-0'
-                                : 'opacity-0 scale-95 translate-x-full'
+                        className={`absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)] transform flex items-center justify-center p-4 md:p-12 ${index === currentIndex
+                            ? 'opacity-100 scale-100 translate-x-0 rotate-0'
+                            : 'opacity-0 scale-75 translate-x-32 rotate-6 pointer-events-none'
                             }`}
                     >
-                        <img
-                            src={sponsor.image}
-                            alt={sponsor.name}
-                            className="max-w-full max-h-full object-contain filter drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]"
-                            onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                            }}
-                        />
+                        <div className="relative w-full h-full flex items-center justify-center">
+                            {/* Card Shadow/Glow */}
+                            <div className="absolute inset-0 bg-white/5 rounded-[40px] border border-white/10 shadow-[0_0_100px_rgba(255,255,255,0.05)]" />
+
+                            <img
+                                src={sponsor.image}
+                                alt={sponsor.name}
+                                className="relative max-w-[85%] max-h-[85%] object-contain filter drop-shadow-[0_0_50px_rgba(255,255,255,0.3)] transition-transform duration-700 hover:scale-105"
+                                onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                }}
+                            />
+                        </div>
                     </div>
                 ))}
+
+                {/* Navigation Buttons */}
+                <button
+                    onClick={prevSlide}
+                    className="absolute -left-4 md:-left-8 top-1/2 -translate-y-1/2 z-30 p-4 md:p-6 rounded-2xl bg-white/5 text-white hover:bg-yellow-500 hover:text-black transition-all transform hover:scale-110 border border-white/10 backdrop-blur-md group"
+                >
+                    <FaChevronLeft size={32} className="group-hover:-translate-x-1 transition-transform" />
+                </button>
+                <button
+                    onClick={nextSlide}
+                    className="absolute -right-4 md:-right-8 top-1/2 -translate-y-1/2 z-30 p-4 md:p-6 rounded-2xl bg-white/5 text-white hover:bg-yellow-500 hover:text-black transition-all transform hover:scale-110 border border-white/10 backdrop-blur-md group"
+                >
+                    <FaChevronRight size={32} className="group-hover:translate-x-1 transition-transform" />
+                </button>
             </div>
 
-            {/* Progress Bar */}
-            <div className="absolute bottom-0 left-0 h-1.5 bg-yellow-500 transition-all duration-50" style={{ width: `${progress}%` }} />
+            {/* Bottom Controls */}
+            <div className="absolute bottom-12 flex flex-col items-center gap-8 w-full">
+                {/* Sponsor Name */}
+                <p className="text-white font-black text-3xl md:text-5xl uppercase tracking-[0.2em] italic drop-shadow-2xl">
+                    {SPONSORS[currentIndex].name}
+                </p>
 
-            {/* Navigation Buttons */}
-            <button
-                onClick={prevSlide}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/50 text-white hover:bg-yellow-500 hover:text-black transition-all transform hover:scale-110 border border-white/10"
-            >
-                <FaChevronLeft size={20} />
-            </button>
-            <button
-                onClick={nextSlide}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/50 text-white hover:bg-yellow-500 hover:text-black transition-all transform hover:scale-110 border border-white/10"
-            >
-                <FaChevronRight size={20} />
-            </button>
-
-            {/* Footer Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 z-20 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                <div className="text-center">
-                    <p className="text-white font-bold text-xl uppercase tracking-widest drop-shadow-lg italic">
-                        {SPONSORS[currentIndex].name}
-                    </p>
+                {/* Progress Bar Container */}
+                <div className="w-1/2 h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-yellow-500 transition-all duration-50 shadow-[0_0_15px_rgba(234,179,8,0.5)]" style={{ width: `${progress}%` }} />
                 </div>
+
+                {/* Action Button */}
+                <button
+                    onClick={onClose}
+                    className="mt-4 bg-yellow-600 hover:bg-yellow-500 text-white px-16 py-6 rounded-2xl font-black uppercase tracking-[0.2em] shadow-[0_0_40px_rgba(202,138,4,0.4)] flex items-center gap-4 text-2xl md:text-3xl transition-all hover:scale-110 active:scale-95 border-b-8 border-yellow-800"
+                >
+                    <FaRedo className="animate-spin-slow" /> Iniciar 2º Tempo
+                </button>
             </div>
         </div>
     );

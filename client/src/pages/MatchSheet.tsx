@@ -934,23 +934,9 @@ const MatchSheet: React.FC = () => {
                             )}
                         </div>
 
-                        {/* End of Period Actions */}
                         {/* Sponsor Carousel at Halftime */}
                         {(!isRunning && time >= 1200 && period === 1) && (
-                            <div className="mb-8 space-y-6">
-                                <div className="text-xl font-black text-yellow-500 uppercase tracking-widest animate-pulse">
-                                    INTERVALO - MOMENTO DO PATROCINADOR
-                                </div>
-                                <SponsorCarousel />
-                                <div className="pt-4">
-                                    <button
-                                        onClick={startNextPeriod}
-                                        className="bg-yellow-600 hover:bg-yellow-500 text-white px-10 py-4 rounded-full font-black uppercase tracking-widest shadow-[0_0_20px_rgba(202,138,4,0.4)] flex items-center gap-3 mx-auto text-xl transition-all hover:scale-105 active:scale-95"
-                                    >
-                                        <FaRedo /> Iniciar 2º Tempo
-                                    </button>
-                                </div>
-                            </div>
+                            <SponsorCarousel onClose={startNextPeriod} />
                         )}
 
                         <div className="flex justify-between items-center mb-4">
