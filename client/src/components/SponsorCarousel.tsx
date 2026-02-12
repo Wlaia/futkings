@@ -48,20 +48,16 @@ const SponsorCarousel: React.FC<SponsorCarouselProps> = ({ onClose }) => {
     }, [currentIndex]);
 
     return (
-        <div className="fixed inset-0 z-[500] bg-black flex flex-col items-center justify-center p-0 animate-in fade-in duration-700">
-            {/* Ambient Background Glow - Subtler on solid black */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-[10%] -left-[5%] w-[40%] h-[40%] bg-blue-500/5 blur-[150px] rounded-full animate-pulse" />
-                <div className="absolute -bottom-[10%] -right-[5%] w-[40%] h-[40%] bg-yellow-500/5 blur-[150px] rounded-full animate-pulse " />
-            </div>
+        <div className="fixed inset-0 z-[500] bg-black flex flex-col items-center justify-center p-0 animate-in fade-in duration-1000">
+            {/* Pure Black Background - No Ambient Glow */}
 
             {/* Top Label */}
-            <div className="absolute top-8 left-0 right-0 z-20 px-12 flex justify-between items-center max-w-[1600px] mx-auto w-full">
+            <div className="absolute top-12 left-0 right-0 z-20 px-12 flex justify-between items-center max-w-[1800px] mx-auto w-full">
                 <div className="flex flex-col">
-                    <span className="text-yellow-500 font-black uppercase tracking-[0.8em] text-lg md:text-2xl italic animate-pulse">
-                        Espaço Publicitário
+                    <span className="text-yellow-500 font-black uppercase tracking-[1em] text-xl md:text-3xl italic">
+                        PUBLICIDADE
                     </span>
-                    <div className="h-1.5 w-32 bg-yellow-500 mt-3" />
+                    <div className="h-2 w-48 bg-yellow-500 mt-4 shadow-[0_0_20px_rgba(234,179,8,0.5)]" />
                 </div>
                 <div className="flex gap-3">
                     {SPONSORS.map((_, idx) => (
@@ -74,23 +70,20 @@ const SponsorCarousel: React.FC<SponsorCarouselProps> = ({ onClose }) => {
             </div>
 
             {/* Main Stage - Full width/height focus */}
-            <div className="relative w-full h-[70vh] flex items-center justify-center overflow-hidden">
+            <div className="relative w-full h-[85vh] flex items-center justify-center overflow-hidden">
                 {SPONSORS.map((sponsor, index) => (
                     <div
                         key={sponsor.id}
-                        className={`absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)] transform flex items-center justify-center p-4 md:p-8 ${index === currentIndex
+                        className={`absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)] transform flex items-center justify-center p-2 md:p-4 ${index === currentIndex
                             ? 'opacity-100 scale-100 translate-x-0 rotate-0'
-                            : 'opacity-0 scale-50 translate-x-[100%] rotate-12 pointer-events-none'
+                            : 'opacity-0 scale-90 translate-x-[100%] rotate-6 pointer-events-none'
                             }`}
                     >
-                        <div className="relative w-full h-full flex items-center justify-center max-w-[1200px]">
-                            {/* Card Shadow/Glow (Subtle) */}
-                            <div className="absolute inset-0 bg-white/[0.02] rounded-[60px] border border-white/5" />
-
+                        <div className="relative w-full h-full flex items-center justify-center max-w-[1600px]">
                             <img
                                 src={sponsor.image}
                                 alt={sponsor.name}
-                                className="relative w-full h-full object-contain filter drop-shadow-[0_0_80px_rgba(255,255,255,0.4)] transition-transform duration-700 hover:scale-110"
+                                className="relative w-full h-full object-contain filter drop-shadow-[0_0_120px_rgba(255,255,255,0.25)] transition-transform duration-700"
                                 onError={(e) => {
                                     e.currentTarget.style.display = 'none';
                                 }}
@@ -129,7 +122,7 @@ const SponsorCarousel: React.FC<SponsorCarouselProps> = ({ onClose }) => {
                 {/* Action Button - Massive */}
                 <button
                     onClick={onClose}
-                    className="mt-6 bg-yellow-600 hover:bg-yellow-500 text-white px-24 py-8 rounded-[30px] font-black uppercase tracking-[0.3em] shadow-[0_0_60px_rgba(202,138,4,0.5)] flex items-center gap-6 text-3xl md:text-5xl transition-all hover:scale-110 active:scale-95 border-b-[12px] border-yellow-800"
+                    className="mt-6 bg-yellow-600 hover:bg-yellow-500 text-white px-20 py-6 rounded-[20px] font-black uppercase tracking-[0.2em] shadow-[0_0_40px_rgba(202,138,4,0.4)] flex items-center gap-6 text-2xl md:text-3xl transition-all hover:scale-105 active:scale-95 border-b-[8px] border-yellow-800"
                 >
                     <FaRedo className="animate-spin-slow" /> Iniciar 2º Tempo
                 </button>
