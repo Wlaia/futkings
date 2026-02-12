@@ -245,8 +245,14 @@ function App() {
       try {
         const response = await fetch(`/version.json?t=${Date.now()}`);
         const data = await response.json();
-        if (data.version && data.version !== APP_VERSION) {
+        const lastNotifiedVersion = localStorage.getItem('last_notified_version');
+
+        if (data.version && data.version !== APP_VERSION && data.version !== lastNotifiedVersion) {
           console.log(`New version available: ${data.version}. Current: ${APP_VERSION}`);
+
+          // Store so we don't ask again for THIS specific version if they cancel
+          localStorage.setItem('last_notified_version', data.version);
+
           if (window.confirm(`Uma nova versão (${data.version}) está disponível. Deseja atualizar agora?`)) {
             if ('serviceWorker' in navigator) {
               const registrations = await navigator.serviceWorker.getRegistrations();
