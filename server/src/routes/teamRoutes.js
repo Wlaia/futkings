@@ -8,7 +8,7 @@ const router = express.Router();
 
 const { createTeamManager } = require('../controllers/managerController');
 
-router.post('/', authenticateToken, authorizeRole(['ADMIN']), createTeam);
+router.post('/', authenticateToken, authorizeRole(['ADMIN']), upload.single('logo'), createTeam);
 router.post('/:teamId/manager', authenticateToken, authorizeRole(['ADMIN']), createTeamManager);
 router.get('/', authenticateToken, listTeams);
 router.get('/:id', authenticateToken, getTeam);

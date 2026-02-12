@@ -5,6 +5,15 @@ const createTeam = async (req, res) => {
     try {
         const { name, logoUrl, managerId, coachName, directorName } = req.body;
 
+        let finalLogoUrl = logoUrl;
+        if (req.file) {
+            try {
+                finalLogoUrl = await uploadToSupabase(req.file, 'teams');
+            } catch (uploadError) {
+                console.error('Failed to upload team logo during creation:', uploadError);
+            }
+        }
+
         if (managerId) {
             const existingTeam = await prisma.team.findUnique({ where: { managerId } });
             if (existingTeam) {
@@ -13,7 +22,13 @@ const createTeam = async (req, res) => {
         }
 
         const team = await prisma.team.create({
-            data: { name, logoUrl, managerId, coachName, directorName },
+            data: {
+                name,
+                logoUrl: finalLogoUrl,
+                managerId,
+                coachName,
+                directorName
+            },
         });
 
         res.status(201).json(team);
