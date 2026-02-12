@@ -11,22 +11,22 @@ export const getLogoUrl = (url?: string) => {
         return `${apiOrigin}${url}`;
     }
 
-    // Check if running in production (not localhost)
+    // Aggressive fix: If the URL contains localhost, 127.0.0.1, or an IP that doesn't match production
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isProductionUrl = url.includes('render.com');
 
-    // If we are in production, and the URL points to localhost, we need to fix it.
-    if (!isLocalhost && url.includes('localhost')) {
+    // If we are in production but the URL points to a local or IP address, fix it
+    if (!isLocalhost && !isProductionUrl && (url.includes('localhost') || url.match(/\d+\.\d+\.\d+\.\d+/))) {
         try {
             const urlObj = new URL(url);
-            const path = urlObj.pathname;
-            return `${apiOrigin}${path}`;
+            return `${apiOrigin}${urlObj.pathname}`;
         } catch (e) {
-            console.error("Error parsing logo URL:", e);
-            return url;
+            // Fallback for malformed URLs that still contain keywords
+            const pathMatch = url.match(/(\/uploads\/.*)/);
+            if (pathMatch) return `${apiOrigin}${pathMatch[1]}`;
         }
     }
 
-    // Ensure cross-protocol compatibility if possible, or just return as is if it's already a full URL
     return url;
 };
 
