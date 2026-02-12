@@ -1,19 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaChevronLeft, FaChevronRight, FaRedo } from 'react-icons/fa';
 
-interface Sponsor {
-    id: number;
-    image: string;
-    name: string;
-}
-
-const SPONSORS: Sponsor[] = [
-    { id: 1, image: '/sponsors/publicidade1.png', name: 'Patrocinador 1' },
-    { id: 2, image: '/sponsors/publicidade2.png', name: 'Patrocinador 2' },
-    { id: 3, image: '/sponsors/publicidade3.png', name: 'Patrocinador 3' },
-    { id: 4, image: '/sponsors/publicidade4.png', name: 'Patrocinador 4' },
-    { id: 5, image: '/sponsors/publicidade5.png', name: 'Patrocinador 5' },
-];
+import { SPONSORS } from '../constants/sponsors';
 
 interface SponsorCarouselProps {
     onClose: () => void;

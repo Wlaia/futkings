@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { FaSave, FaArrowLeft, FaFlag, FaPlay, FaPause, FaPlus, FaCrown, FaBan, FaStar, FaBolt, FaTimes, FaHandPaper, FaUsers, FaExpand, FaShieldAlt } from 'react-icons/fa';
-import SponsorCarousel from '../components/SponsorCarousel';
-import SafeImage from '../components/SafeImage';
+import SafeImage from './components/SafeImage';
+import { SPONSORS } from '../constants/sponsors';
 import MatchLineupModal from '../components/MatchLineupModal';
 
 interface Player {
@@ -840,41 +840,33 @@ const MatchSheet: React.FC = () => {
             )}
 
             {/* Left Vertical Banner (Fixed Position - 3 Stacked Squares) */}
-            <div className="hidden min-[1900px]:flex flex-col gap-4 w-[300px] fixed top-24 left-4 z-10 transition-all duration-500">
-                {/* 1 */}
-                <div className="w-full aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer group shadow-2xl hover:scale-105 relative overflow-hidden">
-                    <span className="text-gray-600 font-bold group-hover:text-white transition-colors tracking-widest text-xl">PUB 1</span>
-                    <img src="/sponsors/publicidade1.png" alt="Publicidade 1" className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-90 group-hover:opacity-100 transition-opacity" onError={(e) => e.currentTarget.style.display = 'none'} />
-                </div>
-                {/* 2 */}
-                <div className="w-full aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer group shadow-2xl hover:scale-105 relative overflow-hidden">
-                    <span className="text-gray-600 font-bold group-hover:text-white transition-colors tracking-widest text-xl">PUB 2</span>
-                    <img src="/sponsors/publicidade2.png" alt="Publicidade 2" className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-90 group-hover:opacity-100 transition-opacity" onError={(e) => e.currentTarget.style.display = 'none'} />
-                </div>
-                {/* 3 */}
-                <div className="w-full aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer group shadow-2xl hover:scale-105 relative overflow-hidden">
-                    <span className="text-gray-600 font-bold group-hover:text-white transition-colors tracking-widest text-xl">PUB 3</span>
-                    <img src="/sponsors/publicidade3.png" alt="Publicidade 3" className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-90 group-hover:opacity-100 transition-opacity" onError={(e) => e.currentTarget.style.display = 'none'} />
-                </div>
+            <div className="hidden min-[1600px]:flex flex-col gap-4 w-[180px] min-[1800px]:w-[250px] fixed top-24 left-4 z-10 transition-all duration-500">
+                {SPONSORS.slice(0, 3).map((sponsor) => (
+                    <div key={sponsor.id} className="w-full aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer group shadow-2xl hover:scale-105 relative overflow-hidden">
+                        <span className="text-gray-700 font-bold group-hover:text-white transition-colors tracking-widest text-sm opacity-20">PUB {sponsor.id}</span>
+                        <img
+                            src={sponsor.image}
+                            alt={sponsor.name}
+                            className="absolute inset-0 w-full h-full object-contain p-2 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity filter drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]"
+                            onError={(e) => e.currentTarget.style.display = 'none'}
+                        />
+                    </div>
+                ))}
             </div>
 
             {/* Right Vertical Banner (Fixed Position - 3 Stacked Squares) */}
-            <div className="hidden min-[1900px]:flex flex-col gap-4 w-[300px] fixed top-24 right-4 z-10 transition-all duration-500">
-                {/* 4 */}
-                <div className="w-full aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer group shadow-2xl hover:scale-105 relative overflow-hidden">
-                    <span className="text-gray-600 font-bold group-hover:text-white transition-colors tracking-widest text-xl">PUB 4</span>
-                    <img src="/sponsors/publicidade4.png" alt="Publicidade 4" className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-90 group-hover:opacity-100 transition-opacity" onError={(e) => e.currentTarget.style.display = 'none'} />
-                </div>
-                {/* 5 */}
-                <div className="w-full aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer group shadow-2xl hover:scale-105 relative overflow-hidden">
-                    <span className="text-gray-600 font-bold group-hover:text-white transition-colors tracking-widest text-xl">PUB 5</span>
-                    <img src="/sponsors/publicidade5.png" alt="Publicidade 5" className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-90 group-hover:opacity-100 transition-opacity" onError={(e) => e.currentTarget.style.display = 'none'} />
-                </div>
-                {/* 6 */}
-                <div className="w-full aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer group shadow-2xl hover:scale-105 relative overflow-hidden">
-                    <span className="text-gray-600 font-bold group-hover:text-white transition-colors tracking-widest text-xl">PUB 6</span>
-                    <img src="/sponsors/publicidade6.png" alt="Publicidade 6" className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-90 group-hover:opacity-100 transition-opacity" onError={(e) => e.currentTarget.style.display = 'none'} />
-                </div>
+            <div className="hidden min-[1600px]:flex flex-col gap-4 w-[180px] min-[1800px]:w-[250px] fixed top-24 right-4 z-10 transition-all duration-500">
+                {SPONSORS.slice(3, 6).map((sponsor) => (
+                    <div key={sponsor.id} className="w-full aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer group shadow-2xl hover:scale-105 relative overflow-hidden">
+                        <span className="text-gray-700 font-bold group-hover:text-white transition-colors tracking-widest text-sm opacity-20">PUB {sponsor.id}</span>
+                        <img
+                            src={sponsor.image}
+                            alt={sponsor.name}
+                            className="absolute inset-0 w-full h-full object-contain p-2 rounded-xl opacity-90 group-hover:opacity-100 transition-opacity filter drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]"
+                            onError={(e) => e.currentTarget.style.display = 'none'}
+                        />
+                    </div>
+                ))}
             </div>
 
             <div className="max-w-[1250px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.5fr_1fr] gap-6 px-4">
