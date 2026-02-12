@@ -164,8 +164,11 @@ const updateTeam = async (req, res) => {
 
         res.json(team);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error updating team' });
+        console.error(`[CRITICAL ERROR] updateTeam failed for ID ${req.params.id}:`, error);
+        res.status(500).json({
+            message: 'Erro interno ao atualizar o time no banco de dados.',
+            error: error.message
+        });
     }
 };
 
