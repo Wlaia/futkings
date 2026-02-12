@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaTimes, FaShieldAlt } from 'react-icons/fa';
+import { FaTimes } from 'react-icons/fa';
 import PlayerCard from './PlayerCard';
 
 interface Player {
@@ -27,13 +27,6 @@ interface MatchLineupModalProps {
 
 const MatchLineupModal: React.FC<MatchLineupModalProps> = ({ isOpen, onClose, homeTeam, awayTeam }) => {
     const [activeTab, setActiveTab] = useState<'HOME' | 'AWAY'>('HOME');
-    const [isAnimating, setIsAnimating] = useState(false);
-
-    useEffect(() => {
-        if (isOpen) {
-            setIsAnimating(true);
-        }
-    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -41,7 +34,15 @@ const MatchLineupModal: React.FC<MatchLineupModalProps> = ({ isOpen, onClose, ho
     const starters = currentTeam.players
         .filter(p => p.isStarter)
         .slice(0, 5)
-        .sort((a, b) => (a.position === 'GOALKEEPER' ? -1 : 1));
+        .sort((a, b) => {
+            if (a.position === 'GOALKEEPER' && b.position !== 'GOALKEEPER') {
+                return -1;
+            }
+            if (a.position !== 'GOALKEEPER' && b.position === 'GOALKEEPER') {
+                return 1;
+            }
+            return 0;
+        });
 
     return (
         <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-in fade-in duration-500 overflow-hidden">
