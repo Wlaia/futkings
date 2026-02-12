@@ -512,34 +512,38 @@ const ChampionshipDetails: React.FC = () => {
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex items-center justify-between">
+                                                            <div className="flex items-center justify-between gap-1">
                                                                 {/* Home Team */}
-                                                                <div className="flex-1 text-right flex items-center justify-end gap-3">
-                                                                    <span className={`font-bold text-base md:text-xl truncate ${!match.homeTeam ? 'text-gray-600 italic' : ''}`}>
+                                                                <div className="flex-1 text-right flex items-center justify-end gap-2 md:gap-3 min-w-0">
+                                                                    <span className={`font-bold text-sm sm:text-base md:text-xl leading-tight ${!match.homeTeam ? 'text-gray-600 italic' : ''}`}>
                                                                         {match.homeTeam?.name || 'A Definir'}
                                                                     </span>
-                                                                    {match.homeTeam?.logoUrl && <img src={getLogoUrl(match.homeTeam.logoUrl)} alt="" className="w-8 h-8 object-contain" />}
+                                                                    {match.homeTeam?.logoUrl && (
+                                                                        <img src={getLogoUrl(match.homeTeam.logoUrl)} alt="" className="w-6 h-6 md:w-8 md:h-8 object-contain shrink-0" />
+                                                                    )}
                                                                 </div>
 
                                                                 {/* Score / VS */}
-                                                                <div className="flex flex-col items-center px-4 md:px-8 shrink-0">
+                                                                <div className="flex flex-col items-center px-2 md:px-8 shrink-0">
                                                                     {match.status === 'COMPLETED' || (match.homeScore !== null) ? (
-                                                                        <div className="flex items-center gap-3 font-mono text-xl md:text-3xl font-bold text-white bg-gray-800 px-4 py-1 rounded-lg border border-gray-700">
+                                                                        <div className="flex items-center gap-2 md:gap-3 font-mono text-lg md:text-3xl font-bold text-white bg-gray-800 px-3 md:px-4 py-1 rounded-lg border border-gray-700">
                                                                             <span className={match.homeScore! > match.awayScore! ? 'text-yellow-500' : ''}>{match.homeScore}</span>
-                                                                            <span className="text-gray-600 text-lg">X</span>
+                                                                            <span className="text-gray-600 text-base md:text-lg">X</span>
                                                                             <span className={match.awayScore! > match.homeScore! ? 'text-yellow-500' : ''}>{match.awayScore}</span>
                                                                         </div>
                                                                     ) : (
-                                                                        <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 font-bold text-xs border border-gray-700">
+                                                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 font-bold text-[10px] md:text-xs border border-gray-700">
                                                                             VS
                                                                         </div>
                                                                     )}
                                                                 </div>
 
                                                                 {/* Away Team */}
-                                                                <div className="flex-1 text-left flex items-center justify-start gap-3">
-                                                                    {match.awayTeam?.logoUrl && <img src={getLogoUrl(match.awayTeam.logoUrl)} alt="" className="w-8 h-8 object-contain" />}
-                                                                    <span className={`font-bold text-base md:text-xl truncate ${!match.awayTeam ? 'text-gray-600 italic' : ''}`}>
+                                                                <div className="flex-1 text-left flex items-center justify-start gap-2 md:gap-3 min-w-0">
+                                                                    {match.awayTeam?.logoUrl && (
+                                                                        <img src={getLogoUrl(match.awayTeam.logoUrl)} alt="" className="w-6 h-6 md:w-8 md:h-8 object-contain shrink-0" />
+                                                                    )}
+                                                                    <span className={`font-bold text-sm sm:text-base md:text-xl leading-tight ${!match.awayTeam ? 'text-gray-600 italic' : ''}`}>
                                                                         {match.awayTeam?.name || 'A Definir'}
                                                                     </span>
                                                                 </div>
