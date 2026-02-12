@@ -11,6 +11,7 @@ const createChampionship = async (req, res) => {
                 logoUrl = await uploadToSupabase(req.file, 'championships');
             } catch (uploadError) {
                 console.error('Failed to upload championship logo:', uploadError);
+                return res.status(500).json({ message: 'Erro ao fazer upload da logo da competição.' });
             }
         }
 

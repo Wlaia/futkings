@@ -3,14 +3,13 @@ const { uploadToSupabase } = require('../services/storageService');
 
 const createTeam = async (req, res) => {
     try {
-        const { name, logoUrl, managerId, coachName, directorName } = req.body;
-
         let finalLogoUrl = logoUrl;
         if (req.file) {
             try {
                 finalLogoUrl = await uploadToSupabase(req.file, 'teams');
             } catch (uploadError) {
                 console.error('Failed to upload team logo during creation:', uploadError);
+                return res.status(500).json({ message: 'Erro ao fazer upload da logo para o servidor de arquivos.' });
             }
         }
 
@@ -133,9 +132,14 @@ const updateTeam = async (req, res) => {
                     console.log(`[DEBUG] Update Team ${id} - Supabase Upload Success: ${finalLogoUrl}`);
                 } else {
                     console.warn(`[DEBUG] Update Team ${id} - uploadToSupabase returned null`);
+                    throw new Error('Servidor de arquivos não retornou URL.');
                 }
             } catch (uploadError) {
                 console.error(`[DEBUG] Update Team ${id} - Failed to upload to Supabase:`, uploadError);
+                return res.status(500).json({
+                    message: 'Erro ao enviar imagem para o servidor de armazenamento (Supabase). Verifique as configurações da conta.',
+                    error: uploadError.message
+                });
             }
         }
 

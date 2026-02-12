@@ -26,10 +26,10 @@ const uploadToSupabase = async (file, bucket, folder = '') => {
             });
 
         if (error) {
-            console.error('Supabase Upload Error:', error);
-            throw error;
+            console.error(`[STORAGE ERROR] Supabase Upload failed for bucket "${bucket}":`, error.message || error);
+            throw new Error(`Supabase Upload failed: ${error.message || 'Unknown error'}`);
         }
-        console.log('Supabase Upload Success:', data);
+        console.log(`[STORAGE SUCCESS] Uploaded to ${bucket}: ${data.path}`);
 
         // Get Public URL
         const { data: { publicUrl } } = supabase.storage
@@ -38,7 +38,7 @@ const uploadToSupabase = async (file, bucket, folder = '') => {
 
         return publicUrl;
     } catch (error) {
-        console.error('Error uploading to Supabase:', error);
+        console.error(`[STORAGE CRITICAL] Critical error in uploadToSupabase:`, error);
         throw error;
     }
 };

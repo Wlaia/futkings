@@ -23,7 +23,7 @@ const publicAddPlayer = async (req, res) => {
             avatarUrl = await uploadToSupabase(req.file, 'players');
         } catch (uploadError) {
             console.error('Failed to upload player avatar (public):', uploadError);
-            // Fallback or handle error
+            return res.status(500).json({ message: 'Erro ao fazer upload da avatar para o servidor de arquivos.' });
         }
     }
 
@@ -60,6 +60,7 @@ const publicUpdatePlayer = async (req, res) => {
             avatarUrl = await uploadToSupabase(req.file, 'players');
         } catch (uploadError) {
             console.error('Failed to update player avatar (public):', uploadError);
+            return res.status(500).json({ message: 'Erro ao atualizar imagem para o servidor de arquivos.' });
         }
     }
 
