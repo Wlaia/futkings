@@ -243,24 +243,31 @@ function App() {
     // Version check to bypass PWA cache
     const checkVersion = async () => {
       try {
-        const response = await fetch(`/version.json?t=${Date.now()}`);
+        console.log(`[VERSION] Checking server version... (Local: ${APP_VERSION})`);
+        const response = await fetch(`/version.json?t=${Date.now()}`, { cache: 'no-store' });
         const data = await response.json();
         const lastNotifiedVersion = localStorage.getItem('last_notified_version');
 
-        if (data.version && data.version !== APP_VERSION && data.version !== lastNotifiedVersion) {
-          console.log(`New version available: ${data.version}. Current: ${APP_VERSION}`);
+        console.log(`[VERSION] Server: ${data.version}, Local: ${APP_VERSION}, LastNotified: ${lastNotifiedVersion}`);
 
-          // Store so we don't ask again for THIS specific version if they cancel
-          localStorage.setItem('last_notified_version', data.version);
+        if (data.version && data.version !== APP_VERSION) {
+          // If we haven't notified about THIS specific version yet
+          if (data.version !== lastNotifiedVersion) {
+            console.log(`New version available: ${data.version}. Current: ${APP_VERSION}`);
 
-          if (window.confirm(`Uma nova versão (${data.version}) está disponível. Deseja atualizar agora?`)) {
-            if ('serviceWorker' in navigator) {
-              const registrations = await navigator.serviceWorker.getRegistrations();
-              for (const registration of registrations) {
-                await registration.unregister();
+            if (window.confirm(`Uma nova versão (${data.version}) está disponível. Deseja atualizar agora para garantir que as fotos e escalações funcionem?`)) {
+              localStorage.setItem('last_notified_version', data.version);
+              if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                  await registration.unregister();
+                }
               }
+              window.location.reload();
+            } else {
+              // Store as notified so we don't spam, but we can still check in the background
+              localStorage.setItem('last_notified_version', data.version);
             }
-            window.location.reload();
           }
         }
       } catch (e) {
@@ -268,8 +275,10 @@ function App() {
       }
     };
 
-    const timer = setTimeout(checkVersion, 5000); // Check after 5s
-    return () => clearTimeout(timer);
+    // Check immediately on load and then every 30s
+    checkVersion();
+    const interval = setInterval(checkVersion, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
