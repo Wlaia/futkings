@@ -48,49 +48,49 @@ const SponsorCarousel: React.FC<SponsorCarouselProps> = ({ onClose }) => {
     }, [currentIndex]);
 
     return (
-        <div className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-center p-4 md:p-12 animate-in fade-in zoom-in duration-500">
-            {/* Ambient Background Glow */}
+        <div className="fixed inset-0 z-[500] bg-black flex flex-col items-center justify-center p-0 animate-in fade-in duration-700">
+            {/* Ambient Background Glow - Subtler on solid black */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-blue-500/10 blur-[120px] rounded-full animate-pulse" />
-                <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-yellow-500/10 blur-[120px] rounded-full animate-pulse " />
+                <div className="absolute -top-[10%] -left-[5%] w-[40%] h-[40%] bg-blue-500/5 blur-[150px] rounded-full animate-pulse" />
+                <div className="absolute -bottom-[10%] -right-[5%] w-[40%] h-[40%] bg-yellow-500/5 blur-[150px] rounded-full animate-pulse " />
             </div>
 
             {/* Top Label */}
-            <div className="absolute top-12 left-0 right-0 z-20 px-8 flex justify-between items-center max-w-[1400px] mx-auto w-full">
+            <div className="absolute top-8 left-0 right-0 z-20 px-12 flex justify-between items-center max-w-[1600px] mx-auto w-full">
                 <div className="flex flex-col">
-                    <span className="text-yellow-500 font-black uppercase tracking-[0.5em] text-sm md:text-xl italic animate-pulse">
+                    <span className="text-yellow-500 font-black uppercase tracking-[0.8em] text-lg md:text-2xl italic animate-pulse">
                         Espaço Publicitário
                     </span>
-                    <div className="h-1 w-24 bg-yellow-500 mt-2" />
+                    <div className="h-1.5 w-32 bg-yellow-500 mt-3" />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                     {SPONSORS.map((_, idx) => (
                         <div
                             key={idx}
-                            className={`h-2 rounded-full transition-all duration-500 ${idx === currentIndex ? 'w-12 bg-yellow-500' : 'w-3 bg-white/10'}`}
+                            className={`h-2.5 rounded-full transition-all duration-700 ${idx === currentIndex ? 'w-20 bg-yellow-500' : 'w-4 bg-white/5'}`}
                         />
                     ))}
                 </div>
             </div>
 
-            {/* Main Stage */}
-            <div className="relative w-full max-w-[1400px] aspect-video flex items-center justify-center">
+            {/* Main Stage - Full width/height focus */}
+            <div className="relative w-full h-[70vh] flex items-center justify-center overflow-hidden">
                 {SPONSORS.map((sponsor, index) => (
                     <div
                         key={sponsor.id}
-                        className={`absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)] transform flex items-center justify-center p-4 md:p-12 ${index === currentIndex
+                        className={`absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)] transform flex items-center justify-center p-4 md:p-8 ${index === currentIndex
                             ? 'opacity-100 scale-100 translate-x-0 rotate-0'
-                            : 'opacity-0 scale-75 translate-x-32 rotate-6 pointer-events-none'
+                            : 'opacity-0 scale-50 translate-x-[100%] rotate-12 pointer-events-none'
                             }`}
                     >
-                        <div className="relative w-full h-full flex items-center justify-center">
-                            {/* Card Shadow/Glow */}
-                            <div className="absolute inset-0 bg-white/5 rounded-[40px] border border-white/10 shadow-[0_0_100px_rgba(255,255,255,0.05)]" />
+                        <div className="relative w-full h-full flex items-center justify-center max-w-[1200px]">
+                            {/* Card Shadow/Glow (Subtle) */}
+                            <div className="absolute inset-0 bg-white/[0.02] rounded-[60px] border border-white/5" />
 
                             <img
                                 src={sponsor.image}
                                 alt={sponsor.name}
-                                className="relative max-w-[85%] max-h-[85%] object-contain filter drop-shadow-[0_0_50px_rgba(255,255,255,0.3)] transition-transform duration-700 hover:scale-105"
+                                className="relative w-full h-full object-contain filter drop-shadow-[0_0_80px_rgba(255,255,255,0.4)] transition-transform duration-700 hover:scale-110"
                                 onError={(e) => {
                                     e.currentTarget.style.display = 'none';
                                 }}
@@ -99,37 +99,37 @@ const SponsorCarousel: React.FC<SponsorCarouselProps> = ({ onClose }) => {
                     </div>
                 ))}
 
-                {/* Navigation Buttons */}
+                {/* Navigation Buttons - Larger and further apart */}
                 <button
                     onClick={prevSlide}
-                    className="absolute -left-4 md:-left-8 top-1/2 -translate-y-1/2 z-30 p-4 md:p-6 rounded-2xl bg-white/5 text-white hover:bg-yellow-500 hover:text-black transition-all transform hover:scale-110 border border-white/10 backdrop-blur-md group"
+                    className="absolute left-8 top-1/2 -translate-y-1/2 z-30 p-8 rounded-full bg-white/5 text-white hover:bg-yellow-500 hover:text-black transition-all transform hover:scale-110 border border-white/10 group"
                 >
-                    <FaChevronLeft size={32} className="group-hover:-translate-x-1 transition-transform" />
+                    <FaChevronLeft size={48} className="group-hover:-translate-x-2 transition-transform" />
                 </button>
                 <button
                     onClick={nextSlide}
-                    className="absolute -right-4 md:-right-8 top-1/2 -translate-y-1/2 z-30 p-4 md:p-6 rounded-2xl bg-white/5 text-white hover:bg-yellow-500 hover:text-black transition-all transform hover:scale-110 border border-white/10 backdrop-blur-md group"
+                    className="absolute right-8 top-1/2 -translate-y-1/2 z-30 p-8 rounded-full bg-white/5 text-white hover:bg-yellow-500 hover:text-black transition-all transform hover:scale-110 border border-white/10 group"
                 >
-                    <FaChevronRight size={32} className="group-hover:translate-x-1 transition-transform" />
+                    <FaChevronRight size={48} className="group-hover:translate-x-2 transition-transform" />
                 </button>
             </div>
 
             {/* Bottom Controls */}
-            <div className="absolute bottom-12 flex flex-col items-center gap-8 w-full">
-                {/* Sponsor Name */}
-                <p className="text-white font-black text-3xl md:text-5xl uppercase tracking-[0.2em] italic drop-shadow-2xl">
+            <div className="absolute bottom-8 flex flex-col items-center gap-10 w-full">
+                {/* Sponsor Name - Huge and high impact */}
+                <p className="text-white font-black text-5xl md:text-8xl uppercase tracking-[0.3em] italic drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
                     {SPONSORS[currentIndex].name}
                 </p>
 
-                {/* Progress Bar Container */}
-                <div className="w-1/2 h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-yellow-500 transition-all duration-50 shadow-[0_0_15px_rgba(234,179,8,0.5)]" style={{ width: `${progress}%` }} />
+                {/* Progress Bar Container - Wider */}
+                <div className="w-2/3 h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-yellow-500 transition-all duration-50 shadow-[0_0_25px_rgba(234,179,8,0.6)]" style={{ width: `${progress}%` }} />
                 </div>
 
-                {/* Action Button */}
+                {/* Action Button - Massive */}
                 <button
                     onClick={onClose}
-                    className="mt-4 bg-yellow-600 hover:bg-yellow-500 text-white px-16 py-6 rounded-2xl font-black uppercase tracking-[0.2em] shadow-[0_0_40px_rgba(202,138,4,0.4)] flex items-center gap-4 text-2xl md:text-3xl transition-all hover:scale-110 active:scale-95 border-b-8 border-yellow-800"
+                    className="mt-6 bg-yellow-600 hover:bg-yellow-500 text-white px-24 py-8 rounded-[30px] font-black uppercase tracking-[0.3em] shadow-[0_0_60px_rgba(202,138,4,0.5)] flex items-center gap-6 text-3xl md:text-5xl transition-all hover:scale-110 active:scale-95 border-b-[12px] border-yellow-800"
                 >
                     <FaRedo className="animate-spin-slow" /> Iniciar 2º Tempo
                 </button>

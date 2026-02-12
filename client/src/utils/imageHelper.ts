@@ -6,6 +6,8 @@ export const getLogoUrl = (url?: string) => {
     const apiBaseUrl = getBaseUrl();
     const apiOrigin = apiBaseUrl.replace(/\/api\/?$/, '');
 
+    // console.log(`[DEBUG] getLogoUrl: url=${url}, apiOrigin=${apiOrigin}`);
+
     // Auto-fix localhost URLs stored in DB when on production
     const isProduction = !window.location.hostname.includes('localhost') &&
         !window.location.hostname.includes('127.0.0.1');
