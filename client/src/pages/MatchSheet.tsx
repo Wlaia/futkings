@@ -4,6 +4,7 @@ import api from '../services/api';
 import { FaSave, FaArrowLeft, FaFlag, FaPlay, FaPause, FaPlus, FaCrown, FaBan, FaStar, FaBolt, FaTimes, FaHandPaper, FaUsers, FaExpand, FaShieldAlt } from 'react-icons/fa';
 import SponsorCarousel from '../components/SponsorCarousel';
 import SafeImage from '../components/SafeImage';
+import MatchLineupModal from '../components/MatchLineupModal';
 
 interface Player {
     id: string;
@@ -107,6 +108,7 @@ const MatchSheet: React.FC = () => {
     const [directorGoals, setDirectorGoals] = useState<Record<string, number>>({});
     const [isDirectorModalOpen, setIsDirectorModalOpen] = useState(false);
     const [selectedDirectorTeamId, setSelectedDirectorTeamId] = useState<string | null>(null);
+    const [isLineupModalOpen, setIsLineupModalOpen] = useState(false);
 
     // Derived State for Scores
     const calculateTeamScore = (teamPlayers: Player[], teamId: string) => {
@@ -1003,6 +1005,16 @@ const MatchSheet: React.FC = () => {
                                 </div>
                             </div>
 
+                            {/* Lineup Preview Button */}
+                            {matchStatus === 'SCHEDULED' && (
+                                <button
+                                    onClick={() => setIsLineupModalOpen(true)}
+                                    className="bg-blue-600/20 text-blue-400 border border-blue-600/30 px-8 py-3 rounded-full font-bold uppercase tracking-[0.2em] hover:bg-blue-600/30 transition-all flex items-center gap-3 shadow-lg hover:scale-105 active:scale-95"
+                                >
+                                    <FaUsers size={20} /> Ver Escalações
+                                </button>
+                            )}
+
                             <div className="flex gap-4 w-full justify-center max-w-md">
                                 <button
                                     onClick={toggleTimer}
@@ -1089,6 +1101,13 @@ const MatchSheet: React.FC = () => {
             )}
 
             {renderCardModal()}
+
+            <MatchLineupModal
+                isOpen={isLineupModalOpen}
+                onClose={() => setIsLineupModalOpen(false)}
+                homeTeam={match.homeTeam}
+                awayTeam={match.awayTeam}
+            />
         </div >
     );
 };
