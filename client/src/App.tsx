@@ -231,7 +231,36 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 
+import { APP_VERSION } from './version';
+
 function App() {
+  useEffect(() => {
+    // Version check to bypass PWA cache
+    const checkVersion = async () => {
+      try {
+        const response = await fetch(`/version.json?t=${Date.now()}`);
+        const data = await response.json();
+        if (data.version && data.version !== APP_VERSION) {
+          console.log(`New version available: ${data.version}. Current: ${APP_VERSION}`);
+          if (window.confirm(`Uma nova versão (${data.version}) está disponível. Deseja atualizar agora?`)) {
+            if ('serviceWorker' in navigator) {
+              const registrations = await navigator.serviceWorker.getRegistrations();
+              for (const registration of registrations) {
+                await registration.unregister();
+              }
+            }
+            window.location.reload();
+          }
+        }
+      } catch (e) {
+        console.error("Failed to check version", e);
+      }
+    };
+
+    const timer = setTimeout(checkVersion, 5000); // Check after 5s
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <AuthProvider>
       <Router>

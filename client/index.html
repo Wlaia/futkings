@@ -10,7 +10,25 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Futkings" />
   <link rel="apple-touch-icon" href="/Favicon.png" />
-  <title>FutKings - Gestão de Futebol</title>
+  <title>Futkings</title>
+  <script>
+    // Force clear old service workers if they are stuck on very old versions
+    // This is a one-time safety measure for the transition to 1.3.0
+    if (localStorage.getItem('sw_reset_130') !== 'true') {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          for (let registration of registrations) {
+            registration.unregister();
+          }
+          if (registrations.length > 0) {
+            localStorage.setItem('sw_reset_130', 'true');
+            window.location.reload();
+          }
+        });
+      }
+      localStorage.setItem('sw_reset_130', 'true');
+    }
+  </script>
 </head>
 
 <body>
