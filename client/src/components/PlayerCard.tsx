@@ -1,6 +1,6 @@
 import React from 'react';
-import { FaUser } from 'react-icons/fa';
-import { getLogoUrl } from '../utils/imageHelper';
+import { FaUser, FaShieldAlt } from 'react-icons/fa';
+import SafeImage from './SafeImage';
 
 
 interface Player {
@@ -86,7 +86,12 @@ const PlayerCard: React.FC<{
                 {/* Team Logo (Center-Top - Optional decorative placement or Watermark) */}
                 {teamLogo && (
                     <div className="absolute left-1/2 top-0 transform -translate-x-1/2 opacity-30 w-32 h-32 pointer-events-none grayscale brightness-50 contrast-125">
-                        <img src={getLogoUrl(teamLogo)} alt="" className="w-full h-full object-contain" />
+                        <SafeImage
+                            src={teamLogo}
+                            alt=""
+                            className="w-full h-full object-contain"
+                            fallbackIcon={<FaShieldAlt size={64} />}
+                        />
                     </div>
                 )}
 
@@ -114,10 +119,11 @@ const PlayerCard: React.FC<{
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gray-800">
                                 {player.avatarUrl && !player.avatarUrl.includes('dicebear') ? (
-                                    <img
-                                        src={getLogoUrl(player.avatarUrl)}
+                                    <SafeImage
+                                        src={player.avatarUrl}
                                         alt={player.name}
                                         className="w-full h-full object-cover img-dramatic transition-transform duration-500 group-hover/img:scale-110 group-hover/img:rotate-2"
+                                        fallbackIcon={<FaUser className="text-gray-600 text-6xl" />}
                                     />
                                 ) : (
                                     <FaUser className="text-gray-600 text-6xl" />

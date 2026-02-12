@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
-import { FaTrophy, FaCalendarCheck, FaUsers, FaFutbol, FaShareAlt, FaArrowLeft } from 'react-icons/fa';
+import { FaTrophy, FaCalendarCheck, FaUsers, FaFutbol, FaShareAlt, FaArrowLeft, FaShieldAlt } from 'react-icons/fa';
+import SafeImage from '../components/SafeImage';
 
 interface Team {
     id: string;
@@ -25,6 +26,7 @@ interface Championship {
     type: string;
     teamsCount: number;
     status: string;
+    logoUrl?: string;
     teams: Team[];
     matches: Match[];
 }
@@ -64,22 +66,28 @@ const PublicChampionshipDetails: React.FC = () => {
             <div className="max-w-6xl mx-auto">
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6 border-b border-gray-800 pb-8">
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <img src="/logo.png" alt="Futkings" className="h-8 opacity-70 grayscale hover:grayscale-0 transition-all" />
-                            <span className="text-gray-500 text-sm font-bold uppercase tracking-widest">Futkings Manager</span>
+                        <div className="flex items-center gap-4 mb-2">
+                            <SafeImage
+                                src={championship.logoUrl}
+                                alt={championship.name}
+                                className="w-16 h-16 rounded-xl border-2 border-yellow-500/30 shadow-lg"
+                                fallbackIcon={<FaTrophy size={32} className="text-yellow-500" />}
+                            />
+                            <div>
+                                <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 uppercase tracking-tighter">
+                                    {championship.name}
+                                </h1>
+                            </div>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 uppercase tracking-tighter mb-2">
-                            {championship.name}
-                        </h1>
                         <div className="flex items-center gap-3">
                             <span className="bg-gray-800 text-gray-300 text-xs font-bold px-3 py-1 rounded-full border border-gray-700 flex items-center gap-1">
                                 <FaTrophy className="text-yellow-500" /> {championship.type}
                             </span>
                             <span className={`text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1 ${championship.status === 'IN_PROGRESS'
-                                    ? 'bg-yellow-900/30 text-yellow-500 border-yellow-500/30'
-                                    : championship.status === 'FINISHED'
-                                        ? 'bg-green-900/30 text-green-500 border-green-500/30'
-                                        : 'bg-gray-800 text-gray-400 border-gray-600'
+                                ? 'bg-yellow-900/30 text-yellow-500 border-yellow-500/30'
+                                : championship.status === 'FINISHED'
+                                    ? 'bg-green-900/30 text-green-500 border-green-500/30'
+                                    : 'bg-gray-800 text-gray-400 border-gray-600'
                                 }`}>
                                 <div className={`w-2 h-2 rounded-full ${championship.status === 'IN_PROGRESS' ? 'bg-yellow-500 animate-pulse' : 'bg-gray-500'
                                     }`}></div>
@@ -114,11 +122,14 @@ const PublicChampionshipDetails: React.FC = () => {
 
                             <div className="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                                 <ul className="space-y-3">
-                                    {championship.teams.map((team, index) => (
+                                    {championship.teams.map((team) => (
                                         <li key={team.id} className="bg-gray-700/50 p-4 rounded-xl flex items-center gap-4 hover:bg-gray-700 transition-all border border-transparent hover:border-gray-600">
-                                            <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-400 border border-gray-600">
-                                                {index + 1}
-                                            </div>
+                                            <SafeImage
+                                                src={team.logoUrl}
+                                                alt={team.name}
+                                                className="w-10 h-10 rounded-full border border-gray-600"
+                                                fallbackIcon={<FaShieldAlt size={16} />}
+                                            />
                                             <span className="font-bold text-lg">{team.name}</span>
                                         </li>
                                     ))}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getLogoUrl } from '../utils/imageHelper';
+import SafeImage from './SafeImage';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { FaShieldAlt, FaUserTie, FaPlus, FaArrowRight, FaUsers } from 'react-icons/fa';
@@ -70,13 +70,12 @@ const TeamList: React.FC = () => {
 
                             <div className="p-6 relative z-10">
                                 <div className="flex items-center gap-4 mb-6">
-                                    {team.logoUrl ? (
-                                        <img src={getLogoUrl(team.logoUrl)} alt={team.name} className="w-16 h-16 rounded-full object-cover border-2 border-gray-600 group-hover:border-yellow-500 transition-colors" />
-                                    ) : (
-                                        <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center text-yellow-500 border-2 border-gray-600 group-hover:border-yellow-500 transition-colors shadow-inner">
-                                            <FaShieldAlt size={32} />
-                                        </div>
-                                    )}
+                                    <SafeImage
+                                        src={team.logoUrl}
+                                        alt={team.name}
+                                        className="w-16 h-16 rounded-full object-cover border-2 border-gray-600 group-hover:border-yellow-500 transition-colors shadow-inner"
+                                        fallbackIcon={<FaShieldAlt size={32} />}
+                                    />
                                     <div>
                                         <h3 className="text-xl font-bold text-white group-hover:text-yellow-500 transition-colors truncate w-40 md:w-48">{team.name}</h3>
                                         <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">

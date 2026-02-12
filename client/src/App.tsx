@@ -18,7 +18,7 @@ import FanZone from './pages/FanZone';
 import Store from './pages/Store';
 import api from './services/api';
 import { FaTrophy, FaUsers, FaPlusCircle, FaArrowRight, FaCalendarCheck } from 'react-icons/fa';
-import { getLogoUrl } from './utils/imageHelper';
+import SafeImage from './components/SafeImage';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -100,11 +100,12 @@ const Dashboard: React.FC = () => {
               <div className="relative">
                 <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-gradient-to-b from-yellow-400 to-yellow-700 p-1 shadow-[0_0_50px_rgba(234,179,8,0.4)] animate-pulse-slow">
                   <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center overflow-hidden border-4 border-gray-900">
-                    {lastChampion.logoUrl ? (
-                      <img src={getLogoUrl(lastChampion.logoUrl)} alt={lastChampion.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <FaTrophy size={80} className="text-yellow-500" />
-                    )}
+                    <SafeImage
+                      src={lastChampion.logoUrl}
+                      alt={lastChampion.name}
+                      className="w-full h-full object-cover"
+                      fallbackIcon={<FaTrophy size={80} className="text-yellow-500" />}
+                    />
                   </div>
                 </div>
                 <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 text-yellow-500 px-4 py-1 rounded-full font-bold text-sm border border-yellow-500/50 whitespace-nowrap">
@@ -204,7 +205,11 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500 overflow-hidden">
-                    {champ.logoUrl ? <img src={getLogoUrl(champ.logoUrl)} className="w-full h-full object-cover" /> : <FaTrophy />}
+                    <SafeImage
+                      src={champ.logoUrl}
+                      className="w-full h-full object-cover"
+                      fallbackIcon={<FaTrophy />}
+                    />
                   </div>
                   <h4 className="font-bold text-lg truncate">{champ.name}</h4>
                 </div>

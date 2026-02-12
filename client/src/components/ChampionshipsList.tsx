@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { FaTrophy, FaCalendarCheck, FaUsers, FaArrowRight, FaPlus, FaMedal } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import SafeImage from './SafeImage';
 
 interface Championship {
     id: string;
@@ -10,6 +11,7 @@ interface Championship {
     status: string;
     teamsCount: number;
     createdAt: string;
+    logoUrl?: string;
 }
 
 const ChampionshipsList: React.FC = () => {
@@ -76,9 +78,12 @@ const ChampionshipsList: React.FC = () => {
 
                             <div className="p-6 relative z-10">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-700 to-gray-800 border border-gray-600 flex items-center justify-center text-yellow-500 shadow-inner group-hover:from-yellow-900/20 group-hover:to-gray-800 group-hover:border-yellow-500/30 transition-all">
-                                        <FaMedal size={24} />
-                                    </div>
+                                    <SafeImage
+                                        src={champ.logoUrl}
+                                        alt={champ.name}
+                                        className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-700 to-gray-800 border border-gray-600 flex items-center justify-center text-yellow-500 shadow-inner group-hover:from-yellow-900/20 group-hover:to-gray-800 group-hover:border-yellow-500/30 transition-all overflow-hidden"
+                                        fallbackIcon={<FaMedal size={24} />}
+                                    />
                                     {getStatusBadge(champ.status)}
                                 </div>
 
