@@ -17,6 +17,7 @@ const uploadToSupabase = async (file, bucket, folder = '') => {
         const fileName = `${uuidv4()}${fileExt}`;
         const filePath = folder ? `${folder}/${fileName}` : fileName;
 
+        console.log(`Uploading to Supabase: bucket=${bucket}, path=${filePath}`);
         const { data, error } = await supabase.storage
             .from(bucket)
             .upload(filePath, file.buffer, {
@@ -25,8 +26,10 @@ const uploadToSupabase = async (file, bucket, folder = '') => {
             });
 
         if (error) {
+            console.error('Supabase Upload Error:', error);
             throw error;
         }
+        console.log('Supabase Upload Success:', data);
 
         // Get Public URL
         const { data: { publicUrl } } = supabase.storage

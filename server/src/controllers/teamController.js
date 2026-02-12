@@ -122,12 +122,15 @@ const updateTeam = async (req, res) => {
         };
 
         let finalLogoUrl = logoUrl;
+        console.log('Update Team - req.file:', req.file ? req.file.originalname : 'no file');
+        console.log('Update Team - body.logoUrl:', logoUrl);
+
         if (req.file) {
             try {
                 finalLogoUrl = await uploadToSupabase(req.file, 'teams');
+                console.log('Update Team - Supabase URL:', finalLogoUrl);
             } catch (uploadError) {
                 console.error('Failed to upload team logo:', uploadError);
-                // Continue with existing logo if upload fails, or handle as error
             }
         }
 
