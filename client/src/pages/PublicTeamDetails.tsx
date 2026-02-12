@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
-import { getLogoUrl } from '../utils/imageHelper';
+import { FaEdit, FaPlus, FaLock, FaPrint } from 'react-icons/fa';
+import SafeImage from '../components/SafeImage';
 
 import PlayerCard from '../components/PlayerCard';
 import PublicPlayerModal from '../components/PublicPlayerModal';
-import { FaEdit, FaPlus, FaLock, FaPrint } from 'react-icons/fa';
 
 interface Player {
     id: string;
@@ -113,13 +113,16 @@ const PublicTeamDetails: React.FC = () => {
         <div className="min-h-screen bg-gray-900 text-white p-8 animate-fade-in pb-20">
             {/* Header */}
             <header className="flex flex-col md:flex-row items-center gap-6 mb-12 border-b border-gray-800 pb-8">
-                {team.logoUrl ? (
-                    <img src={getLogoUrl(team.logoUrl)} alt={team.name} className="w-24 h-24 rounded-full object-cover border-4 border-yellow-500 shadow-xl shadow-yellow-900/20" />
-                ) : (
-                    <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center text-4xl font-bold text-gray-600 border-4 border-yellow-500/50">
-                        {team.name.charAt(0)}
-                    </div>
-                )}
+                <SafeImage
+                    src={team.logoUrl}
+                    alt={team.name}
+                    className="w-24 h-24 rounded-full object-cover border-4 border-yellow-500 shadow-xl shadow-yellow-900/20"
+                    fallbackIcon={
+                        <div className="w-full h-full bg-gray-800 rounded-full flex items-center justify-center text-4xl font-bold text-gray-600">
+                            {team.name.charAt(0)}
+                        </div>
+                    }
+                />
                 <div className="text-center md:text-left">
                     <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter drop-shadow-md">
                         {team.name}

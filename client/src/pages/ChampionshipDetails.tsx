@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getLogoUrl } from '../utils/imageHelper';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { FaTrophy, FaCalendarCheck, FaUsers, FaArrowLeft, FaShareAlt, FaPlus, FaDiceD20, FaFutbol, FaEdit, FaTimes, FaSave } from 'react-icons/fa';
+import { FaTrophy, FaCalendarCheck, FaUsers, FaArrowLeft, FaShareAlt, FaPlus, FaDiceD20, FaFutbol, FaEdit, FaTimes, FaSave, FaShieldAlt } from 'react-icons/fa';
+import SafeImage from '../components/SafeImage';
 
 interface Team {
     id: string;
@@ -362,13 +362,11 @@ const ChampionshipDetails: React.FC = () => {
                                 <ul className="space-y-2">
                                     {championship.teams.map((team, index) => (
                                         <li key={team.id} className="bg-gray-700/50 p-3 rounded-xl flex items-center gap-3 hover:bg-gray-700 transition-colors">
-                                            {team.logoUrl ? (
-                                                <img src={getLogoUrl(team.logoUrl)} alt={team.name} className="w-8 h-8 rounded-full object-cover" />
-                                            ) : (
-                                                <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs font-bold text-gray-400">
-                                                    {index + 1}
-                                                </div>
-                                            )}
+                                            <SafeImage
+                                                src={team.logoUrl}
+                                                className="w-8 h-8 rounded-full object-cover"
+                                                fallbackIcon={<div className="w-full h-full bg-gray-600 flex items-center justify-center text-[10px] font-bold text-gray-400">{index + 1}</div>}
+                                            />
                                             <span className="font-bold flex-1">{team.name}</span>
                                         </li>
                                     ))}
@@ -419,7 +417,11 @@ const ChampionshipDetails: React.FC = () => {
                                                         </span>
                                                     </td>
                                                     <td className="p-3 font-bold flex items-center gap-2">
-                                                        {team.logoUrl && <img src={getLogoUrl(team.logoUrl)} alt={team.name} className="w-5 h-5 object-contain" />}
+                                                        <SafeImage
+                                                            src={team.logoUrl}
+                                                            className="w-5 h-5 object-contain"
+                                                            fallbackIcon={<FaShieldAlt size={12} />}
+                                                        />
                                                         {team.name}
                                                     </td>
                                                     <td className="p-3 text-center font-bold text-yellow-500 text-lg">{team.points}</td>
@@ -518,8 +520,12 @@ const ChampionshipDetails: React.FC = () => {
                                                                     <span className={`font-bold text-sm sm:text-base md:text-xl leading-tight ${!match.homeTeam ? 'text-gray-600 italic' : ''}`}>
                                                                         {match.homeTeam?.name || 'A Definir'}
                                                                     </span>
-                                                                    {match.homeTeam?.logoUrl && (
-                                                                        <img src={getLogoUrl(match.homeTeam.logoUrl)} alt="" className="w-6 h-6 md:w-8 md:h-8 object-contain shrink-0" />
+                                                                    {match.homeTeam && (
+                                                                        <SafeImage
+                                                                            src={match.homeTeam.logoUrl}
+                                                                            className="w-6 h-6 md:w-8 md:h-8 object-contain shrink-0"
+                                                                            fallbackIcon={<FaShieldAlt size={16} />}
+                                                                        />
                                                                     )}
                                                                 </div>
 
@@ -540,8 +546,12 @@ const ChampionshipDetails: React.FC = () => {
 
                                                                 {/* Away Team */}
                                                                 <div className="flex-1 text-left flex items-center justify-start gap-2 md:gap-3 min-w-0">
-                                                                    {match.awayTeam?.logoUrl && (
-                                                                        <img src={getLogoUrl(match.awayTeam.logoUrl)} alt="" className="w-6 h-6 md:w-8 md:h-8 object-contain shrink-0" />
+                                                                    {match.awayTeam && (
+                                                                        <SafeImage
+                                                                            src={match.awayTeam.logoUrl}
+                                                                            className="w-6 h-6 md:w-8 md:h-8 object-contain shrink-0"
+                                                                            fallbackIcon={<FaShieldAlt size={16} />}
+                                                                        />
                                                                     )}
                                                                     <span className={`font-bold text-sm sm:text-base md:text-xl leading-tight ${!match.awayTeam ? 'text-gray-600 italic' : ''}`}>
                                                                         {match.awayTeam?.name || 'A Definir'}

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getLogoUrl } from '../utils/imageHelper';
 import api from '../services/api';
-import { FaSave, FaArrowLeft, FaFlag, FaPlay, FaPause, FaPlus, FaCrown, FaBan, FaStar, FaBolt, FaTimes, FaHandPaper, FaUsers, FaExpand, FaRedo } from 'react-icons/fa';
+import { FaSave, FaArrowLeft, FaFlag, FaPlay, FaPause, FaPlus, FaCrown, FaBan, FaStar, FaBolt, FaTimes, FaHandPaper, FaUsers, FaExpand, FaRedo, FaShieldAlt } from 'react-icons/fa';
 import SponsorCarousel from '../components/SponsorCarousel';
+import SafeImage from '../components/SafeImage';
 
 interface Player {
     id: string;
@@ -629,7 +629,12 @@ const MatchSheet: React.FC = () => {
             <div className={`bg-gray-800 rounded-xl p-4 border-t-4 h-full flex flex-col ${isHome ? 'border-yellow-500' : 'border-blue-500'}`}>
                 <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-700 shrink-0">
                     <div className="flex items-center gap-3">
-                        <img src={getLogoUrl(team.logoUrl) || '/placeholder-shield.png'} className="w-10 h-10 rounded-full bg-gray-700" alt={team.name} />
+                        <SafeImage
+                            src={team.logoUrl}
+                            className="w-10 h-10 rounded-full bg-gray-700"
+                            alt={team.name}
+                            fallbackIcon={<FaShieldAlt size={16} />}
+                        />
                         <div>
                             <h3 className="font-bold text-lg leading-none">{team.name}</h3>
 
@@ -950,7 +955,13 @@ const MatchSheet: React.FC = () => {
 
                         <div className="flex justify-between items-center mb-4">
                             <div className="text-center">
-                                <img src={getLogoUrl(match.homeTeam.logoUrl) || '/placeholder-shield.png'} className="w-24 h-24 mx-auto mb-3 filter drop-shadow-lg" />
+                                <div className="flex justify-center mb-3">
+                                    <SafeImage
+                                        src={match.homeTeam.logoUrl}
+                                        className="w-24 h-24 filter drop-shadow-lg"
+                                        fallbackIcon={<FaShieldAlt size={48} />}
+                                    />
+                                </div>
                                 <h2 className="font-bold text-2xl leading-none">{match.homeTeam.name}</h2>
                                 <div className="flex flex-col mt-2 gap-1 items-center">
                                     {match.homeTeam.directorName && (
@@ -967,7 +978,13 @@ const MatchSheet: React.FC = () => {
                             </div>
                             <span className="text-gray-600 font-bold text-2xl opacity-50">VS</span>
                             <div className="text-center">
-                                <img src={getLogoUrl(match.awayTeam.logoUrl) || '/placeholder-shield.png'} className="w-24 h-24 mx-auto mb-3 filter drop-shadow-lg" />
+                                <div className="flex justify-center mb-3">
+                                    <SafeImage
+                                        src={match.awayTeam.logoUrl}
+                                        className="w-24 h-24 filter drop-shadow-lg"
+                                        fallbackIcon={<FaShieldAlt size={48} />}
+                                    />
+                                </div>
                                 <h2 className="font-bold text-2xl leading-none">{match.awayTeam.name}</h2>
                                 <div className="flex flex-col mt-2 gap-1 items-center">
                                     {match.awayTeam.directorName && (

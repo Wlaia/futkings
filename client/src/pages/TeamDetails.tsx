@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../services/api';
-import { getLogoUrl } from '../utils/imageHelper';
+import { FaEdit, FaUserShield } from 'react-icons/fa';
+import SafeImage from '../components/SafeImage';
 
+import api from '../services/api';
 import PlayerCard from '../components/PlayerCard';
 import TacticalPitch from '../components/TacticalPitch';
 import EditTeamModal from '../components/EditTeamModal';
 import EditPlayerModal from '../components/EditPlayerModal';
-import { FaEdit, FaUserShield } from 'react-icons/fa';
 
 import { useAuth } from '../context/AuthContext';
 import CreateManagerModal from '../components/CreateManagerModal';
@@ -248,11 +248,12 @@ const TeamDetails: React.FC = () => {
                 {/* Shield Area */}
                 <div className="relative group shrink-0">
                     <div className="w-20 h-20 md:w-32 md:h-32 rounded-full border-4 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.3)] bg-black flex items-center justify-center overflow-hidden">
-                        {team.logoUrl ? (
-                            <img src={getLogoUrl(team.logoUrl)} alt={team.name} className="w-full h-full object-cover" />
-                        ) : (
-                            <span className="text-2xl md:text-4xl font-bold text-gray-700">{team.name[0]}</span>
-                        )}
+                        <SafeImage
+                            src={team.logoUrl}
+                            alt={team.name}
+                            className="w-full h-full object-cover"
+                            fallbackIcon={<span className="text-2xl md:text-4xl font-bold text-gray-700">{team.name[0]}</span>}
+                        />
                     </div>
                 </div>
 
