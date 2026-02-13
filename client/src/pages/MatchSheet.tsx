@@ -381,18 +381,30 @@ const MatchSheet: React.FC = () => {
         const teamId = isHome ? match?.homeTeam.id : match?.awayTeam.id;
 
         // Apply Sanction Logic (Yellow/Red Cards)
-        if (delta > 0 && match && teamId) {
+        if (match && teamId) {
             if (type === 'yellow' || type === 'red') {
-                const now = Date.now();
-                const newSanction: Sanction = {
-                    id: Math.random().toString(36).substr(2, 9),
-                    playerId,
-                    teamId,
-                    type: type as 'YELLOW' | 'RED',
-                    startTime: now,
-                    endTime: now + (120 * 1000) // 2 minutes
-                };
-                setActiveSanctions(prev => [...prev, newSanction]);
+                if (delta > 0) {
+                    const now = Date.now();
+                    const newSanction: Sanction = {
+                        id: Math.random().toString(36).substr(2, 9),
+                        playerId,
+                        teamId,
+                        type: type === 'yellow' ? 'YELLOW' : 'RED',
+                        startTime: now,
+                        endTime: now + (120 * 1000) // 2 minutes
+                    };
+                    setActiveSanctions(prev => [...prev, newSanction]);
+                } else if (delta < 0) {
+                    // Remove the most recent sanction of this type for this player
+                    setActiveSanctions(prev => {
+                        const index = [...prev].reverse().findIndex(s => s.playerId === playerId && s.type === (type === 'yellow' ? 'YELLOW' : 'RED'));
+                        if (index === -1) return prev;
+                        const actualIndex = prev.length - 1 - index;
+                        const newSanctions = [...prev];
+                        newSanctions.splice(actualIndex, 1);
+                        return newSanctions;
+                    });
+                }
             }
         }
 
