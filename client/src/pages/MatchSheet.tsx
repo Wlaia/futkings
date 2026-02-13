@@ -700,7 +700,7 @@ const MatchSheet: React.FC = () => {
                     {renderActiveSanctions(team.id)}
                 </div>
 
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 overflow-y-auto flex-1 h-0 pr-1 custom-scrollbar content-start">
+                <div className="flex flex-col gap-1 overflow-y-auto flex-1 h-0 pr-1 custom-scrollbar">
                     {[...team.players].sort((a, b) => {
                         // 1. Starters first
                         if (a.isStarter !== b.isStarter) return a.isStarter ? -1 : 1;
@@ -841,7 +841,7 @@ const MatchSheet: React.FC = () => {
 
                     {/* Director Row */}
                     {team.directorName && (
-                        <div className="col-span-1 xl:col-span-2 group bg-purple-900/20 hover:bg-purple-900/40 p-2 rounded flex flex-col gap-2 border-b border-purple-500/30 transition-all mt-2 border-l-4 border-l-purple-500">
+                        <div className="group bg-purple-900/20 hover:bg-purple-900/40 p-2 rounded flex flex-col gap-2 border-b border-purple-500/30 transition-all mt-2 border-l-4 border-l-purple-500">
                             <div
                                 className="flex items-center gap-2 w-full cursor-pointer"
                                 onClick={() => openDirectorModal(team.id)}
