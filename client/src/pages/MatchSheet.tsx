@@ -716,56 +716,85 @@ const MatchSheet: React.FC = () => {
                                     {(isExcluded || isSanctioned) && <span className="text-[10px] bg-red-600 px-1 rounded text-white font-bold">OUT</span>}
                                 </div>
 
-                                {/* Row 2: Stats Controls (Distributed) */}
-                                <div className="flex items-center justify-between w-full pl-8 pr-2">
+                                {/* Row 2: Stats Controls (Redesigned for touch) */}
+                                <div className="flex items-center justify-between w-full gap-2 mt-1">
 
                                     {/* Goals */}
-                                    <div className="flex items-center gap-1 bg-black/20 rounded px-1" title="Gols">
-                                        <button disabled={matchStatus === 'COMPLETED'} onClick={() => updateStat(player.id, 'goals', -1)} className="text-gray-500 hover:text-red-500 disabled:opacity-30 text-xs px-1 font-bold">-</button>
-                                        <span className={`font-bold text-sm min-w-[16px] text-center ${isKing ? 'text-yellow-400' : 'text-white'}`}>{s.goals}</span>
-                                        <button disabled={matchStatus === 'COMPLETED'} onClick={() => updateStat(player.id, 'goals', 1)} className="text-gray-500 hover:text-green-500 disabled:opacity-30 text-xs px-1 font-bold">+</button>
+                                    <div className="flex items-center bg-black/40 rounded-lg overflow-hidden border border-white/5" title="Gols">
+                                        <button
+                                            disabled={matchStatus === 'COMPLETED'}
+                                            onClick={() => updateStat(player.id, 'goals', -1)}
+                                            className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-white/5 active:scale-95 disabled:opacity-30 transition-all font-black text-xl"
+                                        >-</button>
+                                        <div className="w-12 h-10 flex flex-col items-center justify-center bg-black/20">
+                                            <span className="text-[8px] uppercase font-bold text-gray-500 leading-none mb-0.5">GOLS</span>
+                                            <span className={`font-black text-xl leading-none ${isKing ? 'text-yellow-400' : 'text-white'}`}>{s.goals}</span>
+                                        </div>
+                                        <button
+                                            disabled={matchStatus === 'COMPLETED'}
+                                            onClick={() => updateStat(player.id, 'goals', 1)}
+                                            className="w-12 h-10 flex items-center justify-center text-white bg-green-600/20 hover:bg-green-600/40 active:scale-95 disabled:opacity-30 transition-all font-black text-2xl"
+                                        >+</button>
                                     </div>
 
                                     {/* Cards */}
-                                    <div className="flex items-center gap-2 border-l border-gray-700 pl-2">
+                                    <div className="flex items-center gap-3 px-2 border-x border-gray-700/50">
                                         <button
                                             disabled={matchStatus === 'COMPLETED'}
                                             onClick={() => updateStat(player.id, 'yellow', 1)}
-                                            className={`w-3 h-5 rounded-[1px] bg-yellow-500 hover:opacity-80 disabled:opacity-30 ${s.yellow > 0 ? 'ring-1 ring-white' : 'opacity-40'}`}
+                                            className={`w-8 h-12 rounded-md flex flex-col items-center justify-center gap-1 transition-all active:scale-95 shadow-lg ${s.yellow > 0 ? 'bg-yellow-500 ring-2 ring-white scale-110 z-10' : 'bg-yellow-500/20 grayscale border border-yellow-500/30'}`}
                                             title="+ Amarelo"
-                                        ></button>
+                                        >
+                                            <span className="text-[10px] font-black text-black/60">{s.yellow}</span>
+                                            <div className="w-4 h-6 bg-yellow-500 rounded-sm border border-black/20 shadow-sm"></div>
+                                        </button>
                                         <button
                                             disabled={matchStatus === 'COMPLETED'}
                                             onClick={() => updateStat(player.id, 'red', 1)}
-                                            className={`w-3 h-5 rounded-[1px] bg-red-600 hover:opacity-80 disabled:opacity-30 ${s.red > 0 ? 'ring-1 ring-white' : 'opacity-40'}`}
+                                            className={`w-8 h-12 rounded-md flex flex-col items-center justify-center gap-1 transition-all active:scale-95 shadow-lg ${s.red > 0 ? 'bg-red-600 ring-2 ring-white scale-110 z-10' : 'bg-red-600/20 grayscale border border-red-600/30'}`}
                                             title="+ Vermelho"
-                                        ></button>
-                                    </div>
-
-                                    {/* Fouls */}
-                                    <div className="flex items-center gap-1 border-l border-gray-700 pl-2" title="Faltas">
-                                        <span className="text-[10px] text-gray-500 font-bold mr-1">F</span>
-                                        <button disabled={matchStatus === 'COMPLETED'} onClick={() => updateStat(player.id, 'fouls', 1)} className={`text-xs hover:text-white disabled:opacity-30 ${s.fouls > 0 ? 'text-red-400 font-bold' : 'text-gray-600'}`}>
-                                            {s.fouls > 0 ? s.fouls : '+'}
+                                        >
+                                            <span className="text-[10px] font-black text-white/80">{s.red}</span>
+                                            <div className="w-4 h-6 bg-red-600 rounded-sm border border-black/20 shadow-sm"></div>
                                         </button>
                                     </div>
 
-                                    {/* Assists/Saves */}
-                                    {player.position === 'GOALKEEPER' ? (
-                                        <div className="flex items-center gap-1 border-l border-gray-700 pl-2" title="Defesas Difíceis">
-                                            <span className="text-[10px] text-gray-500 font-bold mr-1">DD</span>
-                                            <button disabled={matchStatus === 'COMPLETED'} onClick={() => updateStat(player.id, 'saves', 1)} className={`text-xs hover:text-blue-400 disabled:opacity-30 ${s.saves > 0 ? 'text-blue-400 font-bold' : 'text-gray-600'}`}>
-                                                {s.saves > 0 ? s.saves : '+'}
+                                    {/* Fouls & Assists/Saves */}
+                                    <div className="flex gap-2">
+                                        {/* Fouls */}
+                                        <button
+                                            disabled={matchStatus === 'COMPLETED'}
+                                            onClick={() => updateStat(player.id, 'fouls', 1)}
+                                            className={`h-12 w-12 rounded-lg flex flex-col items-center justify-center border transition-all active:scale-95 ${s.fouls > 0 ? 'bg-red-900/40 border-red-500 text-red-400' : 'bg-gray-800 border-gray-700 text-gray-400'}`}
+                                            title="Faltas"
+                                        >
+                                            <span className="text-[8px] font-black uppercase">FALTAS</span>
+                                            <span className="text-xl font-black">{s.fouls}</span>
+                                        </button>
+
+                                        {/* Assists/Saves */}
+                                        {player.position === 'GOALKEEPER' ? (
+                                            <button
+                                                disabled={matchStatus === 'COMPLETED'}
+                                                onClick={() => updateStat(player.id, 'saves', 1)}
+                                                className={`h-12 w-12 rounded-lg flex flex-col items-center justify-center border transition-all active:scale-95 ${s.saves > 0 ? 'bg-blue-900/40 border-blue-500 text-blue-400' : 'bg-gray-800 border-gray-700 text-gray-400'}`}
+                                                title="Defesas Difíceis"
+                                            >
+                                                <span className="text-[8px] font-black uppercase">DEF</span>
+                                                <span className="text-xl font-black">{s.saves}</span>
                                             </button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-1 border-l border-gray-700 pl-2" title="Assistências">
-                                            <span className="text-[10px] text-gray-500 font-bold mr-1">A</span>
-                                            <button disabled={matchStatus === 'COMPLETED'} onClick={() => updateStat(player.id, 'assists', 1)} className={`text-xs hover:text-white disabled:opacity-30 ${s.assists > 0 ? 'text-green-400 font-bold' : 'text-gray-600'}`}>
-                                                {s.assists > 0 ? s.assists : '+'}
+                                        ) : (
+                                            <button
+                                                disabled={matchStatus === 'COMPLETED'}
+                                                onClick={() => updateStat(player.id, 'assists', 1)}
+                                                className={`h-12 w-12 rounded-lg flex flex-col items-center justify-center border transition-all active:scale-95 ${s.assists > 0 ? 'bg-green-900/40 border-green-500 text-green-400' : 'bg-gray-800 border-gray-700 text-gray-400'}`}
+                                                title="Assistências"
+                                            >
+                                                <span className="text-[8px] font-black uppercase">AST</span>
+                                                <span className="text-xl font-black">{s.assists}</span>
                                             </button>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
 
                                 </div>
                             </div>
