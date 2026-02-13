@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { motion } from 'framer-motion';
+import './TacticalPitch.css';
 
 interface Player {
     id: string;
@@ -6,7 +8,7 @@ interface Player {
     number: number;
     position: 'GOALKEEPER' | 'FIELD';
     avatarUrl?: string;
-    overall?: number; // Optional prop if we pre-calc it, otherwise calc here
+    overall?: number;
 }
 
 interface TacticalPitchProps {
@@ -15,85 +17,100 @@ interface TacticalPitchProps {
 }
 
 const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick }) => {
+    const constraintsRef = useRef(null);
 
-    // Helper to determine position on pitch (0-100%)
-    // Simple logic for 5-a-side / 7-a-side distribution
-    const getPositionStyle = (index: number, _total: number, position: string) => {
+    // Helper to determine initial position on pitch (0-100%)
+    const getInitialPosition = (index: number, _total: number, position: string) => {
         if (position === 'GOALKEEPER') {
-            return { bottom: '5%', left: '50%', transform: 'translateX(-50%)' };
+            return { bottom: '4%', left: '50%', transform: 'translateX(-50%)' };
         }
 
-        // Distribute field players
-        // Simple distinct positions for demo visual
-
-
-
-        // Spread logic manually for better aesthetics if small number
-        // This is a naive implementation, can be improved with real tactical formations later
-
-
-
-        // Quick hardcoded slots for up to 7 players to look good
         const slots = [
             { bottom: '25%', left: '30%' }, // Def L
             { bottom: '25%', left: '70%' }, // Def R
             { bottom: '55%', left: '50%' }, // Mid
             { bottom: '75%', left: '35%' }, // Att L
             { bottom: '75%', left: '65%' }, // Att R
-            { bottom: '40%', left: '50%' }, // CDM
+            { bottom: '42%', left: '50%' }, // CDM
         ];
 
-        if (position !== 'GOALKEEPER') {
-            // Find index among field players
-            const fpIndex = players.filter(p => p.position !== 'GOALKEEPER').indexOf(players[index]);
-            const slot = slots[fpIndex % slots.length];
-            return slot;
-        }
-
-        return { top: '50%', left: '50%' };
+        const fpIndex = players.filter(p => p.position !== 'GOALKEEPER').indexOf(players[index]);
+        const slot = slots[fpIndex % slots.length] || { bottom: '50%', left: '50%' };
+        return { ...slot, transform: 'translate(-50%, -50%)' };
     };
 
     return (
-        <div className="pitch-container relative w-full aspect-[2/3] max-w-[400px] mx-auto bg-green-900 rounded-xl border-4 border-white/20 shadow-2xl overflow-hidden select-none">
-            {/* Field Texture */}
-            <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/grass.png')]"></div>
+        <div
+            ref={constraintsRef}
+            className="pitch-surface w-full aspect-[2/3] max-w-[450px] mx-auto rounded-2xl border-[6px] border-[#2a4d2a] shadow-[0_0_100px_rgba(0,0,0,0.8)] select-none relative"
+        >
+            {/* Field Graphics */}
+            <div className="pitch-grass-texture" />
 
             {/* Lines */}
-            <div className="absolute inset-4 border-2 border-white/40 opacity-60 rounded-sm"></div>
-            <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-white/30"></div> {/* Center Line (Vertical for layout?? No, standard pitch is vertical here) */}
+            <div className="pitch-line pitch-line-border" />
+            <div className="pitch-line pitch-line-center" />
+            <div className="pitch-line pitch-circle-center" />
+            <div className="pitch-line pitch-dot-center" />
 
-            <div className="absolute top-[50%] left-0 right-0 h-[1px] bg-white/40"></div> {/* Halfway line */}
-            <div className="absolute top-[50%] left-1/2 -translate-x-1/2 w-20 h-20 border-2 border-white/40 rounded-full"></div> {/* Center Circle */}
+            {/* Areas */}
+            <div className="pitch-line pitch-area-bottom" />
+            <div className="pitch-line pitch-area-top" />
+            <div className="pitch-line pitch-goal-bottom" />
+            <div className="pitch-line pitch-goal-top" />
 
-            {/* Boxes */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[60%] h-[15%] border-2 border-b-0 border-white/40 bg-white/5"></div>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60%] h-[15%] border-2 border-t-0 border-white/40 bg-white/5"></div>
+            {/* Corner Arcs */}
+            <div className="absolute top-4 left-4 w-12 h-12 border-l-2 border-t-2 border-white/40 rounded-tl-full" />
+            <div className="absolute top-4 right-4 w-12 h-12 border-r-2 border-t-2 border-white/40 rounded-tr-full" />
+            <div className="absolute bottom-4 left-4 w-12 h-12 border-l-2 border-b-2 border-white/40 rounded-bl-full" />
+            <div className="absolute bottom-4 right-4 w-12 h-12 border-r-2 border-b-2 border-white/40 rounded-br-full" />
 
             {/* Players */}
             {players.map((player, idx) => {
-                const posStyle = getPositionStyle(idx, players.length, player.position);
+                const initialStyle = getInitialPosition(idx, players.length, player.position);
 
                 return (
-                    <div
+                    <motion.div
                         key={player.id}
-                        className="absolute flex flex-col items-center cursor-pointer transition-transform hover:scale-125 z-10 group"
-                        style={posStyle}
-                        onClick={() => onPlayerClick(player)}
+                        drag
+                        dragConstraints={constraintsRef}
+                        dragElastic={0.05}
+                        dragMomentum={false}
+                        initial={false}
+                        className="absolute flex flex-col items-center cursor-move z-20 group"
+                        style={{
+                            bottom: initialStyle.bottom,
+                            left: initialStyle.left,
+                            width: '60px',
+                            height: '80px',
+                        }}
                     >
-                        {/* Player Dot/Icon */}
-                        <div className={`w-10 h-10 rounded-full border-2 ${player.position === 'GOALKEEPER' ? 'border-yellow-400 bg-yellow-900' : 'border-blue-400 bg-blue-900'} flex items-center justify-center shadow-lg relative overflow-hidden`}>
+                        {/* Player Node */}
+                        <div
+                            onClick={() => onPlayerClick(player)}
+                            className={`
+                                w-14 h-14 rounded-full border-4 player-node-glow flex items-center justify-center relative overflow-hidden transition-all duration-300
+                                ${player.position === 'GOALKEEPER'
+                                    ? 'border-yellow-400 bg-gradient-to-br from-yellow-600 to-yellow-900'
+                                    : 'border-blue-400 bg-gradient-to-br from-blue-600 to-blue-900'}
+                                hover:scale-110 active:scale-95 group-hover:border-white
+                            `}
+                        >
                             {player.avatarUrl ? (
                                 <img src={player.avatarUrl} alt={player.name} className="w-full h-full object-cover" />
                             ) : (
-                                <span className="font-bold text-xs">{player.number}</span>
+                                <span className="font-black text-lg text-white drop-shadow-md">{player.number}</span>
                             )}
+
+                            {/* Reflection effect */}
+                            <div className="absolute top-0 left-0 w-full h-1/2 bg-white/10 skew-y-[-20deg] pointer-events-none" />
                         </div>
 
-                        {/* Name Label */}
-                        <div className="mt-1 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider text-white border border-white/10 group-hover:bg-black/80 transition-colors">
+                        {/* Label */}
+                        <div className="mt-2 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/20 shadow-xl group-hover:bg-yellow-500 group-hover:text-black transition-colors whitespace-nowrap">
                             {player.name.split(' ')[0]}
                         </div>
-                    </div>
+                    </motion.div>
                 );
             })}
         </div>
@@ -101,3 +118,4 @@ const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick })
 };
 
 export default TacticalPitch;
+

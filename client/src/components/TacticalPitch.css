@@ -1,0 +1,111 @@
+.pitch-surface {
+  background: radial-gradient(circle at center, #1a4d1a 0%, #0d260d 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.pitch-grass-texture {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.03) 40px,
+    transparent 40px,
+    transparent 80px
+  );
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.pitch-line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.pitch-line-border {
+  inset: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+}
+
+.pitch-line-center {
+  top: 50%;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+.pitch-circle-center {
+  top: 50%;
+  left: 50%;
+  width: 80px;
+  height: 80px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pitch-dot-center {
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Penalty Areas */
+.pitch-area-bottom {
+  bottom: 0;
+  left: 50%;
+  width: 60%;
+  height: 18%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 0;
+  transform: translateX(-50%);
+}
+
+.pitch-area-top {
+  top: 0;
+  left: 50%;
+  width: 60%;
+  height: 18%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top: 0;
+  transform: translateX(-50%);
+}
+
+.pitch-goal-bottom {
+  bottom: 0;
+  left: 50%;
+  width: 30%;
+  height: 6%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 0;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pitch-goal-top {
+  top: 0;
+  left: 50%;
+  width: 30%;
+  height: 6%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top: 0;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.player-node-glow {
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.3s ease;
+}
+
+.player-node-glow:hover {
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+}
