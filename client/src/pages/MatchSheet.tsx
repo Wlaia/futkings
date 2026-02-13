@@ -751,60 +751,98 @@ const MatchSheet: React.FC = () => {
 
                                     {/* Cards */}
                                     <div className="flex items-center gap-3 px-2 border-x border-gray-700/50">
-                                        <button
-                                            disabled={matchStatus === 'COMPLETED'}
-                                            onClick={() => updateStat(player.id, 'yellow', 1)}
-                                            className={`w-8 h-12 rounded-md flex flex-col items-center justify-center gap-1 transition-all active:scale-95 shadow-lg ${s.yellow > 0 ? 'bg-yellow-500 ring-2 ring-white scale-110 z-10' : 'bg-yellow-500/20 grayscale border border-yellow-500/30'}`}
-                                            title="+ Amarelo"
-                                        >
-                                            <span className="text-[10px] font-black text-black/60">{s.yellow}</span>
-                                            <div className="w-4 h-6 bg-yellow-500 rounded-sm border border-black/20 shadow-sm"></div>
-                                        </button>
-                                        <button
-                                            disabled={matchStatus === 'COMPLETED'}
-                                            onClick={() => updateStat(player.id, 'red', 1)}
-                                            className={`w-8 h-12 rounded-md flex flex-col items-center justify-center gap-1 transition-all active:scale-95 shadow-lg ${s.red > 0 ? 'bg-red-600 ring-2 ring-white scale-110 z-10' : 'bg-red-600/20 grayscale border border-red-600/30'}`}
-                                            title="+ Vermelho"
-                                        >
-                                            <span className="text-[10px] font-black text-white/80">{s.red}</span>
-                                            <div className="w-4 h-6 bg-red-600 rounded-sm border border-black/20 shadow-sm"></div>
-                                        </button>
+                                        <div className="flex flex-col items-center gap-1">
+                                            <button
+                                                disabled={matchStatus === 'COMPLETED'}
+                                                onClick={() => updateStat(player.id, 'yellow', 1)}
+                                                className={`w-10 h-10 rounded-md flex flex-col items-center justify-center transition-all active:scale-95 shadow-lg ${s.yellow > 0 ? 'bg-yellow-500 ring-2 ring-white z-10' : 'bg-yellow-500/20 grayscale border border-yellow-500/30'}`}
+                                                title="+ Amarelo"
+                                            >
+                                                <div className="w-5 h-7 bg-yellow-500 rounded-sm border border-black/20 shadow-sm"></div>
+                                            </button>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    onClick={() => updateStat(player.id, 'yellow', -1)}
+                                                    className="w-6 h-5 flex items-center justify-center bg-red-500/20 hover:bg-red-500/40 text-red-500 rounded font-black border border-red-500/30 text-[10px]"
+                                                >-</button>
+                                                <span className="text-[10px] font-black text-yellow-500">{s.yellow}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col items-center gap-1">
+                                            <button
+                                                disabled={matchStatus === 'COMPLETED'}
+                                                onClick={() => updateStat(player.id, 'red', 1)}
+                                                className={`w-10 h-10 rounded-md flex flex-col items-center justify-center transition-all active:scale-95 shadow-lg ${s.red > 0 ? 'bg-red-600 ring-2 ring-white z-10' : 'bg-red-600/20 grayscale border border-red-600/30'}`}
+                                                title="+ Vermelho"
+                                            >
+                                                <div className="w-5 h-7 bg-red-600 rounded-sm border border-black/20 shadow-sm"></div>
+                                            </button>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    onClick={() => updateStat(player.id, 'red', -1)}
+                                                    className="w-6 h-5 flex items-center justify-center bg-red-500/20 hover:bg-red-500/40 text-red-500 rounded font-black border border-red-500/30 text-[10px]"
+                                                >-</button>
+                                                <span className="text-[10px] font-black text-red-500">{s.red}</span>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {/* Fouls & Assists/Saves */}
+                                    {/* Fouls & Assists/Saves (Counter Style) */}
                                     <div className="flex gap-2">
                                         {/* Fouls */}
-                                        <button
-                                            disabled={matchStatus === 'COMPLETED'}
-                                            onClick={() => updateStat(player.id, 'fouls', 1)}
-                                            className={`h-12 w-12 rounded-lg flex flex-col items-center justify-center border transition-all active:scale-95 ${s.fouls > 0 ? 'bg-red-900/40 border-red-500 text-red-400' : 'bg-gray-800 border-gray-700 text-gray-400'}`}
-                                            title="Faltas"
-                                        >
-                                            <span className="text-[8px] font-black uppercase">FALTAS</span>
-                                            <span className="text-xl font-black">{s.fouls}</span>
-                                        </button>
+                                        <div className="flex flex-col items-center bg-black/40 rounded-lg overflow-hidden border border-white/5">
+                                            <button
+                                                disabled={matchStatus === 'COMPLETED'}
+                                                onClick={() => updateStat(player.id, 'fouls', 1)}
+                                                className={`w-12 h-8 flex items-center justify-center transition-all active:scale-95 border-b border-white/5 ${s.fouls > 0 ? 'bg-red-900/40 text-red-400 font-black' : 'bg-gray-800 text-gray-500'}`}
+                                            >+</button>
+                                            <div className="flex flex-col items-center justify-center py-0.5 px-2">
+                                                <span className="text-[7px] font-black text-gray-600 uppercase leading-none">FA</span>
+                                                <span className={`text-xs font-black leading-none ${s.fouls > 0 ? 'text-red-400' : 'text-gray-400'}`}>{s.fouls}</span>
+                                            </div>
+                                            <button
+                                                disabled={matchStatus === 'COMPLETED'}
+                                                onClick={() => updateStat(player.id, 'fouls', -1)}
+                                                className="w-12 h-6 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-white/5 active:scale-95 transition-all font-black"
+                                            >-</button>
+                                        </div>
 
                                         {/* Assists/Saves */}
                                         {player.position === 'GOALKEEPER' ? (
-                                            <button
-                                                disabled={matchStatus === 'COMPLETED'}
-                                                onClick={() => updateStat(player.id, 'saves', 1)}
-                                                className={`h-12 w-12 rounded-lg flex flex-col items-center justify-center border transition-all active:scale-95 ${s.saves > 0 ? 'bg-blue-900/40 border-blue-500 text-blue-400' : 'bg-gray-800 border-gray-700 text-gray-400'}`}
-                                                title="Defesas Difíceis"
-                                            >
-                                                <span className="text-[8px] font-black uppercase">DEF</span>
-                                                <span className="text-xl font-black">{s.saves}</span>
-                                            </button>
+                                            <div className="flex flex-col items-center bg-black/40 rounded-lg overflow-hidden border border-white/5">
+                                                <button
+                                                    disabled={matchStatus === 'COMPLETED'}
+                                                    onClick={() => updateStat(player.id, 'saves', 1)}
+                                                    className={`w-12 h-8 flex items-center justify-center transition-all active:scale-95 border-b border-white/5 ${s.saves > 0 ? 'bg-blue-900/40 text-blue-400 font-black' : 'bg-gray-800 text-gray-500'}`}
+                                                >+</button>
+                                                <div className="flex flex-col items-center justify-center py-0.5 px-2">
+                                                    <span className="text-[7px] font-black text-gray-600 uppercase leading-none">DD</span>
+                                                    <span className={`text-xs font-black leading-none ${s.saves > 0 ? 'text-blue-400' : 'text-gray-400'}`}>{s.saves}</span>
+                                                </div>
+                                                <button
+                                                    disabled={matchStatus === 'COMPLETED'}
+                                                    onClick={() => updateStat(player.id, 'saves', -1)}
+                                                    className="w-12 h-6 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-white/5 active:scale-95 transition-all font-black"
+                                                >-</button>
+                                            </div>
                                         ) : (
-                                            <button
-                                                disabled={matchStatus === 'COMPLETED'}
-                                                onClick={() => updateStat(player.id, 'assists', 1)}
-                                                className={`h-12 w-12 rounded-lg flex flex-col items-center justify-center border transition-all active:scale-95 ${s.assists > 0 ? 'bg-green-900/40 border-green-500 text-green-400' : 'bg-gray-800 border-gray-700 text-gray-400'}`}
-                                                title="Assistências"
-                                            >
-                                                <span className="text-[8px] font-black uppercase">AST</span>
-                                                <span className="text-xl font-black">{s.assists}</span>
-                                            </button>
+                                            <div className="flex flex-col items-center bg-black/40 rounded-lg overflow-hidden border border-white/5">
+                                                <button
+                                                    disabled={matchStatus === 'COMPLETED'}
+                                                    onClick={() => updateStat(player.id, 'assists', 1)}
+                                                    className={`w-12 h-8 flex items-center justify-center transition-all active:scale-95 border-b border-white/5 ${s.assists > 0 ? 'bg-green-900/40 text-green-400 font-black' : 'bg-gray-800 text-gray-500'}`}
+                                                >+</button>
+                                                <div className="flex flex-col items-center justify-center py-0.5 px-2">
+                                                    <span className="text-[7px] font-black text-gray-600 uppercase leading-none">AS</span>
+                                                    <span className={`text-xs font-black leading-none ${s.assists > 0 ? 'text-green-400' : 'text-gray-400'}`}>{s.assists}</span>
+                                                </div>
+                                                <button
+                                                    disabled={matchStatus === 'COMPLETED'}
+                                                    onClick={() => updateStat(player.id, 'assists', -1)}
+                                                    className="w-12 h-6 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-white/5 active:scale-95 transition-all font-black"
+                                                >-</button>
+                                            </div>
                                         )}
                                     </div>
 
