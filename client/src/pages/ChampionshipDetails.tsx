@@ -272,42 +272,42 @@ const ChampionshipDetails: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex gap-2 w-full md:w-auto">
+                <div className="flex flex-wrap gap-2 w-full md:w-auto">
                     {championship.status === 'DRAFT' && user?.role === 'ADMIN' && (
                         <button
                             onClick={handleDraw}
                             className="flex-1 md:flex-none items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-green-500/20 flex"
                         >
-                            <FaDiceD20 /> Sortear Jogos
+                            <FaDiceD20 /> Sortear
                         </button>
                     )}
                     <button
                         onClick={copyShareLink}
-                        className="flex-1 md:flex-none items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-blue-500/20 flex"
+                        className="flex-1 md:flex-none items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-blue-500/20 flex text-center"
                     >
                         <FaShareAlt /> Compartilhar
                     </button>
 
                     {user?.role === 'ADMIN' && (
-                        <div className="flex gap-2">
+                        <>
                             <button
                                 onClick={handleToggleStatus}
                                 className={`flex-1 md:flex-none items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all shadow-lg border ${championship.status === 'DEACTIVATED'
                                     ? 'bg-yellow-600 text-black border-yellow-500 hover:bg-yellow-500 shadow-yellow-500/10'
                                     : 'bg-gray-800 text-yellow-500 border-yellow-500/30 hover:bg-gray-700 shadow-black/20'
-                                    } flex`}
+                                    } flex text-center`}
                                 title={championship.status === 'DEACTIVATED' ? 'Reativar' : 'Bloquear/Desativar'}
                             >
                                 <FaTimes /> {championship.status === 'DEACTIVATED' ? 'Reativar' : 'Bloquear'}
                             </button>
                             <button
                                 onClick={handleDelete}
-                                className="flex-1 md:flex-none items-center justify-center gap-2 bg-red-600/20 text-red-500 border border-red-500/30 hover:bg-red-600 hover:text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-red-500/20 flex"
+                                className="flex-1 md:flex-none items-center justify-center gap-2 bg-red-600/20 text-red-500 border border-red-500/30 hover:bg-red-600 hover:text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-red-500/20 flex text-center"
                                 title="Excluir Definitivamente"
                             >
                                 <FaTimes /> Excluir
                             </button>
-                        </div>
+                        </>
                     )}
                 </div>
             </div>
@@ -378,283 +378,284 @@ const ChampionshipDetails: React.FC = () => {
 
 
 
-                    {/* Right Column: Matches & Bracket */}
-                    <div className="lg:col-span-2 space-y-8">
+                </div>
 
-                        {/* Standings Table (Only for LEAGUE_WITH_FINAL) */}
-                        {championship.type === 'LEAGUE_WITH_FINAL' && (
-                            <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden animate-fade-in">
-                                <div className="p-6 border-b border-gray-700">
-                                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                        <FaTrophy className="text-yellow-500" /> Tabela de Classificação
-                                    </h2>
-                                </div>
-                                <div className="p-4 overflow-x-auto">
-                                    <table className="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr className="text-xs text-gray-400 uppercase tracking-wider border-b border-gray-700">
-                                                <th className="p-3 text-center">Pos</th>
-                                                <th className="p-3">Time</th>
-                                                <th className="p-3 text-center font-bold text-white">PTS</th>
-                                                <th className="p-3 text-center">J</th>
-                                                <th className="p-3 text-center">V</th>
-                                                <th className="p-3 text-center">E</th>
-                                                <th className="p-3 text-center">D</th>
-                                                <th className="p-3 text-center">GP</th>
-                                                <th className="p-3 text-center">GC</th>
-                                                <th className="p-3 text-center">SG</th>
-                                                <th className="p-3 text-center text-red-400" title="Cartões (Amarelos + Vermelhos)">
-                                                    <span className="flex items-center justify-center gap-1">🟥🟨</span>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {standings.map((team) => (
-                                                <tr key={team.id} className="border-b border-gray-700 hover:bg-gray-700/30 transition-colors">
-                                                    <td className="p-3 text-center">
-                                                        <span className={`inline-block w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center ${team.rank <= 2 ? 'bg-green-500 text-white' : 'text-gray-500'}`}>
-                                                            {team.rank}
-                                                        </span>
-                                                    </td>
-                                                    <td className="p-3 font-bold flex items-center gap-2">
-                                                        <SafeImage
-                                                            src={team.logoUrl}
-                                                            className="w-5 h-5 object-contain"
-                                                            fallbackIcon={<FaShieldAlt size={12} />}
-                                                        />
-                                                        {team.name}
-                                                    </td>
-                                                    <td className="p-3 text-center font-bold text-yellow-500 text-lg">{team.points}</td>
-                                                    <td className="p-3 text-center">{team.matchesPlayed}</td>
-                                                    <td className="p-3 text-center text-gray-300">{team.wins}</td>
-                                                    <td className="p-3 text-center text-gray-300">{team.draws}</td>
-                                                    <td className="p-3 text-center text-gray-300">{team.losses}</td>
-                                                    <td className="p-3 text-center text-gray-400 text-xs">{team.goalsFor}</td>
-                                                    <td className="p-3 text-center text-gray-400 text-xs">{team.goalsAgainst}</td>
-                                                    <td className="p-3 text-center font-bold">{team.goalDiff}</td>
-                                                    <td className="p-3 text-center font-bold text-gray-400">{team.cards}</td>
-                                                </tr>
-                                            ))}
-                                            {standings.length === 0 && (
-                                                <tr>
-                                                    <td colSpan={11} className="p-4 text-center text-gray-500">
-                                                        Nenhuma classificação disponível.
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        )}
+                {/* Right Column: Matches & Bracket */}
+                <div className="lg:col-span-2 space-y-8">
 
-                        {/* Matches List */}
-                        <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden">
+                    {/* Standings Table (Only for LEAGUE_WITH_FINAL) */}
+                    {championship.type === 'LEAGUE_WITH_FINAL' && (
+                        <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden animate-fade-in">
                             <div className="p-6 border-b border-gray-700">
                                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                    <FaCalendarCheck className="text-green-400" /> Jogos / Tabela
+                                    <FaTrophy className="text-yellow-500" /> Tabela de Classificação
                                 </h2>
                             </div>
-
-                            <div className="p-4">
-                                {championship.matches.length === 0 ? (
-                                    <div className="text-center py-12">
-                                        <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-500">
-                                            <FaFutbol size={32} />
-                                        </div>
-                                        <p className="text-gray-400 mb-2">Os jogos ainda não foram definidos.</p>
-                                        {championship.status === 'DRAFT' && (
-                                            <p className="text-sm text-yellow-500">Adicione os times e realize o sorteio para começar!</p>
+                            <div className="p-4 overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="text-xs text-gray-400 uppercase tracking-wider border-b border-gray-700">
+                                            <th className="p-3 text-center">Pos</th>
+                                            <th className="p-3">Time</th>
+                                            <th className="p-3 text-center font-bold text-white">PTS</th>
+                                            <th className="p-3 text-center">J</th>
+                                            <th className="p-3 text-center">V</th>
+                                            <th className="p-3 text-center">E</th>
+                                            <th className="p-3 text-center">D</th>
+                                            <th className="p-3 text-center">GP</th>
+                                            <th className="p-3 text-center">GC</th>
+                                            <th className="p-3 text-center">SG</th>
+                                            <th className="p-3 text-center text-red-400" title="Cartões (Amarelos + Vermelhos)">
+                                                <span className="flex items-center justify-center gap-1">🟥🟨</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {standings.map((team) => (
+                                            <tr key={team.id} className="border-b border-gray-700 hover:bg-gray-700/30 transition-colors">
+                                                <td className="p-3 text-center">
+                                                    <span className={`inline-block w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center ${team.rank <= 2 ? 'bg-green-500 text-white' : 'text-gray-500'}`}>
+                                                        {team.rank}
+                                                    </span>
+                                                </td>
+                                                <td className="p-3 font-bold flex items-center gap-2">
+                                                    <SafeImage
+                                                        src={team.logoUrl}
+                                                        className="w-5 h-5 object-contain"
+                                                        fallbackIcon={<FaShieldAlt size={12} />}
+                                                    />
+                                                    {team.name}
+                                                </td>
+                                                <td className="p-3 text-center font-bold text-yellow-500 text-lg">{team.points}</td>
+                                                <td className="p-3 text-center">{team.matchesPlayed}</td>
+                                                <td className="p-3 text-center text-gray-300">{team.wins}</td>
+                                                <td className="p-3 text-center text-gray-300">{team.draws}</td>
+                                                <td className="p-3 text-center text-gray-300">{team.losses}</td>
+                                                <td className="p-3 text-center text-gray-400 text-xs">{team.goalsFor}</td>
+                                                <td className="p-3 text-center text-gray-400 text-xs">{team.goalsAgainst}</td>
+                                                <td className="p-3 text-center font-bold">{team.goalDiff}</td>
+                                                <td className="p-3 text-center font-bold text-gray-400">{team.cards}</td>
+                                            </tr>
+                                        ))}
+                                        {standings.length === 0 && (
+                                            <tr>
+                                                <td colSpan={11} className="p-4 text-center text-gray-500">
+                                                    Nenhuma classificação disponível.
+                                                </td>
+                                            </tr>
                                         )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Matches List */}
+                    <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden">
+                        <div className="p-6 border-b border-gray-700">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <FaCalendarCheck className="text-green-400" /> Jogos / Tabela
+                            </h2>
+                        </div>
+
+                        <div className="p-4">
+                            {championship.matches.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-500">
+                                        <FaFutbol size={32} />
                                     </div>
-                                ) : (
-                                    <div className="space-y-8">
-                                        {sortedRounds.map(roundName => (
-                                            <div key={roundName} className="space-y-4">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-px bg-gray-700 flex-1"></div>
-                                                    <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] whitespace-nowrap">
-                                                        {roundName}
-                                                    </h3>
-                                                    <div className="h-px bg-gray-700 flex-1"></div>
-                                                </div>
+                                    <p className="text-gray-400 mb-2">Os jogos ainda não foram definidos.</p>
+                                    {championship.status === 'DRAFT' && (
+                                        <p className="text-sm text-yellow-500">Adicione os times e realize o sorteio para começar!</p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-8">
+                                    {sortedRounds.map(roundName => (
+                                        <div key={roundName} className="space-y-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-px bg-gray-700 flex-1"></div>
+                                                <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.3em] whitespace-nowrap">
+                                                    {roundName}
+                                                </h3>
+                                                <div className="h-px bg-gray-700 flex-1"></div>
+                                            </div>
 
-                                                <div className="space-y-4">
-                                                    {groupedMatches[roundName].map(match => (
-                                                        <div
-                                                            key={match.id}
-                                                            className="bg-gray-900/80 p-4 rounded-xl border border-gray-700 hover:border-yellow-500/50 transition-all group"
-                                                        >
-                                                            <div className="flex justify-between items-center mb-3">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className={`w-2 h-2 rounded-full ${match.status === 'COMPLETED' ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'}`}></div>
-                                                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Partida #{match.id.slice(0, 4)}</span>
-                                                                </div>
-                                                                <div className="flex items-center gap-2">
-                                                                    {match.startTime && (
-                                                                        <span className="text-xs bg-blue-900/30 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 flex items-center gap-1">
-                                                                            <FaCalendarCheck size={10} />
-                                                                            {new Date(match.startTime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                                                                        </span>
-                                                                    )}
-                                                                    {match.status === 'COMPLETED' ? (
-                                                                        <span className="text-xs bg-green-900/30 text-green-500 px-2 py-0.5 rounded border border-green-500/20">Finalizado</span>
-                                                                    ) : (
-                                                                        <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded border border-gray-700">Agendado</span>
-                                                                    )}
-                                                                    {user?.role === 'ADMIN' && (
-                                                                        <button
-                                                                            onClick={() => openScheduleModal(match)}
-                                                                            className="text-gray-500 hover:text-yellow-500 transition p-1"
-                                                                            title="Agendar Partida"
-                                                                        >
-                                                                            <FaEdit />
-                                                                        </button>
-                                                                    )}
-                                                                </div>
+                                            <div className="space-y-4">
+                                                {groupedMatches[roundName].map(match => (
+                                                    <div
+                                                        key={match.id}
+                                                        className="bg-gray-900/80 p-4 rounded-xl border border-gray-700 hover:border-yellow-500/50 transition-all group"
+                                                    >
+                                                        <div className="flex justify-between items-center mb-3">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`w-2 h-2 rounded-full ${match.status === 'COMPLETED' ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'}`}></div>
+                                                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Partida #{match.id.slice(0, 4)}</span>
                                                             </div>
-
-                                                            <div className="flex items-center justify-between gap-1">
-                                                                {/* Home Team */}
-                                                                <div className="flex-1 text-right flex items-center justify-end gap-2 md:gap-3 min-w-0">
-                                                                    <span className={`font-bold text-sm sm:text-base md:text-xl leading-tight ${!match.homeTeam ? 'text-gray-600 italic' : ''}`}>
-                                                                        {match.homeTeam?.name || 'A Definir'}
+                                                            <div className="flex items-center gap-2">
+                                                                {match.startTime && (
+                                                                    <span className="text-xs bg-blue-900/30 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 flex items-center gap-1">
+                                                                        <FaCalendarCheck size={10} />
+                                                                        {new Date(match.startTime).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                                                     </span>
-                                                                    {match.homeTeam && (
-                                                                        <SafeImage
-                                                                            src={match.homeTeam.logoUrl}
-                                                                            className="w-6 h-6 md:w-8 md:h-8 object-contain shrink-0"
-                                                                            fallbackIcon={<FaShieldAlt size={16} />}
-                                                                        />
-                                                                    )}
-                                                                </div>
-
-                                                                {/* Score / VS */}
-                                                                <div className="flex flex-col items-center px-2 md:px-8 shrink-0">
-                                                                    {match.status === 'COMPLETED' || (match.homeScore !== null) ? (
-                                                                        <div className="flex items-center gap-2 md:gap-3 font-mono text-lg md:text-3xl font-bold text-white bg-gray-800 px-3 md:px-4 py-1 rounded-lg border border-gray-700">
-                                                                            <span className={match.homeScore! > match.awayScore! ? 'text-yellow-500' : ''}>{match.homeScore}</span>
-                                                                            <span className="text-gray-600 text-base md:text-lg">X</span>
-                                                                            <span className={match.awayScore! > match.homeScore! ? 'text-yellow-500' : ''}>{match.awayScore}</span>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 font-bold text-[10px] md:text-xs border border-gray-700">
-                                                                            VS
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-
-                                                                {/* Away Team */}
-                                                                <div className="flex-1 text-left flex items-center justify-start gap-2 md:gap-3 min-w-0">
-                                                                    {match.awayTeam && (
-                                                                        <SafeImage
-                                                                            src={match.awayTeam.logoUrl}
-                                                                            className="w-6 h-6 md:w-8 md:h-8 object-contain shrink-0"
-                                                                            fallbackIcon={<FaShieldAlt size={16} />}
-                                                                        />
-                                                                    )}
-                                                                    <span className={`font-bold text-sm sm:text-base md:text-xl leading-tight ${!match.awayTeam ? 'text-gray-600 italic' : ''}`}>
-                                                                        {match.awayTeam?.name || 'A Definir'}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="flex justify-center mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                {(user?.role === 'ADMIN' || match.status === 'COMPLETED') && (
-                                                                    <Link
-                                                                        to={`/matches/${match.id}/sheet`}
-                                                                        className="text-xs font-bold text-yellow-500 hover:text-white bg-yellow-900/20 hover:bg-yellow-600/50 px-4 py-2 rounded-lg border border-yellow-500/30 transition-all uppercase tracking-wide"
+                                                                )}
+                                                                {match.status === 'COMPLETED' ? (
+                                                                    <span className="text-xs bg-green-900/30 text-green-500 px-2 py-0.5 rounded border border-green-500/20">Finalizado</span>
+                                                                ) : (
+                                                                    <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded border border-gray-700">Agendado</span>
+                                                                )}
+                                                                {user?.role === 'ADMIN' && (
+                                                                    <button
+                                                                        onClick={() => openScheduleModal(match)}
+                                                                        className="text-gray-500 hover:text-yellow-500 transition p-1"
+                                                                        title="Agendar Partida"
                                                                     >
-                                                                        {match.status === 'COMPLETED' ? 'Ver Súmula' : 'Gerenciar Partida'}
-                                                                    </Link>
+                                                                        <FaEdit />
+                                                                    </button>
                                                                 )}
                                                             </div>
                                                         </div>
-                                                    ))}
-                                                </div>
+
+                                                        <div className="flex items-center justify-between gap-1">
+                                                            {/* Home Team */}
+                                                            <div className="flex-1 text-right flex items-center justify-end gap-2 md:gap-3 min-w-0">
+                                                                <span className={`font-bold text-sm sm:text-base md:text-xl leading-tight ${!match.homeTeam ? 'text-gray-600 italic' : ''}`}>
+                                                                    {match.homeTeam?.name || 'A Definir'}
+                                                                </span>
+                                                                {match.homeTeam && (
+                                                                    <SafeImage
+                                                                        src={match.homeTeam.logoUrl}
+                                                                        className="w-6 h-6 md:w-8 md:h-8 object-contain shrink-0"
+                                                                        fallbackIcon={<FaShieldAlt size={16} />}
+                                                                    />
+                                                                )}
+                                                            </div>
+
+                                                            {/* Score / VS */}
+                                                            <div className="flex flex-col items-center px-2 md:px-8 shrink-0">
+                                                                {match.status === 'COMPLETED' || (match.homeScore !== null) ? (
+                                                                    <div className="flex items-center gap-2 md:gap-3 font-mono text-lg md:text-3xl font-bold text-white bg-gray-800 px-3 md:px-4 py-1 rounded-lg border border-gray-700">
+                                                                        <span className={match.homeScore! > match.awayScore! ? 'text-yellow-500' : ''}>{match.homeScore}</span>
+                                                                        <span className="text-gray-600 text-base md:text-lg">X</span>
+                                                                        <span className={match.awayScore! > match.homeScore! ? 'text-yellow-500' : ''}>{match.awayScore}</span>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 font-bold text-[10px] md:text-xs border border-gray-700">
+                                                                        VS
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Away Team */}
+                                                            <div className="flex-1 text-left flex items-center justify-start gap-2 md:gap-3 min-w-0">
+                                                                {match.awayTeam && (
+                                                                    <SafeImage
+                                                                        src={match.awayTeam.logoUrl}
+                                                                        className="w-6 h-6 md:w-8 md:h-8 object-contain shrink-0"
+                                                                        fallbackIcon={<FaShieldAlt size={16} />}
+                                                                    />
+                                                                )}
+                                                                <span className={`font-bold text-sm sm:text-base md:text-xl leading-tight ${!match.awayTeam ? 'text-gray-600 italic' : ''}`}>
+                                                                    {match.awayTeam?.name || 'A Definir'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex justify-center mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            {(user?.role === 'ADMIN' || match.status === 'COMPLETED') && (
+                                                                <Link
+                                                                    to={`/matches/${match.id}/sheet`}
+                                                                    className="text-xs font-bold text-yellow-500 hover:text-white bg-yellow-900/20 hover:bg-yellow-600/50 px-4 py-2 rounded-lg border border-yellow-500/30 transition-all uppercase tracking-wide"
+                                                                >
+                                                                    {match.status === 'COMPLETED' ? 'Ver Súmula' : 'Gerenciar Partida'}
+                                                                </Link>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
+                </div>
 
-                    {/* Statistics Section */}
-                    <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden mt-8">
-                        <div className="p-6 border-b border-gray-700">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                📊 Estatísticas
-                            </h2>
+                {/* Statistics Section */}
+                <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden mt-8">
+                    <div className="p-6 border-b border-gray-700">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                            📊 Estatísticas
+                        </h2>
+                    </div>
+                    <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {/* Top Scorers */}
+                        <div>
+                            <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                👟 Artilharia
+                            </h3>
+                            <ul className="space-y-2">
+                                {stats.topScorers.length === 0 ? <li className="text-gray-500 text-sm">Nenhum gol marcado.</li> :
+                                    stats.topScorers.map((p, i) => (
+                                        <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold text-gray-400 w-4">{i + 1}</span>
+                                                <div>
+                                                    <div className="text-sm font-bold">{p.name}</div>
+                                                    <div className="text-xs text-gray-500">{p.team?.name}</div>
+                                                </div>
+                                            </div>
+                                            <div className="font-mono font-bold text-yellow-500">{p.goals} G</div>
+                                        </li>
+                                    ))}
+                            </ul>
                         </div>
-                        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {/* Top Scorers */}
-                            <div>
-                                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                    👟 Artilharia
-                                </h3>
-                                <ul className="space-y-2">
-                                    {stats.topScorers.length === 0 ? <li className="text-gray-500 text-sm">Nenhum gol marcado.</li> :
-                                        stats.topScorers.map((p, i) => (
-                                            <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-gray-400 w-4">{i + 1}</span>
-                                                    <div>
-                                                        <div className="text-sm font-bold">{p.name}</div>
-                                                        <div className="text-xs text-gray-500">{p.team?.name}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="font-mono font-bold text-yellow-500">{p.goals} G</div>
-                                            </li>
-                                        ))}
-                                </ul>
-                            </div>
 
-                            {/* Top Goalkeepers */}
-                            <div>
-                                <h3 className="text-sm font-bold text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                    🧤 Paredões (Menos Vazados)
-                                </h3>
-                                <ul className="space-y-2">
-                                    {stats.topGoalkeepers.length === 0 ? <li className="text-gray-500 text-sm">Nenhum dado.</li> :
-                                        stats.topGoalkeepers.map((p, i) => (
-                                            <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-gray-400 w-4">{i + 1}</span>
-                                                    <div>
-                                                        <div className="text-sm font-bold">{p.name}</div>
-                                                        <div className="text-xs text-gray-500">{p.team?.name}</div>
-                                                    </div>
+                        {/* Top Goalkeepers */}
+                        <div>
+                            <h3 className="text-sm font-bold text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                🧤 Paredões (Menos Vazados)
+                            </h3>
+                            <ul className="space-y-2">
+                                {stats.topGoalkeepers.length === 0 ? <li className="text-gray-500 text-sm">Nenhum dado.</li> :
+                                    stats.topGoalkeepers.map((p, i) => (
+                                        <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold text-gray-400 w-4">{i + 1}</span>
+                                                <div>
+                                                    <div className="text-sm font-bold">{p.name}</div>
+                                                    <div className="text-xs text-gray-500">{p.team?.name}</div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <div className="font-mono font-bold text-white">{p.goalsConceded} GS</div>
-                                                    <div className="text-[10px] text-gray-500">{p.matchesPlayed} Jogos</div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="font-mono font-bold text-white">{p.goalsConceded} GS</div>
+                                                <div className="text-[10px] text-gray-500">{p.matchesPlayed} Jogos</div>
+                                            </div>
+                                        </li>
+                                    ))}
+                            </ul>
+                        </div>
+                        {/* Top Assists */}
+                        <div className="sm:col-span-2 xl:col-span-1">
+                            <h3 className="text-sm font-bold text-green-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                🅰️ Garçons (Assistências)
+                            </h3>
+                            <ul className="space-y-2">
+                                {stats.topAssists?.length === 0 ? <li className="text-gray-500 text-sm">Nenhuma assistência.</li> :
+                                    stats.topAssists?.map((p, i) => (
+                                        <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold text-gray-400 w-4">{i + 1}</span>
+                                                <div>
+                                                    <div className="text-sm font-bold">{p.name}</div>
+                                                    <div className="text-xs text-gray-500">{p.team?.name}</div>
                                                 </div>
-                                            </li>
-                                        ))}
-                                </ul>
-                            </div>
-                            {/* Top Assists */}
-                            <div className="sm:col-span-2 xl:col-span-1">
-                                <h3 className="text-sm font-bold text-green-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                    🅰️ Garçons (Assistências)
-                                </h3>
-                                <ul className="space-y-2">
-                                    {stats.topAssists?.length === 0 ? <li className="text-gray-500 text-sm">Nenhuma assistência.</li> :
-                                        stats.topAssists?.map((p, i) => (
-                                            <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-gray-400 w-4">{i + 1}</span>
-                                                    <div>
-                                                        <div className="text-sm font-bold">{p.name}</div>
-                                                        <div className="text-xs text-gray-500">{p.team?.name}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="font-mono font-bold text-green-500">{p.assists} A</div>
-                                            </li>
-                                        ))}
-                                </ul>
-                            </div>
+                                            </div>
+                                            <div className="font-mono font-bold text-green-500">{p.assists} A</div>
+                                        </li>
+                                    ))}
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -707,7 +708,8 @@ const ChampionshipDetails: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
         </div >
     );
 };
