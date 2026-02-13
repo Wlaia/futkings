@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { FaSave, FaArrowLeft, FaFlag, FaPlay, FaPause, FaPlus, FaCrown, FaBan, FaStar, FaBolt, FaTimes, FaHandPaper, FaUsers, FaExpand, FaShieldAlt } from 'react-icons/fa';
+import { FaSave, FaArrowLeft, FaFlag, FaPlay, FaPause, FaPlus, FaCrown, FaStar, FaBolt, FaTimes, FaHandPaper, FaUsers, FaExpand, FaShieldAlt, FaBullseye } from 'react-icons/fa';
 import SponsorCarousel from '../components/SponsorCarousel';
 import SafeImage from '../components/SafeImage';
 import { SPONSORS } from '../constants/sponsors';
@@ -40,7 +40,7 @@ interface Match {
 }
 
 // Secret Cards Types
-type CardType = 'KING_PLAYER' | 'LESS_ONE' | 'DOUBLE_GOAL' | 'GK_SURPRISE' | 'EXCLUSION';
+type CardType = 'KING_PLAYER' | 'DOUBLE_GOAL' | 'GK_SURPRISE' | 'EXCLUSION' | 'PENALTY_FUTKINGS';
 
 interface SecretCard {
     id: string;
@@ -71,11 +71,11 @@ interface Sanction {
 }
 
 const SECRET_CARDS: SecretCard[] = [
-    { id: 'king', type: 'KING_PLAYER', label: 'Jogador King', description: 'Gols valem o dobro por 2 min', icon: <FaCrown />, color: 'bg-yellow-500', duration: 120 },
-    { id: 'less_one', type: 'LESS_ONE', label: 'Adversário -1', description: 'Retira 1 jogador adversário por 2 min', icon: <FaBan />, color: 'bg-red-500', duration: 120 },
-    { id: 'double_goal', type: 'DOUBLE_GOAL', label: 'Gol em Dobro', description: 'Todos os gols valem 2 por 2 min', icon: <FaStar />, color: 'bg-purple-500', duration: 120 },
-    { id: 'gk_surprise', type: 'GK_SURPRISE', label: 'Goleiro Surpresa', description: 'Adversário troca GK por linha por 2 min', icon: <FaHandPaper />, color: 'bg-orange-500', duration: 120 },
-    { id: 'exclusion', type: 'EXCLUSION', label: 'Exclusão', description: 'Retira jogador específico por 2 min', icon: <FaBolt />, color: 'bg-indigo-500', duration: 120 },
+    { id: 'king', type: 'KING_PLAYER', label: 'Jogador King', description: 'Gols de um jogador escolhido valem 2 - 2 min', icon: <FaCrown />, color: 'bg-yellow-500', duration: 120 },
+    { id: 'double_goal', type: 'DOUBLE_GOAL', label: 'Gol em Dobro', description: 'Todos os gols do time valem 2', icon: <FaStar />, color: 'bg-purple-500', duration: 120 },
+    { id: 'exclusion', type: 'EXCLUSION', label: 'Exclusão', description: 'Você escolhe um adversário pra sair 2 min', icon: <FaTimes />, color: 'bg-red-500', duration: 120 },
+    { id: 'gk_surprise', type: 'GK_SURPRISE', label: 'Goleiro Surpresa', description: 'Jogador de linha vai pro gol', icon: <FaHandPaper />, color: 'bg-orange-500', duration: 120 },
+    { id: 'penalty', type: 'PENALTY_FUTKINGS', label: 'Pênalti FutKings', description: 'Shootout 1x1 imediato', icon: <FaBullseye />, color: 'bg-indigo-500', duration: 120 },
 ];
 
 const MatchSheet: React.FC = () => {
@@ -597,8 +597,15 @@ const MatchSheet: React.FC = () => {
     }
 
     const renderCardModal = () => {
-        if (!isCardModalOpen) return null;
-        const team = selectedTeamForCard === match.homeTeam.id ? match.homeTeam : match.awayTeam;
+        if (!isCardModalOpen || !match) return null;
+
+        // Determine which team's players to show:
+        // For EXCLUSION, show OPPONENT players.
+        // For KING_PLAYER, show OWN players.
+        const showOpponent = selectedCardType?.type === 'EXCLUSION';
+        const teamToDisplay = showOpponent
+            ? (selectedTeamForCard === match.homeTeam.id ? match.awayTeam : match.homeTeam)
+            : (selectedTeamForCard === match.homeTeam.id ? match.homeTeam : match.awayTeam);
 
         return (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
@@ -607,7 +614,7 @@ const MatchSheet: React.FC = () => {
 
                     <div className="p-6">
                         <h2 className="text-2xl font-black uppercase text-white mb-6 text-center">
-                            {cardStep === 'SELECT_CARD' ? 'Selecionar Carta Secreta' : `Escolher Jogador: ${selectedCardType?.label}`}
+                            {cardStep === 'SELECT_CARD' ? 'Selecionar Carta Secreta' : `${selectedCardType?.label}: Selecionar ${showOpponent ? 'Adversário' : 'Jogador'}`}
                         </h2>
 
                         {cardStep === 'SELECT_CARD' ? (
@@ -628,7 +635,7 @@ const MatchSheet: React.FC = () => {
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">
-                                {team.players.map(p => (
+                                {teamToDisplay.players.map(p => (
                                     <button
                                         key={p.id}
                                         onClick={() => handlePlayerSelect(p.id)}
