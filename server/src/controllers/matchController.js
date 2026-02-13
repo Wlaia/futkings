@@ -44,8 +44,8 @@ const getPublicMatches = async (req, res) => {
                 }
             },
             orderBy: [
-                { status: 'asc' }, // LIVE first (if alphabetical L comes before S? No. LIVE vs SCHEDULED. L < S. So LIVE first.)
-                { startTime: 'asc' }
+                { status: 'asc' },
+                { startTime: 'desc' }
             ]
         });
 

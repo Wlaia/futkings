@@ -1,0 +1,62 @@
+[
+  {
+    "id": "ede4b726-a571-4943-a724-c5d65ed38775",
+    "championshipId": "b9ee8f65-2d85-48ff-b3ce-948fffecd7dd",
+    "homeTeamId": "6ecd8687-b1e4-4823-8f4e-de73195ef59b",
+    "awayTeamId": "c8cb6a04-6c29-4a5c-8fdd-b83c985ca9dc",
+    "homeScore": 0,
+    "awayScore": 0,
+    "round": "Rodada 2",
+    "startTime": "2026-02-12T18:50:00.000Z",
+    "status": "LIVE",
+    "homeTeam": {
+      "name": "Galáticos"
+    },
+    "awayTeam": {
+      "name": "Kings FC"
+    },
+    "championship": {
+      "name": "Homologação FutKings"
+    }
+  },
+  {
+    "id": "1709b9c7-c01a-447e-8aed-0a7cd48ec219",
+    "championshipId": "a5a14fd0-27dd-4abf-890a-591ef2c4519e",
+    "homeTeamId": "56d1af23-960d-4f9d-aa13-de8972e80628",
+    "awayTeamId": "ec961eed-5c6b-4d6e-a69a-c06ccdd2c64a",
+    "homeScore": 1,
+    "awayScore": 3,
+    "round": "Rodada 1",
+    "startTime": "2026-02-13T01:30:00.000Z",
+    "status": "LIVE",
+    "homeTeam": {
+      "name": "Storm Breakers"
+    },
+    "awayTeam": {
+      "name": "Neon City"
+    },
+    "championship": {
+      "name": "Homologação"
+    }
+  },
+  {
+    "id": "53dae518-ac13-4604-97c8-60b6d541c071",
+    "championshipId": "a5a14fd0-27dd-4abf-890a-591ef2c4519e",
+    "homeTeamId": "e4a3d6f1-3ef3-45b8-83ae-7f79a249fed0",
+    "awayTeamId": "ec961eed-5c6b-4d6e-a69a-c06ccdd2c64a",
+    "homeScore": 2,
+    "awayScore": 0,
+    "round": "Rodada 3",
+    "startTime": null,
+    "status": "LIVE",
+    "homeTeam": {
+      "name": "Voltaço Angra"
+    },
+    "awayTeam": {
+      "name": "Neon City"
+    },
+    "championship": {
+      "name": "Homologação"
+    }
+  }
+]

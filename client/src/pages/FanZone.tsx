@@ -51,10 +51,16 @@ const FanZone: React.FC = () => {
             setActiveChampionships(championshipsData);
 
             if (matchesData.length > 0) {
-                // Priority: LIVE match, then next upcoming match
-                const liveMatch = matchesData.find((m: Match) => m.status === 'LIVE');
-                if (liveMatch) {
-                    setFeaturedMatch(liveMatch);
+                // Priority: Latest LIVE match, then next upcoming match
+                const liveMatches = matchesData.filter((m: Match) => m.status === 'LIVE');
+                if (liveMatches.length > 0) {
+                    // Sort by startTime desc if available
+                    const featured = liveMatches.sort((a: Match, b: Match) => {
+                        const dateA = a.startTime ? new Date(a.startTime).getTime() : 0;
+                        const dateB = b.startTime ? new Date(b.startTime).getTime() : 0;
+                        return dateB - dateA;
+                    })[0];
+                    setFeaturedMatch(featured);
                 } else {
                     setFeaturedMatch(matchesData[0]); // First upcoming or recent
                 }
