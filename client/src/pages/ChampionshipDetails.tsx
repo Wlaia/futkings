@@ -580,137 +580,136 @@ const ChampionshipDetails: React.FC = () => {
                             )}
                         </div>
                     </div>
-                </div>
 
-                {/* Statistics Section */}
-                <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden mt-8">
-                    <div className="p-6 border-b border-gray-700">
-                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                            📊 Estatísticas
-                        </h2>
-                    </div>
-                    <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {/* Top Scorers */}
-                        <div>
-                            <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                👟 Artilharia
-                            </h3>
-                            <ul className="space-y-2">
-                                {stats.topScorers.length === 0 ? <li className="text-gray-500 text-sm">Nenhum gol marcado.</li> :
-                                    stats.topScorers.map((p, i) => (
-                                        <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-bold text-gray-400 w-4">{i + 1}</span>
-                                                <div>
-                                                    <div className="text-sm font-bold">{p.name}</div>
-                                                    <div className="text-xs text-gray-500">{p.team?.name}</div>
-                                                </div>
-                                            </div>
-                                            <div className="font-mono font-bold text-yellow-500">{p.goals} G</div>
-                                        </li>
-                                    ))}
-                            </ul>
+                    {/* Statistics Section */}
+                    <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden">
+                        <div className="p-6 border-b border-gray-700">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                📊 Estatísticas
+                            </h2>
                         </div>
-
-                        {/* Top Goalkeepers */}
-                        <div>
-                            <h3 className="text-sm font-bold text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                🧤 Paredões (Menos Vazados)
-                            </h3>
-                            <ul className="space-y-2">
-                                {stats.topGoalkeepers.length === 0 ? <li className="text-gray-500 text-sm">Nenhum dado.</li> :
-                                    stats.topGoalkeepers.map((p, i) => (
-                                        <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-bold text-gray-400 w-4">{i + 1}</span>
-                                                <div>
-                                                    <div className="text-sm font-bold">{p.name}</div>
-                                                    <div className="text-xs text-gray-500">{p.team?.name}</div>
+                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {/* Top Scorers */}
+                            <div>
+                                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    👟 Artilharia
+                                </h3>
+                                <ul className="space-y-2">
+                                    {stats.topScorers.length === 0 ? <li className="text-gray-500 text-sm">Nenhum gol marcado.</li> :
+                                        stats.topScorers.map((p, i) => (
+                                            <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-gray-400 w-4">{i + 1}</span>
+                                                    <div>
+                                                        <div className="text-sm font-bold">{p.name}</div>
+                                                        <div className="text-xs text-gray-500">{p.team?.name}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="font-mono font-bold text-white">{p.goalsConceded} GS</div>
-                                                <div className="text-[10px] text-gray-500">{p.matchesPlayed} Jogos</div>
-                                            </div>
-                                        </li>
-                                    ))}
-                            </ul>
-                        </div>
-                        {/* Top Assists */}
-                        <div className="sm:col-span-2 xl:col-span-1">
-                            <h3 className="text-sm font-bold text-green-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                🅰️ Garçons (Assistências)
-                            </h3>
-                            <ul className="space-y-2">
-                                {stats.topAssists?.length === 0 ? <li className="text-gray-500 text-sm">Nenhuma assistência.</li> :
-                                    stats.topAssists?.map((p, i) => (
-                                        <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-bold text-gray-400 w-4">{i + 1}</span>
-                                                <div>
-                                                    <div className="text-sm font-bold">{p.name}</div>
-                                                    <div className="text-xs text-gray-500">{p.team?.name}</div>
-                                                </div>
-                                            </div>
-                                            <div className="font-mono font-bold text-green-500">{p.assists} A</div>
-                                        </li>
-                                    ))}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Schedule Modal */}
-            {isScheduleModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-                    <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-2xl w-full max-w-md relative">
-                        <button
-                            onClick={() => setIsScheduleModalOpen(false)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
-                        >
-                            <FaTimes size={20} />
-                        </button>
-
-                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                            <FaCalendarCheck className="text-yellow-500" /> Agendar Partida
-                        </h2>
-
-                        <div className="mb-6">
-                            <div className="flex justify-between items-center mb-4 bg-gray-900 p-3 rounded-lg">
-                                <span className="font-bold text-gray-300">{selectedMatch?.homeTeam?.name || 'A Definir'}</span>
-                                <span className="text-xs font-bold text-gray-600">VS</span>
-                                <span className="font-bold text-gray-300">{selectedMatch?.awayTeam?.name || 'A Definir'}</span>
+                                                <div className="font-mono font-bold text-yellow-500">{p.goals} G</div>
+                                            </li>
+                                        ))}
+                                </ul>
                             </div>
 
-                            <label className="block text-sm font-bold text-gray-400 mb-2">Data e Hora</label>
-                            <input
-                                type="datetime-local"
-                                value={scheduleDate}
-                                onChange={(e) => setScheduleDate(e.target.value)}
-                                className="w-full bg-gray-900 border border-gray-600 rounded-xl p-3 text-white focus:border-yellow-500 focus:outline-none"
-                            />
-                        </div>
-
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setIsScheduleModalOpen(false)}
-                                className="text-gray-400 hover:text-white px-4 py-2 font-bold transition"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleScheduleSave}
-                                className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-6 py-2 rounded-xl font-bold shadow-lg shadow-yellow-500/20 transition flex items-center gap-2"
-                            >
-                                <FaSave /> Salvar
-                            </button>
+                            {/* Top Goalkeepers */}
+                            <div>
+                                <h3 className="text-sm font-bold text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    🧤 Paredões (Menos Vazados)
+                                </h3>
+                                <ul className="space-y-2">
+                                    {stats.topGoalkeepers.length === 0 ? <li className="text-gray-500 text-sm">Nenhum dado.</li> :
+                                        stats.topGoalkeepers.map((p, i) => (
+                                            <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-gray-400 w-4">{i + 1}</span>
+                                                    <div>
+                                                        <div className="text-sm font-bold">{p.name}</div>
+                                                        <div className="text-xs text-gray-500">{p.team?.name}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="font-mono font-bold text-white">{p.goalsConceded} GS</div>
+                                                    <div className="text-[10px] text-gray-500">{p.matchesPlayed} Jogos</div>
+                                                </div>
+                                            </li>
+                                        ))}
+                                </ul>
+                            </div>
+                            {/* Top Assists */}
+                            <div className="sm:col-span-2 xl:col-span-1">
+                                <h3 className="text-sm font-bold text-green-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    🅰️ Garçons (Assistências)
+                                </h3>
+                                <ul className="space-y-2">
+                                    {stats.topAssists?.length === 0 ? <li className="text-gray-500 text-sm">Nenhuma assistência.</li> :
+                                        stats.topAssists?.map((p, i) => (
+                                            <li key={p.id} className="bg-gray-700/50 p-2 rounded flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-gray-400 w-4">{i + 1}</span>
+                                                    <div>
+                                                        <div className="text-sm font-bold">{p.name}</div>
+                                                        <div className="text-xs text-gray-500">{p.team?.name}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="font-mono font-bold text-green-500">{p.assists} A</div>
+                                            </li>
+                                        ))}
+                                </ul>
+                            </div>
                         </div>
                     </div>
+
+                    {/* Schedule Modal */}
+                    {isScheduleModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+                            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-2xl w-full max-w-md relative">
+                                <button
+                                    onClick={() => setIsScheduleModalOpen(false)}
+                                    className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+                                >
+                                    <FaTimes size={20} />
+                                </button>
+
+                                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                    <FaCalendarCheck className="text-yellow-500" /> Agendar Partida
+                                </h2>
+
+                                <div className="mb-6">
+                                    <div className="flex justify-between items-center mb-4 bg-gray-900 p-3 rounded-lg">
+                                        <span className="font-bold text-gray-300">{selectedMatch?.homeTeam?.name || 'A Definir'}</span>
+                                        <span className="text-xs font-bold text-gray-600">VS</span>
+                                        <span className="font-bold text-gray-300">{selectedMatch?.awayTeam?.name || 'A Definir'}</span>
+                                    </div>
+
+                                    <label className="block text-sm font-bold text-gray-400 mb-2">Data e Hora</label>
+                                    <input
+                                        type="datetime-local"
+                                        value={scheduleDate}
+                                        onChange={(e) => setScheduleDate(e.target.value)}
+                                        className="w-full bg-gray-900 border border-gray-600 rounded-xl p-3 text-white focus:border-yellow-500 focus:outline-none"
+                                    />
+                                </div>
+
+                                <div className="flex justify-end gap-3">
+                                    <button
+                                        onClick={() => setIsScheduleModalOpen(false)}
+                                        className="text-gray-400 hover:text-white px-4 py-2 font-bold transition"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={handleScheduleSave}
+                                        className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-6 py-2 rounded-xl font-bold shadow-lg shadow-yellow-500/20 transition flex items-center gap-2"
+                                    >
+                                        <FaSave /> Salvar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
-            )
-            }
-        </div >
+            </div>
+        </div>
     );
 };
 
