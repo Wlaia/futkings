@@ -947,7 +947,7 @@ const MatchSheet: React.FC = () => {
                 ))}
             </div>
 
-            <div className="max-w-[1250px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.5fr_1fr] gap-6 px-4">
+            <div className="w-full max-w-[1800px] mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_0.8fr_1.1fr] gap-4 px-2 md:px-6">
 
                 {/* Left/Right Columns (Teams) - Code is below in other chunks, this updates container grid only */}
 
