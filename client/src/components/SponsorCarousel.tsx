@@ -67,7 +67,7 @@ const SponsorCarousel: React.FC<SponsorCarouselProps> = ({ onClose }) => {
                             : 'opacity-0 scale-90 translate-x-[100%] rotate-6 pointer-events-none'
                             }`}
                     >
-                        <div className="relative w-full h-full flex items-center justify-center max-w-[1600px]">
+                        <div className="relative w-full h-full flex items-center justify-center max-w-[1800px]">
                             <img
                                 src={sponsor.image}
                                 alt={sponsor.name}

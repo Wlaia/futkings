@@ -918,7 +918,7 @@ const MatchSheet: React.FC = () => {
             )}
 
             {/* Left Vertical Banner (Fixed Position - 3 Stacked Squares) */}
-            <div className="hidden min-[1600px]:flex flex-col gap-4 w-[180px] min-[1800px]:w-[250px] fixed top-24 left-4 z-10 transition-all duration-500">
+            <div className="hidden min-[1600px]:flex flex-col gap-4 w-[270px] min-[1800px]:w-[375px] fixed top-24 left-4 z-10 transition-all duration-500">
                 {SPONSORS.slice(0, 3).map((sponsor) => (
                     <div key={sponsor.id} className="w-full aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer group shadow-2xl hover:scale-105 relative overflow-hidden">
                         <span className="text-gray-700 font-bold group-hover:text-white transition-colors tracking-widest text-sm opacity-20">PUB {sponsor.id}</span>
@@ -933,7 +933,7 @@ const MatchSheet: React.FC = () => {
             </div>
 
             {/* Right Vertical Banner (Fixed Position - 3 Stacked Squares) */}
-            <div className="hidden min-[1600px]:flex flex-col gap-4 w-[180px] min-[1800px]:w-[250px] fixed top-24 right-4 z-10 transition-all duration-500">
+            <div className="hidden min-[1600px]:flex flex-col gap-4 w-[270px] min-[1800px]:w-[375px] fixed top-24 right-4 z-10 transition-all duration-500">
                 {SPONSORS.slice(3, 6).map((sponsor) => (
                     <div key={sponsor.id} className="w-full aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer group shadow-2xl hover:scale-105 relative overflow-hidden">
                         <span className="text-gray-700 font-bold group-hover:text-white transition-colors tracking-widest text-sm opacity-20">PUB {sponsor.id}</span>
