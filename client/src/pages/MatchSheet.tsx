@@ -720,128 +720,116 @@ const MatchSheet: React.FC = () => {
                             <div key={player.id} className={`group bg-gray-900/40 hover:bg-gray-800 p-2 rounded flex flex-col gap-2 border-b border-gray-800 transition-all ${isKing ? 'ring-1 ring-yellow-500 bg-yellow-900/10' : ''} ${(isExcluded || isSanctioned) ? 'opacity-50 grayscale' : ''}`}>
 
                                 {/* Row 1: Player Info */}
-                                <div className="flex items-center gap-2 w-full">
-                                    <span className={`font-mono font-bold text-base min-w-[24px] text-center ${player.position === 'GOALKEEPER' ? 'text-yellow-500' : 'text-gray-400'}`}>{player.number}</span>
-                                    <span className="truncate font-bold text-base text-gray-100 group-hover:text-white flex-1" title={player.name}>{player.name}</span>
+                                <div className="flex items-center gap-2 w-full mb-1">
+                                    <span className={`font-mono font-bold text-sm min-w-[20px] text-center ${player.position === 'GOALKEEPER' ? 'text-yellow-500' : 'text-gray-400'}`}>{player.number}</span>
+                                    <span className="truncate font-bold text-sm text-gray-100 group-hover:text-white flex-1 leading-tight" title={player.name}>{player.name}</span>
 
-                                    {isKing && <FaCrown size={12} className="text-yellow-500 flex-shrink-0 animate-pulse" />}
-                                    {(isExcluded || isSanctioned) && <span className="text-[10px] bg-red-600 px-1 rounded text-white font-bold">OUT</span>}
+                                    {isKing && <FaCrown size={10} className="text-yellow-500 flex-shrink-0 animate-pulse" />}
+                                    {(isExcluded || isSanctioned) && <span className="text-[9px] bg-red-600 px-1 rounded text-white font-bold">OUT</span>}
                                 </div>
 
-                                {/* Row 2: Stats Controls (Redesigned for touch) */}
-                                <div className="flex items-center justify-between w-full gap-2 mt-1">
+                                {/* Row 2: Stats Controls (Compact Grid) */}
+                                <div className="grid grid-cols-[auto_auto_1fr] gap-x-2 gap-y-1 items-center w-full">
 
-                                    {/* Goals */}
-                                    <div className="flex items-center bg-black/40 rounded-lg overflow-hidden border border-white/5" title="Gols">
+                                    {/* Goals (Col 1) */}
+                                    <div className="flex items-center bg-black/40 rounded-lg overflow-hidden border border-white/5 h-8">
                                         <button
                                             disabled={matchStatus === 'COMPLETED'}
                                             onClick={() => updateStat(player.id, 'goals', -1)}
-                                            className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-white/5 active:scale-95 disabled:opacity-30 transition-all font-black text-xl"
+                                            className="w-8 h-full flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-white/5 active:scale-95 disabled:opacity-30 transition-all font-black text-lg"
                                         >-</button>
-                                        <div className="w-12 h-10 flex flex-col items-center justify-center bg-black/20">
-                                            <span className="text-[8px] uppercase font-bold text-gray-500 leading-none mb-0.5">GOLS</span>
-                                            <span className={`font-black text-xl leading-none ${isKing ? 'text-yellow-400' : 'text-white'}`}>{s.goals}</span>
+                                        <div className="w-8 h-full flex flex-col items-center justify-center bg-black/20 px-1">
+                                            <span className={`font-black text-lg leading-none ${isKing ? 'text-yellow-400' : 'text-white'}`}>{s.goals}</span>
                                         </div>
                                         <button
                                             disabled={matchStatus === 'COMPLETED'}
                                             onClick={() => updateStat(player.id, 'goals', 1)}
-                                            className="w-12 h-10 flex items-center justify-center text-white bg-green-600/20 hover:bg-green-600/40 active:scale-95 disabled:opacity-30 transition-all font-black text-2xl"
+                                            className="w-8 h-full flex items-center justify-center text-white bg-green-600/20 hover:bg-green-600/40 active:scale-95 disabled:opacity-30 transition-all font-black text-xl"
                                         >+</button>
                                     </div>
 
-                                    {/* Cards */}
-                                    <div className="flex items-center gap-3 px-2 border-x border-gray-700/50">
-                                        <div className="flex flex-col items-center gap-1">
+                                    {/* Cards (Col 2) */}
+                                    <div className="flex items-center gap-1.5 px-2 border-x border-gray-700/50 h-8">
+                                        <div className="flex items-center gap-0.5">
+                                            <button
+                                                onClick={() => updateStat(player.id, 'yellow', -1)}
+                                                className="w-5 h-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-l active:scale-95 transition-all"
+                                            ><span className="text-[10px] font-black">-</span></button>
                                             <button
                                                 disabled={matchStatus === 'COMPLETED'}
                                                 onClick={() => updateStat(player.id, 'yellow', 1)}
-                                                className={`w-10 h-10 rounded-md flex flex-col items-center justify-center transition-all active:scale-95 shadow-lg ${s.yellow > 0 ? 'bg-yellow-500 ring-2 ring-white z-10' : 'bg-yellow-500/20 grayscale border border-yellow-500/30'}`}
-                                                title="+ Amarelo"
+                                                className={`w-6 h-8 flex items-center justify-center rounded-r transition-all active:scale-95 shadow-lg ${s.yellow > 0 ? 'bg-yellow-500 text-black' : 'bg-yellow-500/20 text-yellow-500/50 grayscale border border-yellow-500/30'}`}
                                             >
-                                                <div className="w-5 h-7 bg-yellow-500 rounded-sm border border-black/20 shadow-sm"></div>
+                                                <div className="w-3 h-4 bg-current rounded-[1px]"></div>
                                             </button>
-                                            <div className="flex items-center gap-1">
-                                                <button
-                                                    onClick={() => updateStat(player.id, 'yellow', -1)}
-                                                    className="w-6 h-5 flex items-center justify-center bg-red-500/20 hover:bg-red-500/40 text-red-500 rounded font-black border border-red-500/30 text-[10px]"
-                                                >-</button>
-                                                <span className="text-[10px] font-black text-yellow-500">{s.yellow}</span>
-                                            </div>
                                         </div>
 
-                                        <div className="flex flex-col items-center gap-1">
+                                        <div className="flex items-center gap-0.5">
                                             <button
                                                 disabled={matchStatus === 'COMPLETED'}
                                                 onClick={() => updateStat(player.id, 'red', 1)}
-                                                className={`w-10 h-10 rounded-md flex flex-col items-center justify-center transition-all active:scale-95 shadow-lg ${s.red > 0 ? 'bg-red-600 ring-2 ring-white z-10' : 'bg-red-600/20 grayscale border border-red-600/30'}`}
-                                                title="+ Vermelho"
+                                                className={`w-6 h-8 flex items-center justify-center rounded-l transition-all active:scale-95 shadow-lg ${s.red > 0 ? 'bg-red-600 text-white' : 'bg-red-600/20 text-red-600/50 grayscale border border-red-600/30'}`}
                                             >
-                                                <div className="w-5 h-7 bg-red-600 rounded-sm border border-black/20 shadow-sm"></div>
+                                                <div className="w-3 h-4 bg-current rounded-[1px]"></div>
                                             </button>
-                                            <div className="flex items-center gap-1">
-                                                <button
-                                                    onClick={() => updateStat(player.id, 'red', -1)}
-                                                    className="w-6 h-5 flex items-center justify-center bg-red-500/20 hover:bg-red-500/40 text-red-500 rounded font-black border border-red-500/30 text-[10px]"
-                                                >-</button>
-                                                <span className="text-[10px] font-black text-red-500">{s.red}</span>
-                                            </div>
+                                            <button
+                                                onClick={() => updateStat(player.id, 'red', -1)}
+                                                className="w-5 h-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-r active:scale-95 transition-all"
+                                            ><span className="text-[10px] font-black">-</span></button>
                                         </div>
                                     </div>
 
-                                    {/* Fouls & Assists/Saves (Counter Style) */}
-                                    <div className="flex gap-2">
+                                    {/* Fouls & Assists/Saves (Col 3 - Flex) */}
+                                    <div className="flex justify-end gap-1.5">
                                         {/* Fouls */}
-                                        <div className="flex flex-col items-center bg-black/40 rounded-lg overflow-hidden border border-white/5">
+                                        <div className="flex flex-col items-center bg-black/40 rounded overflow-hidden border border-white/5 w-9">
                                             <button
                                                 disabled={matchStatus === 'COMPLETED'}
                                                 onClick={() => updateStat(player.id, 'fouls', 1)}
-                                                className={`w-12 h-8 flex items-center justify-center transition-all active:scale-95 border-b border-white/5 ${s.fouls > 0 ? 'bg-red-900/40 text-red-400 font-black' : 'bg-gray-800 text-gray-500'}`}
-                                            >+</button>
-                                            <div className="flex flex-col items-center justify-center py-0.5 px-2">
-                                                <span className="text-[7px] font-black text-gray-600 uppercase leading-none">FA</span>
-                                                <span className={`text-xs font-black leading-none ${s.fouls > 0 ? 'text-red-400' : 'text-gray-400'}`}>{s.fouls}</span>
+                                                className={`w-full h-5 flex items-center justify-center transition-all active:scale-95 border-b border-white/5 ${s.fouls > 0 ? 'bg-red-900/40 text-red-400 font-black' : 'bg-gray-800 text-gray-500'}`}
+                                            ><span className="text-[10px]">+</span></button>
+                                            <div className="flex items-center justify-center h-4 w-full bg-black/30">
+                                                <span className={`text-[10px] font-black leading-none ${s.fouls > 0 ? 'text-red-400' : 'text-gray-500'}`}>{s.fouls || 'F'}</span>
                                             </div>
                                             <button
                                                 disabled={matchStatus === 'COMPLETED'}
                                                 onClick={() => updateStat(player.id, 'fouls', -1)}
-                                                className="w-12 h-6 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-white/5 active:scale-95 transition-all font-black"
-                                            >-</button>
+                                                className="w-full h-4 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-white/5 active:scale-95 transition-all"
+                                            ><span className="text-[10px] font-black">-</span></button>
                                         </div>
 
                                         {/* Assists/Saves */}
                                         {player.position === 'GOALKEEPER' ? (
-                                            <div className="flex flex-col items-center bg-black/40 rounded-lg overflow-hidden border border-white/5">
+                                            <div className="flex flex-col items-center bg-black/40 rounded overflow-hidden border border-white/5 w-9">
                                                 <button
                                                     disabled={matchStatus === 'COMPLETED'}
                                                     onClick={() => updateStat(player.id, 'saves', 1)}
-                                                    className={`w-12 h-8 flex items-center justify-center transition-all active:scale-95 border-b border-white/5 ${s.saves > 0 ? 'bg-blue-900/40 text-blue-400 font-black' : 'bg-gray-800 text-gray-500'}`}
-                                                >+</button>
-                                                <div className="flex flex-col items-center justify-center py-0.5 px-2">
-                                                    <span className="text-[7px] font-black text-gray-600 uppercase leading-none">DD</span>
-                                                    <span className={`text-xs font-black leading-none ${s.saves > 0 ? 'text-blue-400' : 'text-gray-400'}`}>{s.saves}</span>
+                                                    className={`w-full h-5 flex items-center justify-center transition-all active:scale-95 border-b border-white/5 ${s.saves > 0 ? 'bg-blue-900/40 text-blue-400 font-black' : 'bg-gray-800 text-gray-500'}`}
+                                                ><span className="text-[10px]">+</span></button>
+                                                <div className="flex items-center justify-center h-4 w-full bg-black/30">
+                                                    <span className={`text-[10px] font-black leading-none ${s.saves > 0 ? 'text-blue-400' : 'text-gray-500'}`}>{s.saves || 'D'}</span>
                                                 </div>
                                                 <button
                                                     disabled={matchStatus === 'COMPLETED'}
                                                     onClick={() => updateStat(player.id, 'saves', -1)}
-                                                    className="w-12 h-6 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-white/5 active:scale-95 transition-all font-black"
-                                                >-</button>
+                                                    className="w-full h-4 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-white/5 active:scale-95 transition-all"
+                                                ><span className="text-[10px] font-black">-</span></button>
                                             </div>
                                         ) : (
-                                            <div className="flex flex-col items-center bg-black/40 rounded-lg overflow-hidden border border-white/5">
+                                            <div className="flex flex-col items-center bg-black/40 rounded overflow-hidden border border-white/5 w-9">
                                                 <button
                                                     disabled={matchStatus === 'COMPLETED'}
                                                     onClick={() => updateStat(player.id, 'assists', 1)}
-                                                    className={`w-12 h-8 flex items-center justify-center transition-all active:scale-95 border-b border-white/5 ${s.assists > 0 ? 'bg-green-900/40 text-green-400 font-black' : 'bg-gray-800 text-gray-500'}`}
-                                                >+</button>
-                                                <div className="flex flex-col items-center justify-center py-0.5 px-2">
-                                                    <span className="text-[7px] font-black text-gray-600 uppercase leading-none">AS</span>
-                                                    <span className={`text-xs font-black leading-none ${s.assists > 0 ? 'text-green-400' : 'text-gray-400'}`}>{s.assists}</span>
+                                                    className={`w-full h-5 flex items-center justify-center transition-all active:scale-95 border-b border-white/5 ${s.assists > 0 ? 'bg-green-900/40 text-green-400 font-black' : 'bg-gray-800 text-gray-500'}`}
+                                                ><span className="text-[10px]">+</span></button>
+                                                <div className="flex items-center justify-center h-4 w-full bg-black/30">
+                                                    <span className={`text-[10px] font-black leading-none ${s.assists > 0 ? 'text-green-400' : 'text-gray-500'}`}>{s.assists || 'A'}</span>
                                                 </div>
                                                 <button
                                                     disabled={matchStatus === 'COMPLETED'}
                                                     onClick={() => updateStat(player.id, 'assists', -1)}
-                                                    className="w-12 h-6 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-white/5 active:scale-95 transition-all font-black"
-                                                >-</button>
+                                                    className="w-full h-4 flex items-center justify-center text-gray-600 hover:text-red-500 hover:bg-white/5 active:scale-95 transition-all"
+                                                ><span className="text-[10px] font-black">-</span></button>
                                             </div>
                                         )}
                                     </div>
