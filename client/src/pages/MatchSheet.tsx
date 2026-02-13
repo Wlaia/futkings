@@ -537,14 +537,18 @@ const MatchSheet: React.FC = () => {
         if (teamCards.length === 0) return null;
 
         return (
-            <div className="flex flex-wrap gap-2 mt-2 justify-center">
+            <div className="flex flex-col gap-3 mt-4 w-full">
                 {teamCards.map(card => {
                     const def = SECRET_CARDS.find(s => s.type === card.type);
                     return (
-                        <div key={card.cardId} className={`${def?.color || 'bg-gray-700'} text-white px-2 py-1 rounded-md flex items-center gap-2 text-xs font-bold animate-pulse shadow-lg`}>
-                            {def?.icon}
-                            <span>{def?.label}</span>
-                            <span className="font-mono bg-black/20 px-1 rounded">{formatCardTimer(card.endTime)}</span>
+                        <div key={card.cardId} className={`${def?.color || 'bg-gray-700'} text-white p-3 rounded-xl flex items-center justify-between gap-4 animate-pulse shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/10`}>
+                            <div className="flex items-center gap-3">
+                                <div className="text-2xl">{def?.icon}</div>
+                                <span className="font-black uppercase tracking-widest text-sm">{def?.label}</span>
+                            </div>
+                            <span className="font-mono bg-black/40 px-4 py-1.5 rounded-lg text-2xl font-black text-white shadow-inner">
+                                {formatCardTimer(card.endTime)}
+                            </span>
                         </div>
                     );
                 })}
@@ -558,15 +562,21 @@ const MatchSheet: React.FC = () => {
         if (teamSanctions.length === 0) return null;
 
         return (
-            <div className="flex flex-wrap gap-2 mt-2 justify-center">
+            <div className="flex flex-col gap-3 mt-4 w-full">
                 {teamSanctions.map(sanction => {
                     const player = [...match.homeTeam.players, ...match.awayTeam.players].find(p => p.id === sanction.playerId);
                     if (!player) return null;
                     return (
-                        <div key={sanction.id} className={`${sanction.type === 'YELLOW' ? 'bg-yellow-500 text-black' : 'bg-red-600 text-white'} px-2 py-1 rounded-md flex items-center gap-2 text-xs font-bold shadow-lg animate-pulse`}>
-                            <span className="font-black bg-black/20 px-1 rounded text-[10px]">{player.number}</span>
-                            <span>{sanction.type === 'YELLOW' ? 'Temp' : 'Expulso'}</span>
-                            <span className="font-mono bg-black/20 px-1 rounded">{formatCardTimer(sanction.endTime)}</span>
+                        <div key={sanction.id} className={`${sanction.type === 'YELLOW' ? 'bg-yellow-500 text-black' : 'bg-red-600 text-white'} p-3 rounded-xl flex items-center justify-between gap-4 shadow-xl animate-pulse border border-white/10`}>
+                            <div className="flex items-center gap-3">
+                                <span className="font-black bg-black/20 px-3 py-1 rounded text-xl">{player.number}</span>
+                                <span className="font-black uppercase tracking-widest text-sm italic">
+                                    {sanction.type === 'YELLOW' ? 'CARTÃO AMARELO (TEMP)' : 'EXPULSÃO TEMPORÁRIA'}
+                                </span>
+                            </div>
+                            <span className="font-mono bg-black/30 px-4 py-1.5 rounded-lg text-2xl font-black shadow-inner">
+                                {formatCardTimer(sanction.endTime)}
+                            </span>
                         </div>
                     );
                 })}
@@ -894,7 +904,7 @@ const MatchSheet: React.FC = () => {
                                 <div className="text-sm font-bold text-gray-400 mt-3 mb-1 uppercase tracking-wider">
                                     Próximo entra em:
                                 </div>
-                                <div className="text-6xl font-mono font-black text-yellow-500 drop-shadow-lg mb-4">
+                                <div className="text-8xl md:text-9xl font-mono font-black text-yellow-500 drop-shadow-[0_0_20px_rgba(234,179,8,0.5)] mb-4 animate-pulse">
                                     {60 - (time % 60)}s
                                 </div>
                             </div>
