@@ -1,6 +1,6 @@
 {
   "name": "futkings-manager",
-  "version": "1.7.34",
+  "version": "1.7.35",
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "dev": "npm start",

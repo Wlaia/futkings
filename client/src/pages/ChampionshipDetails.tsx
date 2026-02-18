@@ -548,7 +548,7 @@ const ChampionshipDetails: React.FC = () => {
                                                                             <span className={match.awayScore! > match.homeScore! || (match.awayShootoutScore || 0) > (match.homeShootoutScore || 0) ? 'text-yellow-500' : ''}>{match.awayScore}</span>
                                                                         </div>
                                                                         {/* Shootout Score Display */}
-                                                                        {(match.homeShootoutScore !== undefined && match.awayShootoutScore !== undefined) && (
+                                                                        {(match.homeShootoutScore != null && match.awayShootoutScore != null) && (
                                                                             <div className="text-[10px] md:text-xs font-bold text-gray-400 mt-1 bg-gray-800/50 px-2 py-0.5 rounded border border-gray-700/50">
                                                                                 ({match.homeShootoutScore} - {match.awayShootoutScore} pen)
                                                                             </div>

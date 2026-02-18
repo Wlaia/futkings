@@ -87,7 +87,11 @@ const getChampionship = async (req, res) => {
                 matches: {
                     include: {
                         homeTeam: true,
-                        awayTeam: true
+                        homeTeam: true,
+                        awayTeam: true,
+                        // Ensure newly added fields are returned (though findUnique includes all scalar fields by default)
+                        // If Prisma client is outdated in memory, it might skip them.
+
                     },
                     orderBy: { startTime: 'asc' }
                 }
