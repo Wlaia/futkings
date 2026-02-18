@@ -171,7 +171,12 @@ const ChampionshipDetails: React.FC = () => {
     };
 
     const handleScheduleSave = async () => {
-        if (!selectedMatch || !scheduleDate) return;
+        if (!selectedMatch) return;
+
+        if (!scheduleDate) {
+            alert('Por favor, selecione uma data e hora para a partida.');
+            return;
+        }
 
         try {
             await api.put(`/matches/${selectedMatch.id}`, {

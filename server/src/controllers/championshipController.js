@@ -344,9 +344,21 @@ const getDashboardData = async (req, res) => {
         });
 
         if (lastCompleted && lastCompleted.matches.length > 0) {
-            // changes logic: assume the very last match completed determines the winner
-            // In a knockout, the last match is the Final.
-            const finalMatch = lastCompleted.matches[0];
+            // Sort matches to find the "Final" one.
+            // Priority:
+            // 1. match.round === 'Final'
+            // 2. match.startTime (descending), treating null as oldest (0)
+            const sortedMatches = lastCompleted.matches.sort((a, b) => {
+                if (a.round === 'Final' && b.round !== 'Final') return -1;
+                if (b.round === 'Final' && a.round !== 'Final') return 1;
+
+                const timeA = a.startTime ? new Date(a.startTime).getTime() : 0;
+                const timeB = b.startTime ? new Date(b.startTime).getTime() : 0;
+                return timeB - timeA;
+            });
+
+            const finalMatch = sortedMatches[0];
+
             if (finalMatch.homeScore > finalMatch.awayScore) {
                 lastChampion = { ...finalMatch.homeTeam, championshipName: lastCompleted.name };
             } else if (finalMatch.awayScore > finalMatch.homeScore) {

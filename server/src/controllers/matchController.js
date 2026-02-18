@@ -85,18 +85,35 @@ const updateMatchResult = async (req, res) => {
         // events: array of { playerId, type: 'GOAL'|'ASSIST'|'YELLOW'|'RED'|'SAVE'|'GOAL_CONCEDED' }
 
         // Prepare update data
+        // Fetch current match data first to validate and precise updates
+        const match = await prisma.match.findUnique({ where: { id } });
+        if (!match) return res.status(404).json({ message: 'Match not found' });
+
+        if ((status === 'LIVE' || status === 'COMPLETED') || (match.status === 'LIVE' || match.status === 'COMPLETED')) {
+            // If we are setting it to Live/Completed OR it is already Live/Completed
+            // We must ensure startTime is set either in this request or already in DB
+            if (!startTime && !match.startTime) {
+                return res.status(400).json({ message: 'É obrigatório definir a data e hora de início antes de iniciar ou finalizar a partida.' });
+            }
+        }
+
         const updateData = {
             homeScore,
             awayScore,
-            status: status || 'COMPLETED'
+            status: status || match.status // Keep existing status if not provided, or default to COMPLETED if logic elsewhere implies it? Actually line 91 said "status || 'COMPLETED'". Let's stick to user intent or default.
         };
+
+        // If status was not provided, but we are closing the match via other means? 
+        // Original code: status: status || 'COMPLETED' -> This implies if I send just score, it completes.
+        // Let's keep original default behavior but be careful.
+        if (!updateData.status) updateData.status = 'COMPLETED';
 
         if (startTime) {
             updateData.startTime = new Date(startTime);
         }
 
         // Update Match Score
-        const match = await prisma.match.update({
+        const updatedMatch = await prisma.match.update({
             where: { id },
             data: updateData
         });

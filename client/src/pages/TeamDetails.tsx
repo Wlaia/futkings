@@ -26,6 +26,8 @@ interface Player {
     saves: number;
     goalsConceded: number;
     isStarter?: boolean;
+    positionX?: number;
+    positionY?: number;
 }
 
 interface Team {
@@ -475,6 +477,23 @@ const TeamDetails: React.FC = () => {
                                 if (user?.role === 'ADMIN' || (user?.role === 'MANAGER' && user.id === team.managerId)) {
                                     const fullPlayer = team.players.find(tp => tp.id === p.id);
                                     if (fullPlayer) setEditingPlayer(fullPlayer);
+                                }
+                            }}
+                            onPositionChange={async (player, x, y) => {
+                                if (user?.role !== 'ADMIN' && (user?.role !== 'MANAGER' || user.id !== team.managerId)) return;
+
+                                // Optimistic update
+                                const updatedPlayers = team.players.map(p =>
+                                    p.id === player.id ? { ...p, positionX: x, positionY: y } : p
+                                );
+                                setTeam({ ...team, players: updatedPlayers });
+
+                                try {
+                                    await api.put(`/players/${player.id}`, { positionX: x, positionY: y });
+                                } catch (error) {
+                                    console.error("Failed to save position", error);
+                                    // Revert if needed (fetching again is easiest)
+                                    fetchTeamAndPlayers();
                                 }
                             }}
                         />

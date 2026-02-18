@@ -1,10 +1,17 @@
 import React from 'react';
 import ChampionshipsList from '../components/ChampionshipsList';
+import { Link } from 'react-router-dom';
+import { FaHome } from 'react-icons/fa';
 
 const Championships: React.FC = () => {
     return (
         <div className="animate-fade-in">
-            <h1 className="text-3xl font-bold text-yellow-500 mb-6 uppercase tracking-wider">Campeonatos</h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold text-yellow-500 uppercase tracking-wider">Campeonatos</h1>
+                <Link to="/dashboard" className="hidden md:flex items-center gap-2 text-gray-400 hover:text-white transition-colors bg-gray-800 px-4 py-2 rounded-lg border border-gray-700 hover:border-gray-500">
+                    <FaHome /> <span>Dashboard</span>
+                </Link>
+            </div>
             <ChampionshipsList />
         </div>
     );

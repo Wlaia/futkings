@@ -2,6 +2,8 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import BottomMenu from './BottomMenu';
 
+import { Link } from 'react-router-dom';
+
 interface LayoutProps {
     children: React.ReactNode;
 }
@@ -24,12 +26,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             {/* Desktop/Tablet Header (Hidden on small mobile if we want a different look, but usually good to keep) */}
             <header className="sticky top-0 z-40 bg-gray-900/90 backdrop-blur-md border-b border-gray-800 px-6 py-4 flex justify-between items-center transition-all duration-300">
-                <div className="flex items-center gap-3">
+                <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                     <img src="/logo.png" alt="Futkings" className="h-10 w-auto md:h-12 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
                     <h1 className="hidden md:block text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 uppercase tracking-tighter">
                         Futkings Manager
                     </h1>
-                </div>
+                </Link>
 
                 {!isFullscreen && (
                     <div className="flex items-center gap-4">

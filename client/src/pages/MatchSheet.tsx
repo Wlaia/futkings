@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { FaSave, FaArrowLeft, FaFlag, FaPlay, FaPause, FaPlus, FaCrown, FaStar, FaBolt, FaTimes, FaHandPaper, FaUsers, FaExpand, FaShieldAlt, FaBullseye } from 'react-icons/fa';
+import { FaSave, FaArrowLeft, FaFlag, FaPlay, FaPause, FaPlus, FaCrown, FaStar, FaBolt, FaTimes, FaHandPaper, FaUsers, FaExpand, FaShieldAlt, FaBullseye, FaCalendarCheck } from 'react-icons/fa';
 import SponsorCarousel from '../components/SponsorCarousel';
 import SafeImage from '../components/SafeImage';
 import { SPONSORS } from '../constants/sponsors';
@@ -37,6 +37,7 @@ interface Match {
     championship: {
         gameDuration: number;
     };
+    startTime?: string;
 }
 
 // Secret Cards Types
@@ -111,6 +112,10 @@ const MatchSheet: React.FC = () => {
     const [selectedDirectorTeamId, setSelectedDirectorTeamId] = useState<string | null>(null);
     const [isLineupModalOpen, setIsLineupModalOpen] = useState(false);
 
+    // Date Modal State
+    const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+    const [newDate, setNewDate] = useState('');
+
     // Derived State for Scores
     const calculateTeamScore = (teamPlayers: Player[], teamId: string) => {
         const playerGoals = teamPlayers.reduce((acc, p) => acc + (stats[p.id]?.goals || 0), 0);
@@ -169,9 +174,14 @@ const MatchSheet: React.FC = () => {
         if (time >= maxTime) return;
 
         const newIsRunning = !isRunning;
-        setIsRunning(newIsRunning);
 
         if (newIsRunning && matchStatus === 'SCHEDULED') {
+            if (!match?.startTime) {
+                setNewDate('');
+                setIsDateModalOpen(true);
+                return;
+            }
+
             setMatchStatus('LIVE');
             try {
                 await api.put(`/matches/${id}`, {
@@ -182,6 +192,23 @@ const MatchSheet: React.FC = () => {
             } catch (error) {
                 console.error("Error starting match:", error);
             }
+        }
+
+        setIsRunning(newIsRunning);
+    };
+
+    const handleDateSave = async () => {
+        if (!newDate) return;
+        try {
+            await api.put(`/matches/${id}`, {
+                startTime: new Date(newDate).toISOString()
+            });
+            alert('Data definida com sucesso! Agora você pode iniciar o cronômetro.');
+            setIsDateModalOpen(false);
+            fetchMatch();
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao salvar data.');
         }
     };
 
@@ -504,10 +531,36 @@ const MatchSheet: React.FC = () => {
 
             if (!silent) alert('Súmula salva com sucesso!');
             setUnsavedChanges(false);
-            // fetchMatch(); // Don't re-fetch on auto-save to avoid UI flicker
-        } catch (error) {
+
+            // Update local match baseline to prevent double counting on next save
+            setMatch(prev => {
+                if (!prev) return null;
+                const updatedPlayerStats = Object.keys(stats).map(playerId => {
+                    const s = stats[playerId];
+                    const existing = prev.playerStats.find(ps => ps.playerId === playerId);
+                    return {
+                        ...(existing || { playerId }),
+                        goals: s.goals,
+                        assists: s.assists,
+                        yellowCards: s.yellow,
+                        redCards: s.red,
+                        fouls: s.fouls,
+                        saves: s.saves,
+                        goalsConceded: s.conceded
+                    };
+                });
+                return { ...prev, playerStats: updatedPlayerStats };
+            });
+
+        } catch (error: any) {
             console.error(error);
-            if (!silent) alert('Erro ao salvar. Tente novamente.');
+            if (!silent) {
+                if (error.response?.data?.message) {
+                    alert(`Erro: ${error.response.data.message}`);
+                } else {
+                    alert('Erro ao salvar. Tente novamente.');
+                }
+            }
         }
     };
 
@@ -535,9 +588,13 @@ const MatchSheet: React.FC = () => {
                 navigate('/dashboard');
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Erro ao finalizar partida.');
+            if (error.response?.data?.message) {
+                alert(`Erro: ${error.response.data.message}`);
+            } else {
+                alert('Erro ao finalizar partida.');
+            }
         }
     };
 
@@ -1185,6 +1242,43 @@ const MatchSheet: React.FC = () => {
                 homeTeam={match.homeTeam}
                 awayTeam={match.awayTeam}
             />
+
+            {/* Date Selection Modal */}
+            {isDateModalOpen && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
+                    <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-2xl w-full max-w-md relative text-center">
+                        <h2 className="text-xl font-bold text-white mb-6 flex items-center justify-center gap-2">
+                            <FaCalendarCheck className="text-yellow-500" /> Definir Início da Partida
+                        </h2>
+
+                        <p className="text-gray-400 mb-4 text-sm">
+                            Esta partida não tem data definida. Para iniciar o cronômetro, informe a data e hora de início.
+                        </p>
+
+                        <input
+                            type="datetime-local"
+                            value={newDate}
+                            onChange={(e) => setNewDate(e.target.value)}
+                            className="w-full bg-gray-900 border border-gray-600 rounded-xl p-4 text-white focus:border-yellow-500 focus:outline-none mb-6 text-lg"
+                        />
+
+                        <div className="flex gap-3 justify-center">
+                            <button
+                                onClick={() => setIsDateModalOpen(false)}
+                                className="text-gray-400 hover:text-white px-4 py-2 font-bold transition"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleDateSave}
+                                className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-8 py-3 rounded-xl font-bold shadow-lg shadow-yellow-500/20 transition flex items-center gap-2"
+                            >
+                                <FaSave /> Salvar e Continuar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };

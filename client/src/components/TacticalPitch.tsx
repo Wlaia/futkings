@@ -9,20 +9,29 @@ interface Player {
     position: 'GOALKEEPER' | 'FIELD';
     avatarUrl?: string;
     overall?: number;
+    positionX?: number;
+    positionY?: number;
 }
 
 interface TacticalPitchProps {
     players: Player[];
     onPlayerClick: (player: Player) => void;
+    onPositionChange?: (player: Player, x: number, y: number) => void;
 }
 
-const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick }) => {
-    const constraintsRef = useRef(null);
+const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick, onPositionChange }) => {
+    const constraintsRef = useRef<HTMLDivElement>(null);
 
-    // Helper to determine initial position on pitch (0-100%)
-    const getInitialPosition = (index: number, _total: number, position: string) => {
-        if (position === 'GOALKEEPER') {
-            return { bottom: '4%', left: '50%', transform: 'translateX(-50%)' };
+    // Helper to determine position (Priority: DB > Initial Default)
+    const getPosition = (index: number, player: Player) => {
+        // If DB has position, use it
+        if (player.positionX !== undefined && player.positionX !== null && player.positionY !== undefined && player.positionY !== null) {
+            return { bottom: `${player.positionY}%`, left: `${player.positionX}%` };
+        }
+
+        // Default logic
+        if (player.position === 'GOALKEEPER') {
+            return { bottom: '4%', left: '50%' };
         }
 
         const slots = [
@@ -34,9 +43,34 @@ const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick })
             { bottom: '42%', left: '50%' }, // CDM
         ];
 
-        const fpIndex = players.filter(p => p.position !== 'GOALKEEPER').indexOf(players[index]);
+        const fpIndex = players.filter(p => p.position !== 'GOALKEEPER').indexOf(player);
         const slot = slots[fpIndex % slots.length] || { bottom: '50%', left: '50%' };
-        return { ...slot, transform: 'translate(-50%, -50%)' };
+        return slot;
+    };
+
+    const handleDragEnd = (event: any, info: any, player: Player) => {
+        if (!constraintsRef.current || !onPositionChange) return;
+
+        const container = constraintsRef.current.getBoundingClientRect();
+        const node = event.target.closest('.motion-player-node'); // We'll add this class
+        if (!node) return;
+
+        // Framer Motion transforms the element. We need the final visual position relative to container.
+        const nodeRect = node.getBoundingClientRect();
+
+        // Calculate center of node relative to container
+        const relativeX = nodeRect.left - container.left + (nodeRect.width / 2);
+        const relativeY = container.bottom - nodeRect.bottom + (nodeRect.height / 2); // Bottom-up
+
+        // Convert to percentage
+        const xPercent = (relativeX / container.width) * 100;
+        const yPercent = (relativeY / container.height) * 100;
+
+        // Clamp 0-100
+        const clampedX = Math.max(0, Math.min(100, xPercent));
+        const clampedY = Math.max(0, Math.min(100, yPercent));
+
+        onPositionChange(player, clampedX, clampedY);
     };
 
     return (
@@ -67,7 +101,7 @@ const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick })
 
             {/* Players */}
             {players.map((player, idx) => {
-                const initialStyle = getInitialPosition(idx, players.length, player.position);
+                const initialStyle = getPosition(idx, player);
 
                 return (
                     <motion.div
@@ -76,18 +110,29 @@ const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick })
                         dragConstraints={constraintsRef}
                         dragElastic={0.05}
                         dragMomentum={false}
+                        onDragEnd={(e, info) => handleDragEnd(e, info, player)}
                         initial={false}
-                        className="absolute flex flex-col items-center cursor-move z-20 group"
+                        // We remove the default transform centering because we calculate precise %
+                        className="absolute flex flex-col items-center cursor-move z-20 group motion-player-node"
                         style={{
                             bottom: initialStyle.bottom,
                             left: initialStyle.left,
                             width: '60px',
                             height: '80px',
+                            marginLeft: '-30px', // Center manually
+                            marginBottom: '-40px', // Center manually
                         }}
                     >
                         {/* Player Node */}
                         <div
-                            onClick={() => onPlayerClick(player)}
+                            onClick={(e) => {
+                                // Prevent drag click propagation if needed, mostly handled by motion
+                                if (!onPositionChange) onPlayerClick(player);
+                            }}
+                            onPointerUp={() => {
+                                // Fallback for simple clicks without drag
+                                setTimeout(() => onPlayerClick(player), 0);
+                            }}
                             className={`
                                 w-14 h-14 rounded-full border-4 player-node-glow flex items-center justify-center relative overflow-hidden transition-all duration-300
                                 ${player.position === 'GOALKEEPER'
