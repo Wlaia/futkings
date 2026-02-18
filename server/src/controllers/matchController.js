@@ -112,6 +112,9 @@ const updateMatchResult = async (req, res) => {
             updateData.startTime = new Date(startTime);
         }
 
+        if (req.body.homeShootoutScore !== undefined) updateData.homeShootoutScore = req.body.homeShootoutScore;
+        if (req.body.awayShootoutScore !== undefined) updateData.awayShootoutScore = req.body.awayShootoutScore;
+
         // Update Match Score
         const updatedMatch = await prisma.match.update({
             where: { id },

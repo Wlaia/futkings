@@ -449,10 +449,24 @@ const getChampionshipStandings = async (req, res) => {
                 standings[awayTeamId].wins += 1;
                 standings[homeTeamId].losses += 1;
             } else {
-                standings[homeTeamId].points += 1;
-                standings[awayTeamId].points += 1;
+                // DRAW
                 standings[homeTeamId].draws += 1;
                 standings[awayTeamId].draws += 1;
+
+                // Check Shootout for extra point
+                const homeShootout = m.homeShootoutScore || 0;
+                const awayShootout = m.awayShootoutScore || 0;
+
+                if (homeShootout > awayShootout) {
+                    standings[homeTeamId].points += 2; // 1 (draw) + 1 (shootout win)
+                    standings[awayTeamId].points += 1; // 1 (draw)
+                } else if (awayShootout > homeShootout) {
+                    standings[awayTeamId].points += 2; // 1 (draw) + 1 (shootout win)
+                    standings[homeTeamId].points += 1; // 1 (draw)
+                } else {
+                    standings[homeTeamId].points += 1;
+                    standings[awayTeamId].points += 1;
+                }
             }
 
             // Count Cards

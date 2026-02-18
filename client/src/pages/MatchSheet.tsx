@@ -111,6 +111,14 @@ const MatchSheet: React.FC = () => {
     const [isDirectorModalOpen, setIsDirectorModalOpen] = useState(false);
     const [selectedDirectorTeamId, setSelectedDirectorTeamId] = useState<string | null>(null);
     const [isLineupModalOpen, setIsLineupModalOpen] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Shootout State
+    const [isShootoutModalOpen, setIsShootoutModalOpen] = useState(false);
+    const [shootoutHistory, setShootoutHistory] = useState<{ home: ('GOAL' | 'MISS')[], away: ('GOAL' | 'MISS')[] }>({ home: [], away: [] });
+
+    const homeShootoutScore = shootoutHistory.home.filter(r => r === 'GOAL').length;
+    const awayShootoutScore = shootoutHistory.away.filter(r => r === 'GOAL').length;
 
     // Date Modal State
     const [isDateModalOpen, setIsDateModalOpen] = useState(false);
@@ -509,16 +517,18 @@ const MatchSheet: React.FC = () => {
 
     // Auto-Save Effect (Debounced)
     useEffect(() => {
-        if (!unsavedChanges) return;
+        if (!unsavedChanges || isSaving) return;
 
         const timeoutId = setTimeout(() => {
             handleSave(true); // Silent save
         }, 2000); // 2 seconds debounce
 
         return () => clearTimeout(timeoutId);
-    }, [stats, directorGoals]); // Trigger on stats change
+    }, [stats, directorGoals, unsavedChanges, isSaving]); // Trigger on stats change and respect lock
 
     const handleSave = async (silent = false) => {
+        if (isSaving) return;
+        setIsSaving(true);
         try {
             const diffEvents = getDiffEvents();
 
@@ -561,26 +571,50 @@ const MatchSheet: React.FC = () => {
                     alert('Erro ao salvar. Tente novamente.');
                 }
             }
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleMatchFinalize = async () => {
+        if (isSaving) return;
+
+        // Check for Draw
+        if (homeScore === awayScore) {
+            setIsShootoutModalOpen(true);
+            return;
+        }
+
         if (!window.confirm('Tem certeza que deseja FINALIZAR a partida? Isso encerrará o jogo e contabilizará as estatísticas.')) return;
 
+        await finalizeMatch();
+    };
+
+    const finalizeMatch = async () => {
+        setIsSaving(true);
         try {
             const diffEvents = getDiffEvents();
 
-            await api.put(`/matches/${id}`, {
+            const payload: any = {
                 homeScore,
                 awayScore,
                 status: 'COMPLETED',
                 events: diffEvents
-            });
+            };
+
+            // Include Shootout Score if it was a draw
+            if (homeScore === awayScore) {
+                payload.homeShootoutScore = homeShootoutScore;
+                payload.awayShootoutScore = awayShootoutScore;
+            }
+
+            await api.put(`/matches/${id}`, { ...payload });
 
             alert('Partida finalizada com sucesso!');
             setMatchStatus('COMPLETED');
             setIsRunning(false);
             setUnsavedChanges(false);
+            setIsShootoutModalOpen(false);
 
             if (match?.championshipId) {
                 navigate(`/championships/${match.championshipId}`);
@@ -595,6 +629,8 @@ const MatchSheet: React.FC = () => {
             } else {
                 alert('Erro ao finalizar partida.');
             }
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -1274,6 +1310,122 @@ const MatchSheet: React.FC = () => {
                                 className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-8 py-3 rounded-xl font-bold shadow-lg shadow-yellow-500/20 transition flex items-center gap-2"
                             >
                                 <FaSave /> Salvar e Continuar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Shootout Modal */}
+            {isShootoutModalOpen && match && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                    <div className="w-full max-w-4xl relative">
+                        <div className="text-center mb-12">
+                            <h2 className="text-5xl font-black text-white italic uppercase tracking-tighter mb-2 drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+                                Empate!
+                            </h2>
+                            <p className="text-yellow-500 font-bold tracking-widest text-lg uppercase">Disputa de Shootouts</p>
+                        </div>
+
+                        <div className="flex items-start justify-center gap-12 mb-12">
+                            {/* Home Team */}
+                            <div className="flex flex-col items-center gap-6 w-1/2">
+                                <SafeImage src={match.homeTeam.logoUrl} className="w-24 h-24 object-contain drop-shadow-2xl" alt={match.homeTeam.name} />
+                                <h3 className="text-2xl font-bold text-white uppercase">{match.homeTeam.name}</h3>
+
+                                {/* Score Display */}
+                                <div className="text-6xl font-black text-white font-mono mb-4">{homeShootoutScore}</div>
+
+                                {/* History Bubbles */}
+                                <div className="flex gap-2 flex-wrap justify-center min-h-[32px]">
+                                    {shootoutHistory.home.map((result, idx) => (
+                                        <div key={idx} className={`w-8 h-8 rounded-full flex items-center justify-center border-2 border-white/20 ${result === 'GOAL' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)]'
+                                            }`}>
+                                            {result === 'GOAL' ? '✓' : '✕'}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Controls */}
+                                <div className="flex gap-4 w-full">
+                                    <button
+                                        onClick={() => setShootoutHistory(prev => ({ ...prev, home: [...prev.home, 'MISS'] }))}
+                                        className="flex-1 bg-red-600/20 hover:bg-red-600/40 text-red-500 border-2 border-red-600/50 py-3 rounded-xl font-bold transition uppercase tracking-wider"
+                                    >
+                                        Perdeu
+                                    </button>
+                                    <button
+                                        onClick={() => setShootoutHistory(prev => ({ ...prev, home: [...prev.home, 'GOAL'] }))}
+                                        className="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-green-600/20 uppercase tracking-wider border-b-4 border-green-800 active:border-b-0 active:translate-y-1"
+                                    >
+                                        GOL
+                                    </button>
+                                </div>
+                                <button
+                                    onClick={() => setShootoutHistory(prev => ({ ...prev, home: prev.home.slice(0, -1) }))}
+                                    className="text-xs text-gray-500 hover:text-white underline mt-2"
+                                >
+                                    Desfazer último
+                                </button>
+                            </div>
+
+                            <div className="h-64 w-px bg-gray-800 self-center"></div>
+
+                            {/* Away Team */}
+                            <div className="flex flex-col items-center gap-6 w-1/2">
+                                <SafeImage src={match.awayTeam.logoUrl} className="w-24 h-24 object-contain drop-shadow-2xl" alt={match.awayTeam.name} />
+                                <h3 className="text-2xl font-bold text-white uppercase">{match.awayTeam.name}</h3>
+
+                                {/* Score Display */}
+                                <div className="text-6xl font-black text-white font-mono mb-4">{awayShootoutScore}</div>
+
+                                {/* History Bubbles */}
+                                <div className="flex gap-2 flex-wrap justify-center min-h-[32px]">
+                                    {shootoutHistory.away.map((result, idx) => (
+                                        <div key={idx} className={`w-8 h-8 rounded-full flex items-center justify-center border-2 border-white/20 ${result === 'GOAL' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)]'
+                                            }`}>
+                                            {result === 'GOAL' ? '✓' : '✕'}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Controls */}
+                                <div className="flex gap-4 w-full">
+                                    <button
+                                        onClick={() => setShootoutHistory(prev => ({ ...prev, away: [...prev.away, 'MISS'] }))}
+                                        className="flex-1 bg-red-600/20 hover:bg-red-600/40 text-red-500 border-2 border-red-600/50 py-3 rounded-xl font-bold transition uppercase tracking-wider"
+                                    >
+                                        Perdeu
+                                    </button>
+                                    <button
+                                        onClick={() => setShootoutHistory(prev => ({ ...prev, away: [...prev.away, 'GOAL'] }))}
+                                        className="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-green-600/20 uppercase tracking-wider border-b-4 border-green-800 active:border-b-0 active:translate-y-1"
+                                    >
+                                        GOL
+                                    </button>
+                                </div>
+                                <button
+                                    onClick={() => setShootoutHistory(prev => ({ ...prev, away: prev.away.slice(0, -1) }))}
+                                    className="text-xs text-gray-500 hover:text-white underline mt-2"
+                                >
+                                    Desfazer último
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-4 max-w-md mx-auto">
+                            <button
+                                onClick={() => finalizeMatch()}
+                                disabled={homeShootoutScore === awayShootoutScore}
+                                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-black py-4 rounded-xl text-xl shadow-xl shadow-yellow-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider"
+                            >
+                                {homeShootoutScore === awayShootoutScore ? 'Desempate Obrigatório' : 'Finalizar com Shootouts'}
+                            </button>
+                            <button
+                                onClick={() => setIsShootoutModalOpen(false)}
+                                className="w-full text-gray-400 hover:text-white font-bold py-2 transition"
+                            >
+                                Cancelar e Voltar ao Jogo
                             </button>
                         </div>
                     </div>
