@@ -20,6 +20,8 @@ interface Match {
     awayScore: number | null;
     status: string;
     startTime?: string;
+    homeShootoutScore?: number;
+    awayShootoutScore?: number;
 }
 
 interface Championship {
@@ -539,10 +541,18 @@ const ChampionshipDetails: React.FC = () => {
                                                             {/* Score / VS */}
                                                             <div className="flex flex-col items-center px-2 md:px-8 shrink-0">
                                                                 {match.status === 'COMPLETED' || (match.homeScore !== null) ? (
-                                                                    <div className="flex items-center gap-2 md:gap-3 font-mono text-lg md:text-3xl font-bold text-white bg-gray-800 px-3 md:px-4 py-1 rounded-lg border border-gray-700">
-                                                                        <span className={match.homeScore! > match.awayScore! ? 'text-yellow-500' : ''}>{match.homeScore}</span>
-                                                                        <span className="text-gray-600 text-base md:text-lg">X</span>
-                                                                        <span className={match.awayScore! > match.homeScore! ? 'text-yellow-500' : ''}>{match.awayScore}</span>
+                                                                    <div className="flex flex-col items-center">
+                                                                        <div className="flex items-center gap-2 md:gap-3 font-mono text-lg md:text-3xl font-bold text-white bg-gray-800 px-3 md:px-4 py-1 rounded-lg border border-gray-700">
+                                                                            <span className={match.homeScore! > match.awayScore! || (match.homeShootoutScore || 0) > (match.awayShootoutScore || 0) ? 'text-yellow-500' : ''}>{match.homeScore}</span>
+                                                                            <span className="text-gray-600 text-base md:text-lg">X</span>
+                                                                            <span className={match.awayScore! > match.homeScore! || (match.awayShootoutScore || 0) > (match.homeShootoutScore || 0) ? 'text-yellow-500' : ''}>{match.awayScore}</span>
+                                                                        </div>
+                                                                        {/* Shootout Score Display */}
+                                                                        {(match.homeShootoutScore !== undefined && match.awayShootoutScore !== undefined) && (
+                                                                            <div className="text-[10px] md:text-xs font-bold text-gray-400 mt-1 bg-gray-800/50 px-2 py-0.5 rounded border border-gray-700/50">
+                                                                                ({match.homeShootoutScore} - {match.awayShootoutScore} pen)
+                                                                            </div>
+                                                                        )}
                                                                     </div>
                                                                 ) : (
                                                                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-500 font-bold text-[10px] md:text-xs border border-gray-700">
