@@ -82,6 +82,7 @@ const updateMatchResult = async (req, res) => {
     try {
         const { id } = req.params;
         const { homeScore, awayScore, status, events, startTime } = req.body;
+        // console.log('Update Match Payload:', { id, homeScore, awayScore, status, eventsCount: events?.length, homeShootoutScore: req.body.homeShootoutScore, awayShootoutScore: req.body.awayShootoutScore });
         // events: array of { playerId, type: 'GOAL'|'ASSIST'|'YELLOW'|'RED'|'SAVE'|'GOAL_CONCEDED' }
 
         // Prepare update data
