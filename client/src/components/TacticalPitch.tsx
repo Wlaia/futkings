@@ -23,7 +23,7 @@ const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick, o
     const constraintsRef = useRef<HTMLDivElement>(null);
 
     // Helper to determine position (Priority: DB > Initial Default)
-    const getPosition = (index: number, player: Player) => {
+    const getPosition = (_index: number, player: Player) => {
         // If DB has position, use it
         if (player.positionX !== undefined && player.positionX !== null && player.positionY !== undefined && player.positionY !== null) {
             return { bottom: `${player.positionY}%`, left: `${player.positionX}%` };
@@ -48,7 +48,7 @@ const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick, o
         return slot;
     };
 
-    const handleDragEnd = (event: any, info: any, player: Player) => {
+    const handleDragEnd = (event: any, _info: any, player: Player) => {
         if (!constraintsRef.current || !onPositionChange) return;
 
         const container = constraintsRef.current.getBoundingClientRect();
@@ -125,7 +125,7 @@ const TacticalPitch: React.FC<TacticalPitchProps> = ({ players, onPlayerClick, o
                     >
                         {/* Player Node */}
                         <div
-                            onClick={(e) => {
+                            onClick={(_e) => {
                                 // Prevent drag click propagation if needed, mostly handled by motion
                                 if (!onPositionChange) onPlayerClick(player);
                             }}
