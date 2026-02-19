@@ -16,6 +16,7 @@ import Teams from './pages/Teams';
 import Championships from './pages/Championships';
 import FanZone from './pages/FanZone';
 import Store from './pages/Store';
+import Friendlies from './pages/Friendlies';
 import api from './services/api';
 import { FaTrophy, FaUsers, FaPlusCircle, FaArrowRight, FaCalendarCheck } from 'react-icons/fa';
 import SafeImage from './components/SafeImage';
@@ -300,6 +301,8 @@ function App() {
 
           <Route path="/teams/new" element={<PrivateRoute><CreateTeam /></PrivateRoute>} />
           <Route path="/teams/:id" element={<PrivateRoute><TeamDetails /></PrivateRoute>} />
+
+          <Route path="/friendlies" element={<PrivateRoute><Friendlies /></PrivateRoute>} />
 
           <Route path="/matches/:id/sheet" element={<PrivateRoute><MatchSheet /></PrivateRoute>} />
 

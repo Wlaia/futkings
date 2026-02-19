@@ -4,25 +4,8 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { FaTrophy, FaCalendarCheck, FaUsers, FaArrowLeft, FaShareAlt, FaPlus, FaDiceD20, FaFutbol, FaEdit, FaTimes, FaSave, FaShieldAlt } from 'react-icons/fa';
 import SafeImage from '../components/SafeImage';
-
-interface Team {
-    id: string;
-    name: string;
-    logoUrl?: string;
-}
-
-interface Match {
-    id: string;
-    homeTeam: Team;
-    awayTeam: Team;
-    round: string;
-    homeScore: number | null;
-    awayScore: number | null;
-    status: string;
-    startTime?: string;
-    homeShootoutScore?: number;
-    awayShootoutScore?: number;
-}
+import DrawAnimationModal from '../components/DrawAnimationModal';
+import type { Match, Team } from '../types.ts';
 
 interface Championship {
     id: string;
@@ -77,6 +60,10 @@ const ChampionshipDetails: React.FC = () => {
     const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
     const [scheduleDate, setScheduleDate] = useState('');
 
+    // Draw Animation State
+    const [showDrawAnimation, setShowDrawAnimation] = useState(false);
+    const [drawMatches, setDrawMatches] = useState<Match[]>([]);
+
     useEffect(() => {
         fetchChampionship();
         fetchTeams();
@@ -88,6 +75,7 @@ const ChampionshipDetails: React.FC = () => {
         try {
             const response = await api.get(`/championships/${id}`);
             setChampionship(response.data);
+            return response.data;
         } catch (error) {
             console.error(error);
         } finally {
@@ -144,9 +132,22 @@ const ChampionshipDetails: React.FC = () => {
         if (!window.confirm('Deseja sortear os jogos e iniciar o campeonato?')) return;
 
         try {
-            const response = await api.post(`/championships/${id}/draw`);
-            alert(response.data.message);
-            fetchChampionship();
+            await api.post(`/championships/${id}/draw`);
+
+            const updatedData = await fetchChampionship();
+            if (updatedData && updatedData.matches) {
+                // Filter matches for the first round/phase to show in animation
+                const firstRoundMatches = updatedData.matches.filter((m: Match) =>
+                    m.round === 'Rodada 1' || m.round === 'Round 1' || m.round.startsWith('Group')
+                );
+
+                if (firstRoundMatches.length > 0) {
+                    setDrawMatches(firstRoundMatches);
+                    setShowDrawAnimation(true);
+                } else {
+                    alert('Sorteio realizado com sucesso!');
+                }
+            }
         } catch (error) {
             alert('Erro ao realizar sorteio.');
         }
@@ -724,6 +725,14 @@ const ChampionshipDetails: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Draw Animation Modal */}
+            <DrawAnimationModal
+                isOpen={showDrawAnimation}
+                onClose={() => setShowDrawAnimation(false)}
+                matches={drawMatches}
+                teams={championship.teams}
+            />
         </div>
     );
 };

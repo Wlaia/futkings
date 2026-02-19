@@ -1,6 +1,54 @@
 const prisma = require('../utils/prismaClient');
 const { advanceTournamentRound } = require('../services/tournamentService');
 
+const createMatch = async (req, res) => {
+    try {
+        const { homeTeamId, awayTeamId, startTime, round } = req.body;
+
+        if (!homeTeamId || !awayTeamId) {
+            return res.status(400).json({ message: 'Home and Away teams are required' });
+        }
+
+        // Find or Create "Amistosos" Championship
+        let championship = await prisma.championship.findFirst({
+            where: {
+                name: 'Amistosos',
+                status: 'ACTIVE'
+            }
+        });
+
+        if (!championship) {
+            championship = await prisma.championship.create({
+                data: {
+                    name: 'Amistosos',
+                    type: 'LEAGUE_WITH_FINAL', // Dummy type
+                    teamsCount: 2,
+                    gameDuration: 20, // Default duration
+                    status: 'ACTIVE',
+                    startDate: new Date()
+                }
+            });
+        }
+
+        const match = await prisma.match.create({
+            data: {
+                championshipId: championship.id,
+                homeTeamId,
+                awayTeamId,
+                round: round || 'Amistoso',
+                startTime: startTime ? new Date(startTime) : new Date(),
+                status: 'SCHEDULED'
+            }
+        });
+
+        res.status(201).json(match);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error creating match' });
+    }
+};
+
 const listMatches = async (req, res) => {
     try {
         const matches = await prisma.match.findMany({
@@ -204,4 +252,4 @@ const updateMatchResult = async (req, res) => {
     }
 };
 
-module.exports = { listMatches, getMatch, updateMatchResult, getPublicMatches };
+module.exports = { listMatches, getMatch, updateMatchResult, getPublicMatches, createMatch };

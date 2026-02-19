@@ -89,6 +89,7 @@ const MatchSheet: React.FC = () => {
     // Timer State
     const [time, setTime] = useState(0); // Count UP
     const [period, setPeriod] = useState(1); // 1st or 2nd Half
+    const [firstHalfFouls, setFirstHalfFouls] = useState<Record<string, number>>({});
     const [isRunning, setIsRunning] = useState(false);
     const timerRef = useRef<any>(null);
     const [extraTime, setExtraTime] = useState(0); // in minutes
@@ -236,6 +237,13 @@ const MatchSheet: React.FC = () => {
     };
 
     const startNextPeriod = () => {
+        // Snapshot fouls from 1st half
+        if (period === 1 && match) {
+            setFirstHalfFouls({
+                [match.homeTeam.id]: calculateTeamFouls(match.homeTeam.id),
+                [match.awayTeam.id]: calculateTeamFouls(match.awayTeam.id)
+            });
+        }
         setPeriod(2);
         setTime(0);
         setExtraTime(0);
@@ -471,7 +479,12 @@ const MatchSheet: React.FC = () => {
     const calculateTeamFouls = (teamId: string) => {
         if (!match) return 0;
         const teamPlayers = match.homeTeam.id === teamId ? match.homeTeam.players : match.awayTeam.players;
-        return teamPlayers.reduce((acc, p) => acc + (stats[p.id]?.fouls || 0), 0);
+        const totalFouls = teamPlayers.reduce((acc, p) => acc + (stats[p.id]?.fouls || 0), 0);
+
+        if (period === 2) {
+            return totalFouls - (firstHalfFouls[teamId] || 0);
+        }
+        return totalFouls;
     };
 
     // Calculate Players On Court (Dynamic Start)
@@ -482,8 +495,7 @@ const MatchSheet: React.FC = () => {
         if (time < 60) return "1 vs 1";
         if (time < 120) return "2 vs 2";
         if (time < 180) return "3 vs 3";
-        if (time < 240) return "4 vs 4";
-        return "5 vs 5 (COMPLETO)";
+        return "4 vs 4 (COMPLETO)";
     };
 
     const getDiffEvents = () => {
@@ -1059,7 +1071,7 @@ const MatchSheet: React.FC = () => {
                         {/* Copy existing content logic but ensure container is flexible */}
 
                         {/* Dynamic Start / Players on Court Indicator */}
-                        {time < 240 && (
+                        {time < 180 && (
                             <div className="mb-4">
                                 <div className="text-xs uppercase text-gray-500 font-bold tracking-widest mb-1">Formato em Quadra</div>
                                 <div className="inline-flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-blue-500/30 rounded-full animate-pulse transform hover:scale-105 transition-transform">

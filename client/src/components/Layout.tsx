@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import BottomMenu from './BottomMenu';
 
 import { Link } from 'react-router-dom';
+import { FaFutbol } from 'react-icons/fa';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -35,6 +36,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
                 {!isFullscreen && (
                     <div className="flex items-center gap-4">
+                        <Link to="/friendlies" className={`flex items-center gap-3 p-3 rounded-lg transition-all ${location.pathname === '/friendlies' ? 'bg-yellow-500 text-black font-bold shadow-[0_0_15px_rgba(234,179,8,0.4)]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${location.pathname === '/friendlies' ? 'bg-black/20' : 'bg-gray-800'}`}>
+                                <FaFutbol />
+                            </div>
+                            <span className="tracking-wide">Amistosos</span>
+                        </Link>
                         <div className="text-right hidden sm:block">
                             <p className="font-bold text-sm text-white">{user?.name}</p>
                             <span className="text-[10px] bg-yellow-900/50 text-yellow-500 px-2 py-0.5 rounded border border-yellow-500/20">{user?.role}</span>
