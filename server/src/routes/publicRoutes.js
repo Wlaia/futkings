@@ -1,5 +1,5 @@
 const express = require('express');
-const { listChampionships, getChampionship } = require('../controllers/championshipController');
+const { listChampionships, getChampionship, getChampionshipStandings, getChampionshipStats } = require('../controllers/championshipController');
 const { getMatch } = require('../controllers/matchController');
 const { getTeam } = require('../controllers/teamController');
 const { publicAddPlayer, publicUpdatePlayer, publicRemovePlayer } = require('../controllers/publicTeamController');
@@ -12,6 +12,8 @@ router.get('/championships', listChampionships);
 router.get('/championships/:id', getChampionship);
 router.get('/matches/:id', getMatch);
 router.get('/teams/:id', getTeam);
+router.get('/championships/:id/standings', getChampionshipStandings);
+router.get('/championships/:id/stats', getChampionshipStats);
 
 // Public Team Mutation Routes (Guarded by DB flags)
 router.post('/teams/:id/players', upload.single('avatar'), publicAddPlayer);

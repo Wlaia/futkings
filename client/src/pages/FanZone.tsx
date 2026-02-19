@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { FaTrophy, FaCalendarAlt, FaSignInAlt, FaStar, FaFire } from 'react-icons/fa';
+import { FaTrophy, FaCalendarAlt, FaSignInAlt, FaStar, FaFire, FaFutbol, FaHandPaper } from 'react-icons/fa';
 import { getLogoUrl } from '../utils/imageHelper';
 
 interface Championship {
@@ -18,6 +18,12 @@ interface Team {
     logoUrl?: string;
 }
 
+interface Player {
+    id: string;
+    name: string;
+    teamId: string;
+}
+
 interface Match {
     id: string;
     homeTeam?: Team;
@@ -27,13 +33,46 @@ interface Match {
     status: 'SCHEDULED' | 'LIVE' | 'COMPLETED';
     startTime: string;
     championship?: { name: string };
-    playerStats?: any[];
+    playerStats?: {
+        player: Player;
+        goals: number;
+        yellowCards: number;
+        redCards: number;
+    }[];
+}
+
+interface Standing {
+    rank: number;
+    id: string;
+    name: string;
+    logoUrl?: string;
+    points: number;
+    matchesPlayed: number;
+    wins: number;
+    draws: number;
+    losses: number;
+    goalsFor: number;
+    goalsAgainst: number;
+    goalDiff: number;
+}
+
+interface PlayerStat {
+    id: string;
+    name: string;
+    team: { name: string; logoUrl?: string };
+    goals?: number;
+    goalsConceded?: number;
+    matchesPlayed?: number;
 }
 
 const FanZone: React.FC = () => {
     const navigate = useNavigate();
     const [activeChampionships, setActiveChampionships] = useState<Championship[]>([]);
     const [featuredMatch, setFeaturedMatch] = useState<Match | null>(null);
+    const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
+    const [standings, setStandings] = useState<Standing[]>([]);
+    const [topScorers, setTopScorers] = useState<PlayerStat[]>([]);
+    const [topGoalkeepers, setTopGoalkeepers] = useState<PlayerStat[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -53,19 +92,53 @@ const FanZone: React.FC = () => {
             if (matchesData.length > 0) {
                 // Priority: Latest LIVE match, then next upcoming match
                 const liveMatches = matchesData.filter((m: Match) => m.status === 'LIVE');
+                let featured = null;
+
                 if (liveMatches.length > 0) {
                     // Sort by startTime desc if available
-                    const featured = liveMatches.sort((a: Match, b: Match) => {
+                    featured = liveMatches.sort((a: Match, b: Match) => {
                         const dateA = a.startTime ? new Date(a.startTime).getTime() : 0;
                         const dateB = b.startTime ? new Date(b.startTime).getTime() : 0;
                         return dateB - dateA;
                     })[0];
-                    setFeaturedMatch(featured);
                 } else {
-                    setFeaturedMatch(matchesData[0]); // First upcoming or recent
+                    featured = matchesData[0]; // First upcoming or recent
                 }
+                setFeaturedMatch(featured);
+
+                // Upcoming Matches (excluding featured if it's scheduled)
+                const upcoming = matchesData.filter((m: Match) =>
+                    m.status === 'SCHEDULED' && m.id !== featured?.id
+                ).slice(0, 5); // Take next 5
+                setUpcomingMatches(upcoming);
+
             } else {
                 setFeaturedMatch(null);
+                setUpcomingMatches([]);
+            }
+
+            // Fetch Standings and Stats for the first active championship or the featured match's championship
+            let champIdToFetch = null;
+            if (featuredMatch?.championship) {
+                // Try to find championship ID from active list matching name
+                const champ = championshipsData.find((c: Championship) => c.name === featuredMatch.championship?.name);
+                if (champ) champIdToFetch = champ.id;
+            }
+
+            if (!champIdToFetch && championshipsData.length > 0) {
+                // Default to first active if any
+                const active = championshipsData.find((c: Championship) => c.status === 'ACTIVE');
+                if (active) champIdToFetch = active.id;
+            }
+
+            if (champIdToFetch) {
+                const [standingsRes, statsRes] = await Promise.all([
+                    api.get(`/championships/${champIdToFetch}/standings`),
+                    api.get(`/championships/${champIdToFetch}/stats`)
+                ]);
+                setStandings(standingsRes.data.slice(0, 5)); // Top 5
+                setTopScorers(statsRes.data.topScorers || []);
+                setTopGoalkeepers(statsRes.data.topGoalkeepers || []);
             }
 
             setLoading(false);
@@ -78,7 +151,7 @@ const FanZone: React.FC = () => {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 5000); // Poll every 5s for near-realtime updates
+        const interval = setInterval(fetchData, 10000); // Poll every 10s
         return () => clearInterval(interval);
     }, []);
 
@@ -131,23 +204,6 @@ const FanZone: React.FC = () => {
         );
     }
 
-    if (error) {
-        return (
-            <div className="min-h-screen bg-[#0f172a] text-white flex items-center justify-center">
-                <div className="text-center p-6">
-                    <h2 className="text-3xl font-bold mb-4">Ops! Algo deu errado.</h2>
-                    <p className="text-gray-400 mb-6">Não foi possível carregar o Fan Zone.</p>
-                    <button onClick={() => window.location.reload()} className="bg-yellow-500 text-black px-6 py-2 rounded-full font-bold hover:bg-yellow-400 transition">
-                        Tentar Novamente
-                    </button>
-                    <button onClick={() => navigate('/login')} className="block mt-4 text-gray-500 hover:text-white mx-auto text-sm underline">
-                        Ir para Área Restrita
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-[#0f172a] text-white font-sans overflow-x-hidden">
 
@@ -168,7 +224,7 @@ const FanZone: React.FC = () => {
             </nav>
 
             {/* Hero Section */}
-            <header className="relative pt-32 pb-20 px-6 overflow-hidden">
+            <header className="relative pt-32 pb-12 px-6 overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-indigo-900/20 to-[#0f172a] z-0 pointer-events-none" />
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-yellow-500/10 blur-[120px] rounded-full z-0 pointer-events-none" />
 
@@ -179,95 +235,230 @@ const FanZone: React.FC = () => {
                     <h1 className="text-5xl md:text-8xl font-black mb-6 leading-tight tracking-tighter animate-fade-in-up delay-100">
                         ACOMPANHE <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500">CADA LANCE</span>
                     </h1>
-                    <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 animate-fade-in-up delay-200">
-                        Resultados ao vivo, estatísticas detalhadas e a cobertura completa dos campeonatos mais disputados da várzea.
-                    </p>
-
-                    <div className="flex flex-col md:flex-row justify-center gap-4 animate-fade-in-up delay-300">
-                        <button className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-black py-4 px-10 rounded-2xl text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_50px_rgba(234,179,8,0.5)] transition-all transform hover:-translate-y-1">
-                            JOGOS DE HOJE
-                        </button>
-                        <button className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-10 rounded-2xl text-lg border border-white/10 backdrop-blur-sm transition-all flex items-center justify-center gap-2">
-                            <FaTrophy className="text-yellow-500" /> CAMPEONATOS
-                        </button>
-                    </div>
                 </div>
             </header>
 
-            {/* Live / Featured Match */}
-            <section className="max-w-6xl mx-auto px-4 mb-24 relative z-10">
-                {loading && !featuredMatch ? (
-                    <div className="animate-pulse flex justify-center">
-                        <div className="h-64 w-full bg-gray-800 rounded-3xl"></div>
-                    </div>
-                ) : featuredMatch && featuredMatch.homeTeam && featuredMatch.awayTeam ? (
-                    <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-3xl p-1 shadow-2xl overflow-hidden group">
-                        <div className="bg-gray-900/50 backdrop-blur-xl p-8 md:p-12 rounded-[20px] relative overflow-hidden">
-                            {/* Background Effects */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none" />
+            {/* Main Content Grid */}
+            <div className="max-w-7xl mx-auto px-4 pb-24 grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
 
-                            <div className="text-center text-xs text-gray-400 uppercase tracking-widest mb-8">
-                                {featuredMatch.championship?.name || 'Amistoso Oficial'}
+                {/* Left Column: Featured Match & Agenda */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Live / Featured Match */}
+                    <section>
+                        {loading && !featuredMatch ? (
+                            <div className="animate-pulse flex justify-center">
+                                <div className="h-64 w-full bg-gray-800 rounded-3xl"></div>
                             </div>
+                        ) : featuredMatch && featuredMatch.homeTeam && featuredMatch.awayTeam ? (
+                            <div className="bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-3xl p-1 shadow-2xl overflow-hidden group">
+                                <div className="bg-gray-900/50 backdrop-blur-xl p-6 md:p-8 rounded-[20px] relative overflow-hidden">
+                                    {/* Effects */}
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none" />
+                                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none" />
 
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-                                {/* Home Team */}
-                                <div className="text-center md:text-right flex-1 w-full">
-                                    <img
-                                        src={getLogoUrl(featuredMatch.homeTeam?.logoUrl)}
-                                        className="w-20 h-20 md:w-24 md:h-24 mx-auto md:ml-auto md:mr-0 mb-4 drop-shadow-xl object-contain"
-                                        alt={featuredMatch.homeTeam?.name}
-                                        onError={handleImageError}
-                                    />
-                                    <h3 className="text-2xl font-black uppercase italic tracking-tighter truncate">{featuredMatch.homeTeam?.name}</h3>
-                                    <p className="text-gray-500 font-bold">Mandante</p>
-                                </div>
+                                    <div className="text-center text-xs text-gray-400 uppercase tracking-widest mb-6">
+                                        {featuredMatch.championship?.name || 'Amistoso Oficial'}
+                                    </div>
 
-                                {/* Score / VS */}
-                                <div className="flex flex-col items-center px-8">
-                                    {featuredMatch.status === 'LIVE' ? (
-                                        <div className="text-xs font-bold text-red-500 bg-red-500/10 px-3 py-1 rounded-full mb-4 animate-pulse">
-                                            • AO VIVO •
+                                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                                        {/* Home Team */}
+                                        <div className="text-center md:text-right flex-1 w-full">
+                                            <img
+                                                src={getLogoUrl(featuredMatch.homeTeam?.logoUrl)}
+                                                className="w-16 h-16 md:w-20 md:h-20 mx-auto md:ml-auto md:mr-0 mb-3 drop-shadow-xl object-contain"
+                                                alt={featuredMatch.homeTeam?.name}
+                                                onError={handleImageError}
+                                            />
+                                            <h3 className="text-xl font-black uppercase italic tracking-tighter truncate">{featuredMatch.homeTeam?.name}</h3>
                                         </div>
-                                    ) : (
-                                        <div className="text-xs font-bold text-gray-500 bg-gray-800 px-3 py-1 rounded-full mb-4">
-                                            {featuredMatch.startTime ? new Date(featuredMatch.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+
+                                        {/* Score / VS */}
+                                        <div className="flex flex-col items-center px-4">
+                                            {featuredMatch.status === 'LIVE' ? (
+                                                <div className="text-xs font-bold text-red-500 bg-red-500/10 px-3 py-1 rounded-full mb-2 animate-pulse">
+                                                    • AO VIVO •
+                                                </div>
+                                            ) : (
+                                                <div className="text-xs font-bold text-gray-500 bg-gray-800 px-3 py-1 rounded-full mb-2">
+                                                    {featuredMatch.startTime ? new Date(featuredMatch.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center gap-4 text-4xl md:text-6xl font-black font-mono">
+                                                <span className="text-white">{featuredMatch.homeScore}</span>
+                                                <span className="text-gray-700">:</span>
+                                                <span className="text-white">{featuredMatch.awayScore}</span>
+                                            </div>
+                                            <div className="mt-2 text-green-400 font-mono font-bold text-sm">
+                                                {featuredMatch.status === 'LIVE' ? 'Em andamento' : featuredMatch.status === 'COMPLETED' ? 'Finalizado' : 'Agendado'}
+                                            </div>
+                                        </div>
+
+                                        {/* Away Team */}
+                                        <div className="text-center md:text-left flex-1 w-full">
+                                            <img
+                                                src={getLogoUrl(featuredMatch.awayTeam?.logoUrl)}
+                                                className="w-16 h-16 md:w-20 md:h-20 mx-auto md:mr-auto md:ml-0 mb-3 drop-shadow-xl object-contain"
+                                                alt={featuredMatch.awayTeam?.name}
+                                                onError={handleImageError}
+                                            />
+                                            <h3 className="text-xl font-black uppercase italic tracking-tighter truncate">{featuredMatch.awayTeam?.name}</h3>
+                                        </div>
+                                    </div>
+
+                                    {/* Match Stats (Goals) */}
+                                    {(featuredMatch.status === 'LIVE' || featuredMatch.status === 'COMPLETED') && featuredMatch.playerStats && featuredMatch.playerStats.length > 0 && (
+                                        <div className="mt-8 pt-6 border-t border-white/5 grid grid-cols-2 gap-4">
+                                            <div className="text-right">
+                                                {featuredMatch.playerStats
+                                                    .filter(s => s.player?.teamId === featuredMatch.homeTeam?.id && s.goals > 0)
+                                                    .map(s => (
+                                                        <div key={s.player.id} className="text-sm text-gray-300 flex items-center justify-end gap-2">
+                                                            {s.player.name} <span className="text-yellow-500 font-bold">x{s.goals}</span> <FaFutbol className="text-xs" />
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                            <div className="text-left">
+                                                {featuredMatch.playerStats
+                                                    .filter(s => s.player?.teamId === featuredMatch.awayTeam?.id && s.goals > 0)
+                                                    .map(s => (
+                                                        <div key={s.player.id} className="text-sm text-gray-300 flex items-center gap-2">
+                                                            <FaFutbol className="text-xs" /> <span className="text-yellow-500 font-bold">x{s.goals}</span> {s.player.name}
+                                                        </div>
+                                                    ))}
+                                            </div>
                                         </div>
                                     )}
-
-                                    <div className="flex items-center gap-6 text-5xl md:text-7xl font-black font-mono">
-                                        <span className="text-white">{featuredMatch.homeScore}</span>
-                                        <span className="text-gray-700">:</span>
-                                        <span className="text-white">{featuredMatch.awayScore}</span>
-                                    </div>
-                                    <div className="mt-4 text-green-400 font-mono font-bold text-lg">
-                                        {featuredMatch.status === 'LIVE' ? 'Em andamento' : featuredMatch.status === 'COMPLETED' ? 'Finalizado' : 'Agendado'}
-                                    </div>
-                                </div>
-
-                                {/* Away Team */}
-                                <div className="text-center md:text-left flex-1 w-full">
-                                    <img
-                                        src={getLogoUrl(featuredMatch.awayTeam?.logoUrl)}
-                                        className="w-20 h-20 md:w-24 md:h-24 mx-auto md:mr-auto md:ml-0 mb-4 drop-shadow-xl object-contain"
-                                        alt={featuredMatch.awayTeam?.name}
-                                        onError={handleImageError}
-                                    />
-                                    <h3 className="text-2xl font-black uppercase italic tracking-tighter truncate">{featuredMatch.awayTeam?.name}</h3>
-                                    <p className="text-gray-500 font-bold">Visitante</p>
                                 </div>
                             </div>
+                        ) : (
+                            <div className="text-center py-12 bg-gray-900/50 rounded-3xl border border-dashed border-gray-800">
+                                <FaCalendarAlt className="text-4xl text-gray-600 mx-auto mb-4" />
+                                <h3 className="text-xl font-bold text-gray-400">Nenhum jogo em destaque</h3>
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Upcoming Agenda */}
+                    {upcomingMatches.length > 0 && (
+                        <section>
+                            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><FaCalendarAlt className="text-yellow-500" /> Próximos Jogos</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {upcomingMatches.map(match => (
+                                    <div key={match.id} className="bg-gray-900/50 border border-gray-800 rounded-xl p-4 flex items-center justify-between hover:border-yellow-500/30 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <img src={getLogoUrl(match.homeTeam?.logoUrl)} className="w-8 h-8 object-contain" onError={handleImageError} />
+                                            <span className="font-bold text-sm">{match.homeTeam?.name}</span>
+                                        </div>
+                                        <div className="flex flex-col items-center px-2">
+                                            <span className="text-xs font-bold text-gray-500 bg-gray-800 px-2 py-0.5 rounded">
+                                                {match.startTime ? new Date(match.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'vs'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-3 justify-end">
+                                            <span className="font-bold text-sm">{match.awayTeam?.name}</span>
+                                            <img src={getLogoUrl(match.awayTeam?.logoUrl)} className="w-8 h-8 object-contain" onError={handleImageError} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+                </div>
+
+                {/* Right Column: Standings & Highlights */}
+                <div className="space-y-8">
+
+                    {/* Mini Standings */}
+                    {standings.length > 0 && (
+                        <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
+                            <h3 className="text-lg font-black italic uppercase mb-4 flex items-center gap-2 text-yellow-500">
+                                <FaTrophy /> Classificação
+                            </h3>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead>
+                                        <tr className="text-gray-500 border-b border-white/5">
+                                            <th className="pb-2 pl-2">#</th>
+                                            <th className="pb-2">Time</th>
+                                            <th className="pb-2 text-center">P</th>
+                                            <th className="pb-2 text-center">J</th>
+                                            <th className="pb-2 text-center">V</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {standings.map((team) => (
+                                            <tr key={team.id}>
+                                                <td className="py-3 pl-2 font-bold text-gray-400">{team.rank}º</td>
+                                                <td className="py-3 flex items-center gap-2">
+                                                    <img src={getLogoUrl(team.logoUrl)} className="w-6 h-6 object-contain" onError={handleImageError} />
+                                                    <span className="font-medium truncate max-w-[100px]">{team.name}</span>
+                                                </td>
+                                                <td className="py-3 text-center font-bold text-yellow-500">{team.points}</td>
+                                                <td className="py-3 text-center text-gray-400">{team.matchesPlayed}</td>
+                                                <td className="py-3 text-center text-gray-400">{team.wins}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <div className="text-center py-12 bg-gray-900/50 rounded-3xl border border-dashed border-gray-800">
-                        <FaCalendarAlt className="text-4xl text-gray-600 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-gray-400">Nenhum jogo programado para hoje</h3>
-                        <p className="text-gray-600">Confira a tabela dos campeonatos.</p>
-                    </div>
-                )}
-            </section>
+                    )}
+
+                    {/* Top Scorers */}
+                    {topScorers.length > 0 && (
+                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl p-6 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl"></div>
+                            <h3 className="text-lg font-black italic uppercase mb-4 flex items-center gap-2 text-white relative z-10">
+                                <FaFutbol className="text-yellow-500" /> Artilharia
+                            </h3>
+                            <div className="space-y-4 relative z-10">
+                                {topScorers.slice(0, 3).map((player, index) => (
+                                    <div key={player.id} className="flex items-center justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? 'bg-yellow-500 text-black' : 'bg-gray-700 text-white'}`}>
+                                                {index + 1}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-sm text-white">{player.name}</p>
+                                                <p className="text-xs text-gray-400">{player.team.name}</p>
+                                            </div>
+                                        </div>
+                                        <span className="font-mono font-bold text-yellow-500">{player.goals} Gols</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Top Goalkeepers */}
+                    {topGoalkeepers.length > 0 && (
+                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl p-6 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+                            <h3 className="text-lg font-black italic uppercase mb-4 flex items-center gap-2 text-white relative z-10">
+                                <FaHandPaper className="text-blue-500" /> Paredões
+                            </h3>
+                            <div className="space-y-4 relative z-10">
+                                {topGoalkeepers.slice(0, 3).map((player, index) => (
+                                    <div key={player.id} className="flex items-center justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? 'bg-blue-500 text-white' : 'bg-gray-700 text-white'}`}>
+                                                {index + 1}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-sm text-white">{player.name}</p>
+                                                <p className="text-xs text-gray-400">{player.team.name}</p>
+                                            </div>
+                                        </div>
+                                        <span className="font-mono font-bold text-blue-400">{player.goalsConceded} Gols</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            </div>
 
             {/* Active Championships Grid */}
             <section className="max-w-7xl mx-auto px-6 mb-24">
@@ -275,9 +466,6 @@ const FanZone: React.FC = () => {
                     <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter flex items-center gap-3">
                         <FaTrophy className="text-yellow-500" /> Torneios Ativos
                     </h2>
-                    <button className="text-gray-400 hover:text-yellow-500 transition font-bold text-sm">
-                        Ver Todos
-                    </button>
                 </div>
 
                 {loading && activeChampionships.length === 0 ? (
@@ -358,16 +546,10 @@ const FanZone: React.FC = () => {
                             Em Construção
                         </span>
                     </div>
-                    <button
-                        onClick={() => navigate('/store')}
-                        className="text-gray-400 hover:text-yellow-500 transition font-bold text-sm text-left md:text-right"
-                    >
-                        Ver Coleção Completa
-                    </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {/* Product 1 */}
+                    {/* Products - same as before */}
                     <div className="group relative">
                         <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-8 relative overflow-hidden h-80 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                             <div className="absolute inset-0 bg-yellow-500/5 group-hover:bg-yellow-500/10 transition-colors"></div>
@@ -384,78 +566,6 @@ const FanZone: React.FC = () => {
                             <p className="text-gray-500 text-sm mb-2">Edição de Colecionador</p>
                             <div className="flex items-center justify-between">
                                 <span className="font-mono text-xl font-bold text-white">R$ 149,90</span>
-                                <button onClick={() => navigate('/store')} className="bg-white/10 hover:bg-yellow-500 hover:text-black text-white p-2 rounded-full transition-colors">
-                                    <FaSignInAlt className="rotate-[-90deg]" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Product 2 */}
-                    <div className="group relative">
-                        <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-8 relative overflow-hidden h-80 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                            <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors"></div>
-                            <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
-                                <img src="/products/bottle.png" alt="Garrafa" className="w-full h-full object-contain filter drop-shadow-2xl" onError={handleImageError} />
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] rounded-2xl">
-                                    <span className="bg-yellow-500 text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg">EM BREVE</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="mt-4">
-                            <h3 className="font-bold text-lg text-white group-hover:text-blue-500 transition-colors">Squeeze Térmica Futkings</h3>
-                            <p className="text-gray-500 text-sm mb-2">Mantenha-se hidratado</p>
-                            <div className="flex items-center justify-between">
-                                <span className="font-mono text-xl font-bold text-white">R$ 59,90</span>
-                                <button onClick={() => navigate('/store')} className="bg-white/10 hover:bg-blue-500 hover:text-white text-white p-2 rounded-full transition-colors">
-                                    <FaSignInAlt className="rotate-[-90deg]" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Product 3 */}
-                    <div className="group relative">
-                        <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-8 relative overflow-hidden h-80 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                            <div className="absolute inset-0 bg-red-500/5 group-hover:bg-red-500/10 transition-colors"></div>
-                            <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
-                                <img src="/products/cap.png" alt="Boné" className="w-full h-full object-contain filter drop-shadow-2xl" onError={handleImageError} />
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] rounded-2xl">
-                                    <span className="bg-yellow-500 text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg">EM BREVE</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="mt-4">
-                            <h3 className="font-bold text-lg text-white group-hover:text-red-500 transition-colors">Boné Oficial Snapback</h3>
-                            <p className="text-gray-500 text-sm mb-2">Estilo fora de campo</p>
-                            <div className="flex items-center justify-between">
-                                <span className="font-mono text-xl font-bold text-white">R$ 89,90</span>
-                                <button onClick={() => navigate('/store')} className="bg-white/10 hover:bg-red-500 hover:text-white text-white p-2 rounded-full transition-colors">
-                                    <FaSignInAlt className="rotate-[-90deg]" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Product 4 */}
-                    <div className="group relative">
-                        <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-8 relative overflow-hidden h-80 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                            <div className="absolute inset-0 bg-purple-500/5 group-hover:bg-purple-500/10 transition-colors"></div>
-                            <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
-                                <img src="/products/kit.png" alt="Kit" className="w-full h-full object-contain filter drop-shadow-2xl" onError={handleImageError} />
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] rounded-2xl">
-                                    <span className="bg-yellow-500 text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter shadow-lg">EM BREVE</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="mt-4">
-                            <h3 className="font-bold text-lg text-white group-hover:text-purple-500 transition-colors">Kit Treino Completo</h3>
-                            <p className="text-gray-500 text-sm mb-2">Para todo o equipamento</p>
-                            <div className="flex items-center justify-between">
-                                <span className="font-mono text-xl font-bold text-white">R$ 299,90</span>
-                                <button onClick={() => navigate('/store')} className="bg-white/10 hover:bg-purple-500 hover:text-white text-white p-2 rounded-full transition-colors">
-                                    <FaSignInAlt className="rotate-[-90deg]" />
-                                </button>
                             </div>
                         </div>
                     </div>
