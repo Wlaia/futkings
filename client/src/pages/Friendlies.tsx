@@ -316,6 +316,13 @@ const Friendlies: React.FC = () => {
                     )}
                 </div>
             </div>
+            {/* Draw Animation Modal */}
+            <DrawAnimationModal
+                isOpen={showDrawModal}
+                onClose={() => setShowDrawModal(false)}
+                matches={drawMatches}
+                teams={teams}
+            />
         </div>
     );
 };
