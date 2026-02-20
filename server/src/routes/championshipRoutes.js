@@ -22,10 +22,10 @@ router.get('/public-list', listPublicChampionships);
 router.post('/', authenticateToken, authorizeRole(['ADMIN']), upload.single('logo'), createChampionship);
 router.get('/', authenticateToken, listChampionships);
 router.get('/:id', authenticateToken, getChampionship);
-router.get('/:id/standings', authenticateToken, getChampionshipStandings);
+router.get('/:id/standings', getChampionshipStandings);
 router.post('/:id/teams', authenticateToken, authorizeRole(['ADMIN']), addTeamToChampionship);
 router.post('/:id/draw', authenticateToken, authorizeRole(['ADMIN']), generateDraw);
-router.get('/:id/stats', authenticateToken, getChampionshipStats);
+router.get('/:id/stats', getChampionshipStats);
 router.delete('/:id', authenticateToken, authorizeRole(['ADMIN']), deleteChampionship);
 router.patch('/:id/status', authenticateToken, authorizeRole(['ADMIN']), updateChampionshipStatus);
 
