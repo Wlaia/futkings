@@ -178,7 +178,7 @@ const FanZone: React.FC = () => {
 
     // Local Clock Effect
     useEffect(() => {
-        let clockId: NodeJS.Timeout;
+        let clockId: ReturnType<typeof setInterval>;
         if (featuredMatch?.status === 'LIVE') {
             clockId = setInterval(() => {
                 setLocalTime(prev => prev + 1);

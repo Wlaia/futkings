@@ -530,7 +530,7 @@ const MatchSheet: React.FC = () => {
     };
 
     // Keep track of the latest save function to avoid closure staleness
-    const handleSaveRef = useRef<Function>();
+    const handleSaveRef = useRef<(silent?: boolean) => void>();
     useEffect(() => {
         handleSaveRef.current = handleSave;
     });
