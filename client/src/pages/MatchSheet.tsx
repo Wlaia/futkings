@@ -204,6 +204,7 @@ const MatchSheet: React.FC = () => {
         }
 
         setIsRunning(newIsRunning);
+        setUnsavedChanges(true); // Ensure FanZone gets the exact paused/resumed time
     };
 
     const handleDateSave = async () => {
@@ -384,6 +385,7 @@ const MatchSheet: React.FC = () => {
         };
 
         setActiveCards(prev => [...prev, newCard]);
+        setUnsavedChanges(true); // Trigger auto-save immediately to sync cards to FanZone
         setIsCardModalOpen(false);
     };
 
@@ -527,16 +529,34 @@ const MatchSheet: React.FC = () => {
         return diffEvents;
     };
 
-    // Auto-Save Effect (Debounced)
+    // Keep track of the latest save function to avoid closure staleness
+    const handleSaveRef = useRef<Function>();
+    useEffect(() => {
+        handleSaveRef.current = handleSave;
+    });
+
+    // Auto-Save Effect (Debounced) for STAT changes
     useEffect(() => {
         if (!unsavedChanges || isSaving) return;
 
         const timeoutId = setTimeout(() => {
-            handleSave(true); // Silent save
-        }, 2000); // 2 seconds debounce
+            if (handleSaveRef.current) handleSaveRef.current(true); // Silent save
+        }, 1500); // 1.5 seconds debounce
 
         return () => clearTimeout(timeoutId);
-    }, [stats, directorGoals, unsavedChanges, isSaving, time, activeCards]); // Trigger on stats change and respect lock
+    }, [unsavedChanges, isSaving]); // Trigger ONLY on unsavedChanges toggle or save logic
+
+    // Periodic Sync for FanZone (Every 10 seconds if LIVE)
+    useEffect(() => {
+        if (matchStatus === 'LIVE' && isRunning) {
+            const syncId = setInterval(() => {
+                if (handleSaveRef.current && !isSaving) {
+                    handleSaveRef.current(true); // Silent sync
+                }
+            }, 10000);
+            return () => clearInterval(syncId);
+        }
+    }, [matchStatus, isRunning, isSaving]);
 
     const handleSave = async (silent = false) => {
         if (isSaving) return;

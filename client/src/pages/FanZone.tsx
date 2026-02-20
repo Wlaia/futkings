@@ -87,6 +87,9 @@ const FanZone: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Local ticker for the LIVE match
+    const [localTime, setLocalTime] = useState(0);
+
     const fetchData = async () => {
         try {
             const [champsRes, matchesRes] = await Promise.all([
@@ -116,6 +119,13 @@ const FanZone: React.FC = () => {
                     featured = matchesData[0]; // First upcoming or recent
                 }
                 setFeaturedMatch(featured);
+
+                if (featured?.status === 'LIVE' && featured.elapsedTime !== undefined) {
+                    // Sync local time but allow it to have slightly ticked forward if we were already ticking
+                    setLocalTime(prev => Math.max(prev, featured.elapsedTime || 0));
+                } else {
+                    setLocalTime(0);
+                }
 
                 // Upcoming Matches (excluding featured if it's scheduled)
                 const upcoming = matchesData.filter((m: Match) =>
@@ -165,6 +175,17 @@ const FanZone: React.FC = () => {
         const interval = setInterval(fetchData, 10000); // Poll every 10s
         return () => clearInterval(interval);
     }, []);
+
+    // Local Clock Effect
+    useEffect(() => {
+        let clockId: NodeJS.Timeout;
+        if (featuredMatch?.status === 'LIVE') {
+            clockId = setInterval(() => {
+                setLocalTime(prev => prev + 1);
+            }, 1000);
+        }
+        return () => clearInterval(clockId);
+    }, [featuredMatch?.status]);
 
     // Sponsors - only existing ones
     const sponsors = [
@@ -305,7 +326,7 @@ const FanZone: React.FC = () => {
                                                         • AO VIVO •
                                                     </div>
                                                     <div className="text-2xl font-mono font-black text-yellow-500 bg-black/50 px-4 py-1.5 rounded-xl border border-yellow-500/30 shadow-inner">
-                                                        {formatTime(featuredMatch.elapsedTime)}
+                                                        {formatTime(localTime)}
                                                     </div>
                                                 </div>
                                             ) : (
