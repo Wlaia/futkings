@@ -1,6 +1,6 @@
 const express = require('express');
-const { listChampionships, getChampionship, getChampionshipStandings, getChampionshipStats } = require('../controllers/championshipController');
-const { getMatch } = require('../controllers/matchController');
+const { listChampionships, getChampionship, getChampionshipStandings, getChampionshipStats, listPublicChampionships } = require('../controllers/championshipController');
+const { getMatch, getPublicMatches } = require('../controllers/matchController');
 const { getTeam } = require('../controllers/teamController');
 const { publicAddPlayer, publicUpdatePlayer, publicRemovePlayer } = require('../controllers/publicTeamController');
 const upload = require('../config/uploadConfig');
@@ -8,8 +8,10 @@ const upload = require('../config/uploadConfig');
 const router = express.Router();
 
 // Public Routes - No Authentication Required
+router.get('/championships/public-list', listPublicChampionships);
 router.get('/championships', listChampionships);
 router.get('/championships/:id', getChampionship);
+router.get('/matches/public-list', getPublicMatches);
 router.get('/matches/:id', getMatch);
 router.get('/teams/:id', getTeam);
 router.get('/championships/:id/standings', getChampionshipStandings);

@@ -536,7 +536,7 @@ const MatchSheet: React.FC = () => {
         }, 2000); // 2 seconds debounce
 
         return () => clearTimeout(timeoutId);
-    }, [stats, directorGoals, unsavedChanges, isSaving]); // Trigger on stats change and respect lock
+    }, [stats, directorGoals, unsavedChanges, isSaving, time, activeCards]); // Trigger on stats change and respect lock
 
     const handleSave = async (silent = false) => {
         if (isSaving) return;
@@ -548,7 +548,9 @@ const MatchSheet: React.FC = () => {
                 homeScore,
                 awayScore,
                 status: matchStatus,
-                events: diffEvents
+                events: diffEvents,
+                elapsedTime: time,
+                activeEvents: activeCards
             });
 
             if (!silent) alert('Súmula salva com sucesso!');
@@ -611,7 +613,9 @@ const MatchSheet: React.FC = () => {
                 homeScore,
                 awayScore,
                 status: 'COMPLETED',
-                events: diffEvents
+                events: diffEvents,
+                elapsedTime: time,
+                activeEvents: [] // Clear active events on end
             };
 
             // Include Shootout Score if it was a draw

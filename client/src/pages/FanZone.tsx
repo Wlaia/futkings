@@ -33,6 +33,8 @@ interface Match {
     status: 'SCHEDULED' | 'LIVE' | 'COMPLETED';
     startTime: string;
     championship?: { name: string };
+    elapsedTime?: number;
+    activeEvents?: any[];
     playerStats?: {
         player: Player;
         goals: number;
@@ -40,6 +42,15 @@ interface Match {
         redCards: number;
     }[];
 }
+
+// Map Card Types
+const CARD_CONFIG: Record<string, { label: string, color: string, icon: React.ReactNode }> = {
+    'KING_PLAYER': { label: 'King', color: 'bg-yellow-500 text-black', icon: <FaStar /> },
+    'DOUBLE_GOAL': { label: 'Dobro', color: 'bg-purple-500 text-white', icon: <FaStar /> },
+    'EXCLUSION': { label: 'Exclusão', color: 'bg-red-500 text-white', icon: <FaFire /> },
+    'GK_SURPRISE': { label: 'Goleiro S.', color: 'bg-orange-500 text-white', icon: <FaHandPaper /> },
+    'PENALTY_FUTKINGS': { label: 'Shootout', color: 'bg-indigo-500 text-white', icon: <FaFutbol /> }
+};
 
 interface Standing {
     rank: number;
@@ -164,6 +175,20 @@ const FanZone: React.FC = () => {
         { name: "Nike", logo: "/sponsors/publicidade5.png" },
     ];
 
+    const formatTime = (seconds?: number) => {
+        if (!seconds) return '00:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const formatCardTimer = (endTime: number) => {
+        const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
     const getStatusLabel = (status: string) => {
         switch (status) {
             case 'ACTIVE': return 'Em Andamento';
@@ -273,24 +298,29 @@ const FanZone: React.FC = () => {
                                         </div>
 
                                         {/* Score / VS */}
-                                        <div className="flex flex-col items-center px-4">
+                                        <div className="flex flex-col items-center px-4 shrink-0 relative">
                                             {featuredMatch.status === 'LIVE' ? (
-                                                <div className="text-xs font-bold text-red-500 bg-red-500/10 px-3 py-1 rounded-full mb-2 animate-pulse">
-                                                    • AO VIVO •
+                                                <div className="flex flex-col items-center gap-1 mb-2">
+                                                    <div className="text-xs font-bold text-red-500 bg-red-500/10 px-3 py-1 rounded-full animate-pulse border border-red-500/20">
+                                                        • AO VIVO •
+                                                    </div>
+                                                    <div className="text-2xl font-mono font-black text-yellow-500 bg-black/50 px-4 py-1.5 rounded-xl border border-yellow-500/30 shadow-inner">
+                                                        {formatTime(featuredMatch.elapsedTime)}
+                                                    </div>
                                                 </div>
                                             ) : (
-                                                <div className="text-xs font-bold text-gray-500 bg-gray-800 px-3 py-1 rounded-full mb-2">
+                                                <div className="text-sm font-bold text-gray-400 bg-gray-800 border border-gray-700 px-4 py-1.5 rounded-xl mb-4 shadow-inner">
                                                     {featuredMatch.startTime ? new Date(featuredMatch.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                                                 </div>
                                             )}
 
-                                            <div className="flex items-center gap-4 text-4xl md:text-6xl font-black font-mono">
-                                                <span className="text-white">{featuredMatch.homeScore}</span>
-                                                <span className="text-gray-700">:</span>
-                                                <span className="text-white">{featuredMatch.awayScore}</span>
+                                            <div className="flex items-center gap-4 text-5xl md:text-7xl font-black font-mono">
+                                                <span className="text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]">{featuredMatch.homeScore}</span>
+                                                <span className="text-gray-700 text-3xl md:text-5xl -translate-y-1">x</span>
+                                                <span className="text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]">{featuredMatch.awayScore}</span>
                                             </div>
-                                            <div className="mt-2 text-green-400 font-mono font-bold text-sm">
-                                                {featuredMatch.status === 'LIVE' ? 'Em andamento' : featuredMatch.status === 'COMPLETED' ? 'Finalizado' : 'Agendado'}
+                                            <div className="mt-3 text-gray-500 font-mono font-bold text-sm tracking-widest uppercase">
+                                                {featuredMatch.status === 'LIVE' ? 'Andamento' : featuredMatch.status === 'COMPLETED' ? 'Finalizado' : 'Agendado'}
                                             </div>
                                         </div>
 
@@ -326,6 +356,34 @@ const FanZone: React.FC = () => {
                                                             <FaFutbol className="text-xs" /> <span className="text-yellow-500 font-bold">x{s.goals}</span> {s.player.name}
                                                         </div>
                                                     ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Active Events Display (Secret Cards & Director Penalties) */}
+                                    {featuredMatch.status === 'LIVE' && featuredMatch.activeEvents && featuredMatch.activeEvents.length > 0 && (
+                                        <div className="mt-6 pt-6 border-t border-white/5 flex gap-8 justify-between">
+                                            {/* Home Team Cards */}
+                                            <div className="flex-1 flex flex-col gap-2 items-end">
+                                                {featuredMatch.activeEvents.filter(e => e.teamId === featuredMatch.homeTeam?.id && e.endTime > Date.now()).map(e => {
+                                                    const config = CARD_CONFIG[e.type] || { label: e.type, color: 'bg-gray-700 text-white', icon: <FaStar /> };
+                                                    return (
+                                                        <div key={e.cardId} className={`${config.color} px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-pulse`}>
+                                                            {config.icon} {config.label} <span className="font-mono bg-black/30 px-1.5 rounded">{formatCardTimer(e.endTime)}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                            {/* Away Team Cards */}
+                                            <div className="flex-1 flex flex-col gap-2 items-start">
+                                                {featuredMatch.activeEvents.filter(e => e.teamId === featuredMatch.awayTeam?.id && e.endTime > Date.now()).map(e => {
+                                                    const config = CARD_CONFIG[e.type] || { label: e.type, color: 'bg-gray-700 text-white', icon: <FaStar /> };
+                                                    return (
+                                                        <div key={e.cardId} className={`${config.color} px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-pulse`}>
+                                                            <span className="font-mono bg-black/30 px-1.5 rounded">{formatCardTimer(e.endTime)}</span> {config.label} {config.icon}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     )}

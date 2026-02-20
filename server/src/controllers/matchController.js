@@ -129,7 +129,7 @@ const getMatch = async (req, res) => {
 const updateMatchResult = async (req, res) => {
     try {
         const { id } = req.params;
-        const { homeScore, awayScore, status, events, startTime } = req.body;
+        const { homeScore, awayScore, status, events, startTime, elapsedTime, activeEvents } = req.body;
         // console.log('Update Match Payload:', { id, homeScore, awayScore, status, eventsCount: events?.length, homeShootoutScore: req.body.homeShootoutScore, awayShootoutScore: req.body.awayShootoutScore });
         // events: array of { playerId, type: 'GOAL'|'ASSIST'|'YELLOW'|'RED'|'SAVE'|'GOAL_CONCEDED' }
 
@@ -159,6 +159,14 @@ const updateMatchResult = async (req, res) => {
 
         if (startTime) {
             updateData.startTime = new Date(startTime);
+        }
+
+        if (elapsedTime !== undefined) {
+            updateData.elapsedTime = elapsedTime;
+        }
+
+        if (activeEvents !== undefined) {
+            updateData.activeEvents = activeEvents;
         }
 
         if (req.body.homeShootoutScore !== undefined) updateData.homeShootoutScore = req.body.homeShootoutScore;
