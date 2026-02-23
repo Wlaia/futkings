@@ -430,13 +430,23 @@ const MatchSheet: React.FC = () => {
             if (type === 'yellow' || type === 'red') {
                 if (delta > 0) {
                     const now = Date.now();
+                    const currentYellows = stats[playerId]?.yellow || 0;
+
+                    // If adding a yellow and player already has 1, trigger 2nd yellow -> Red logic
+                    if (type === 'yellow' && currentYellows >= 1) {
+                        // 1. Add the Red Card to statistics automatically
+                        updateStat(playerId, 'red', 1);
+                        // 2. We don't need to add a new yellow sanction because the red one will handle the 2-min penalty
+                        return;
+                    }
+
                     const newSanction: Sanction = {
                         id: Math.random().toString(36).substr(2, 9),
                         playerId,
                         teamId,
                         type: type === 'yellow' ? 'YELLOW' : 'RED',
                         startTime: now,
-                        endTime: now + (120 * 1000) // 2 minutes
+                        endTime: now + (120 * 1000) // 2 minutes for team penalty
                     };
                     setActiveSanctions(prev => [...prev, newSanction]);
                 } else if (delta < 0) {
@@ -712,7 +722,7 @@ const MatchSheet: React.FC = () => {
                             <div className="flex items-center gap-3">
                                 <span className="font-black bg-black/20 px-3 py-1 rounded text-xl">{player.number}</span>
                                 <span className="font-black uppercase tracking-widest text-sm italic">
-                                    {sanction.type === 'YELLOW' ? 'CARTÃO AMARELO (TEMP)' : 'EXPULSÃO TEMPORÁRIA'}
+                                    {sanction.type === 'YELLOW' ? 'CARTÃO AMARELO (2 MIN)' : 'PUNIÇÃO COLETIVA (2 MIN)'}
                                 </span>
                             </div>
                             <span className="font-mono bg-black/30 px-4 py-1.5 rounded-lg text-2xl font-black shadow-inner">
@@ -844,13 +854,22 @@ const MatchSheet: React.FC = () => {
                         if (a.position !== b.position) return a.position === 'GOALKEEPER' ? -1 : 1;
                         // 3. Number ascending
                         return a.number - b.number;
+                    }).sort((a, b) => {
+                        // 4. Force expelled players (red card) to very bottom
+                        const redA = (stats[a.id]?.red || 0) > 0;
+                        const redB = (stats[b.id]?.red || 0) > 0;
+                        if (redA !== redB) return redA ? 1 : -1;
+                        return 0;
                     }).map(player => {
                         const s = stats[player.id] || { goals: 0, assists: 0, yellow: 0, red: 0, fouls: 0, saves: 0, conceded: 0 };
                         // Check if player is target of active King Card
                         const isKing = activeCards.some(c => c.type === 'KING_PLAYER' && c.targetPlayerId === player.id && c.teamId === team.id);
                         // Check if player is Excluded or Sanctioned
                         const isExcluded = activeCards.some(c => c.type === 'EXCLUSION' && c.targetPlayerId === player.id && c.teamId !== team.id);
-                        const isSanctioned = activeSanctions.some(sanction => sanction.playerId === player.id);
+
+                        // Red card = permanent match exclusion
+                        const hasRedCard = s.red > 0;
+                        const isSanctioned = activeSanctions.some(sanction => sanction.playerId === player.id) || hasRedCard;
 
                         return (
                             <div key={player.id} className={`group bg-gray-900/40 hover:bg-gray-800 p-2 rounded flex flex-col gap-2 border-b border-gray-800 transition-all ${isKing ? 'ring-1 ring-yellow-500 bg-yellow-900/10' : ''} ${(isExcluded || isSanctioned) ? 'opacity-50 grayscale' : ''}`}>
@@ -858,10 +877,14 @@ const MatchSheet: React.FC = () => {
                                 {/* Row 1: Player Info */}
                                 <div className="flex items-center gap-2 w-full mb-1">
                                     <span className={`font-mono font-bold text-sm min-w-[20px] text-center ${player.position === 'GOALKEEPER' ? 'text-yellow-500' : 'text-gray-400'}`}>{player.number}</span>
-                                    <span className="truncate font-bold text-sm text-gray-100 group-hover:text-white flex-1 leading-tight" title={player.name}>{player.name}</span>
+                                    <span className={`truncate font-bold text-sm flex-1 leading-tight ${hasRedCard ? 'text-red-500' : 'text-gray-100 group-hover:text-white'}`} title={player.name}>{player.name}</span>
 
                                     {isKing && <FaCrown size={10} className="text-yellow-500 flex-shrink-0 animate-pulse" />}
-                                    {(isExcluded || isSanctioned) && <span className="text-[9px] bg-red-600 px-1 rounded text-white font-bold">OUT</span>}
+                                    {(isExcluded || isSanctioned) && (
+                                        <span className={`text-[9px] px-1 rounded text-white font-bold ${hasRedCard ? 'bg-red-600' : 'bg-orange-600'}`}>
+                                            {hasRedCard ? 'EXPULSO' : 'OUT'}
+                                        </span>
+                                    )}
                                 </div>
 
                                 {/* Row 2: Stats Controls (Compact Grid) */}

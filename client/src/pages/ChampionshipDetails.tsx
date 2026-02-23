@@ -40,7 +40,8 @@ interface StandingsTeam {
     goalsFor: number;
     goalsAgainst: number;
     goalDiff: number;
-    cards: number;
+    yellowCards: number;
+    redCards: number;
 }
 
 const ChampionshipDetails: React.FC = () => {
@@ -413,8 +414,11 @@ const ChampionshipDetails: React.FC = () => {
                                             <th className="p-3 text-center">GP</th>
                                             <th className="p-3 text-center">GC</th>
                                             <th className="p-3 text-center">SG</th>
-                                            <th className="p-3 text-center text-red-400" title="Cartões (Amarelos + Vermelhos)">
-                                                <span className="flex items-center justify-center gap-1">🟥🟨</span>
+                                            <th className="p-3 text-center text-yellow-500" title="Cartões Amarelos">
+                                                <span className="flex items-center justify-center gap-1">🟨</span>
+                                            </th>
+                                            <th className="p-3 text-center text-red-500" title="Cartões Vermelhos">
+                                                <span className="flex items-center justify-center gap-1">🟥</span>
                                             </th>
                                         </tr>
                                     </thead>
@@ -442,7 +446,8 @@ const ChampionshipDetails: React.FC = () => {
                                                 <td className="p-3 text-center text-gray-400 text-xs">{team.goalsFor}</td>
                                                 <td className="p-3 text-center text-gray-400 text-xs">{team.goalsAgainst}</td>
                                                 <td className="p-3 text-center font-bold">{team.goalDiff}</td>
-                                                <td className="p-3 text-center font-bold text-gray-400">{team.cards}</td>
+                                                <td className="p-3 text-center font-bold text-yellow-500/50">{team.yellowCards}</td>
+                                                <td className="p-3 text-center font-bold text-red-500/50">{team.redCards}</td>
                                             </tr>
                                         ))}
                                         {standings.length === 0 && (

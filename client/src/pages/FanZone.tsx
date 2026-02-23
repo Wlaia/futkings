@@ -65,6 +65,8 @@ interface Standing {
     goalsFor: number;
     goalsAgainst: number;
     goalDiff: number;
+    yellowCards: number;
+    redCards: number;
 }
 
 interface PlayerStat {
@@ -463,6 +465,8 @@ const FanZone: React.FC = () => {
                                             <th className="pb-2 text-center">P</th>
                                             <th className="pb-2 text-center">J</th>
                                             <th className="pb-2 text-center">V</th>
+                                            <th className="pb-2 text-center">🟨</th>
+                                            <th className="pb-2 text-center">🟥</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
@@ -476,6 +480,8 @@ const FanZone: React.FC = () => {
                                                 <td className="py-3 text-center font-bold text-yellow-500">{team.points}</td>
                                                 <td className="py-3 text-center text-gray-400">{team.matchesPlayed}</td>
                                                 <td className="py-3 text-center text-gray-400">{team.wins}</td>
+                                                <td className="py-3 text-center text-yellow-500/50 text-[10px] font-bold">{team.yellowCards}</td>
+                                                <td className="py-3 text-center text-red-500/50 text-[10px] font-bold">{team.redCards}</td>
                                             </tr>
                                         ))}
                                     </tbody>

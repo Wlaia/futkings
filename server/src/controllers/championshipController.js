@@ -421,7 +421,8 @@ const getChampionshipStandings = async (req, res) => {
                 goalsFor: 0,
                 goalsAgainst: 0,
                 goalDiff: 0,
-                cards: 0
+                yellowCards: 0,
+                redCards: 0
             };
         });
 
@@ -475,11 +476,10 @@ const getChampionshipStandings = async (req, res) => {
 
             // Count Cards
             playerStats.forEach(stat => {
-                const cardCount = stat.yellowCards + stat.redCards;
-                if (stat.player.teamId === homeTeamId) {
-                    standings[homeTeamId].cards += cardCount;
-                } else if (stat.player.teamId === awayTeamId) {
-                    standings[awayTeamId].cards += cardCount;
+                const teamId = stat.player.teamId;
+                if (standings[teamId]) {
+                    standings[teamId].yellowCards += (stat.yellowCards || 0);
+                    standings[teamId].redCards += (stat.redCards || 0);
                 }
             });
         });
@@ -488,7 +488,9 @@ const getChampionshipStandings = async (req, res) => {
             if (b.points !== a.points) return b.points - a.points;
             if (b.wins !== a.wins) return b.wins - a.wins;
             if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff;
-            if (a.cards !== b.cards) return a.cards - b.cards;
+            // Tie-break: Red cards (fewer is better), then Yellow cards (fewer is better)
+            if (a.redCards !== b.redCards) return a.redCards - b.redCards;
+            if (a.yellowCards !== b.yellowCards) return a.yellowCards - b.yellowCards;
             return b.goalsFor - a.goalsFor;
         });
 
