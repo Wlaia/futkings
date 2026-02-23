@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { FaTrophy, FaCalendarAlt, FaSignInAlt, FaStar, FaFire, FaFutbol, FaHandPaper, FaTimes } from 'react-icons/fa';
+import { SPONSORS, SUPPORTERS } from '../constants/sponsors';
 import { getLogoUrl } from '../utils/imageHelper';
 
 interface Championship {
@@ -191,14 +192,7 @@ const FanZone: React.FC = () => {
         return () => clearInterval(clockId);
     }, [featuredMatch?.status]);
 
-    // Sponsors - only existing ones
-    const sponsors = [
-        { name: "Global Sports", logo: "/sponsors/publicidade1.png" },
-        { name: "Tech Arena", logo: "/sponsors/publicidade2.png" },
-        { name: "Energy Drink", logo: "/sponsors/publicidade3.png" },
-        { name: "Bet365", logo: "/sponsors/publicidade4.png" },
-        { name: "Nike", logo: "/sponsors/publicidade5.png" },
-    ];
+    // Sponsors & Supporters imported from constants
 
     const formatTime = (seconds?: number) => {
         if (!seconds) return '00:00';
@@ -609,23 +603,53 @@ const FanZone: React.FC = () => {
                 )}
             </section>
 
-            {/* Sponsors Marquee */}
-            <section className="border-y border-white/5 bg-black/20 py-12 mb-12 overflow-hidden">
-                <div className="max-w-7xl mx-auto px-6 text-center mb-8">
-                    <h4 className="text-xs font-bold text-gray-600 uppercase tracking-[0.2em]">Patrocinadores Oficiais</h4>
+            {/* Sponsors Section */}
+            <section className="border-t border-white/5 bg-black/20 pt-16 pb-8 overflow-hidden">
+                <div className="max-w-7xl mx-auto px-6 text-center mb-10">
+                    <h4 className="text-xs font-black text-yellow-500 uppercase tracking-[0.4em] mb-2">Main Partners</h4>
+                    <h2 className="text-3xl font-black italic uppercase tracking-tighter">Patrocinadores <span className="text-yellow-500">Master</span></h2>
                 </div>
 
-                <div className="flex justify-center flex-wrap gap-8 md:gap-12 lg:gap-16">
-                    {sponsors.map((s, i) => (
-                        <div key={i} className="w-40 h-24 md:w-56 md:h-32 flex items-center justify-center bg-white/5 rounded-2xl p-6 hover:bg-white/10 transition-all hover:scale-105 border border-white/5">
-                            <img
-                                src={s.logo}
-                                alt={s.name}
-                                className="max-w-full max-h-full object-contain filter brightness-110"
-                                onError={handleImageError}
-                            />
-                        </div>
-                    ))}
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-10">
+                        {SPONSORS.map((s) => (
+                            <div key={s.id} className="group relative aspect-[16/9] flex items-center justify-center bg-white/5 rounded-3xl p-6 hover:bg-white/10 transition-all hover:scale-[1.02] border border-white/5 hover:border-yellow-500/30 overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <img
+                                    src={s.image}
+                                    alt={s.name}
+                                    className="max-w-full max-h-full object-contain filter brightness-110 drop-shadow-2xl group-hover:scale-110 transition-transform duration-500"
+                                    onError={handleImageError}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Supporters Section */}
+            <section className="border-b border-white/5 bg-black/20 pb-16 pt-8 overflow-hidden">
+                <div className="max-w-7xl mx-auto px-6 text-center mb-8">
+                    <div className="h-px w-24 bg-white/10 mx-auto mb-6" />
+                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em]">Apoio Institucional e Regional</h4>
+                </div>
+
+                <div className="max-w-5xl mx-auto px-6">
+                    <div className="flex flex-wrap justify-center gap-6 md:gap-10 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
+                        {SUPPORTERS.map((s) => (
+                            <div key={s.id} className="flex flex-col items-center gap-3 group">
+                                <div className="w-24 h-14 md:w-32 md:h-16 flex items-center justify-center bg-white/5 rounded-xl p-3 border border-white/5 group-hover:border-white/20 transition-all">
+                                    <img
+                                        src={s.image}
+                                        alt={s.name}
+                                        className="max-w-full max-h-full object-contain"
+                                        onError={handleImageError}
+                                    />
+                                </div>
+                                <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{s.name}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
