@@ -61,6 +61,9 @@ const ChampionshipDetails: React.FC = () => {
     const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
     const [scheduleDate, setScheduleDate] = useState('');
 
+    // Rules Modal State
+    const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
+
     // Draw Animation State
     const [showDrawAnimation, setShowDrawAnimation] = useState(false);
     const [drawMatches, setDrawMatches] = useState<Match[]>([]);
@@ -395,10 +398,16 @@ const ChampionshipDetails: React.FC = () => {
                     {/* Standings Table (Only for LEAGUE_WITH_FINAL) */}
                     {championship.type === 'LEAGUE_WITH_FINAL' && (
                         <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden animate-fade-in">
-                            <div className="p-6 border-b border-gray-700">
+                            <div className="p-6 border-b border-gray-700 flex justify-between items-center">
                                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                                     <FaTrophy className="text-yellow-500" /> Tabela de Classificação
                                 </h2>
+                                <button
+                                    onClick={() => setIsRulesModalOpen(true)}
+                                    className="text-[10px] uppercase tracking-widest font-bold text-yellow-500/50 hover:text-yellow-500 transition-colors border border-yellow-500/20 hover:border-yellow-500/50 px-3 py-1.5 rounded-lg"
+                                >
+                                    Critérios
+                                </button>
                             </div>
                             <div className="p-4 overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
@@ -730,6 +739,61 @@ const ChampionshipDetails: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Tie-Breaker Rules Modal */}
+            {isRulesModalOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fade-in shadow-2xl">
+                    <div className="bg-gray-800 p-8 rounded-3xl border border-yellow-500/20 shadow-2xl w-full max-w-lg relative overflow-hidden">
+                        {/* Background Decoration */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/5 rounded-full -ml-24 -mb-24 blur-3xl"></div>
+
+                        <button
+                            onClick={() => setIsRulesModalOpen(false)}
+                            className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors"
+                        >
+                            <FaTimes size={24} />
+                        </button>
+
+                        <div className="relative z-10 text-center mb-8">
+                            <div className="w-16 h-16 bg-yellow-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-yellow-500/20 shadow-xl shadow-yellow-500/5">
+                                <FaTrophy className="text-yellow-500 text-2xl" />
+                            </div>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Critérios de Desempate</h2>
+                            <p className="text-gray-400 text-[10px] mt-1 uppercase tracking-widest font-black opacity-50">Ordem de Prioridade Regulamentar</p>
+                        </div>
+
+                        <div className="space-y-2.5 relative z-10 font-bold uppercase tracking-tight">
+                            {[
+                                { label: 'Pontos Ganhos', icon: '💎', color: 'text-yellow-400', desc: 'Soma total de pontos' },
+                                { label: 'Número de Vitórias', icon: '✅', color: 'text-green-400', desc: 'Mais jogos vencidos' },
+                                { label: 'Saldo de Gols', icon: '⚽', color: 'text-blue-400', desc: 'Gols Pró - Gols Contra' },
+                                { label: 'Diciplina: Menos Vermelhos', icon: '🟥', color: 'text-red-500', desc: 'Fair Play: Menos expulsões' },
+                                { label: 'Diciplina: Menos Amarelos', icon: '🟨', color: 'text-orange-400', desc: 'Fair Play: Menos advertências' },
+                                { label: 'Gols Pró (Marcados)', icon: '🔥', color: 'text-white', desc: 'Maior volume ofensivo' }
+                            ].map((rule, idx) => (
+                                <div key={idx} className="flex items-center gap-4 bg-gray-900/40 p-3.5 rounded-2xl border border-white/5 hover:border-yellow-500/20 transition-all group">
+                                    <span className="text-sm font-black text-gray-700 group-hover:text-yellow-500/50 transition-colors w-5">0{idx + 1}</span>
+                                    <div className="p-2 bg-gray-800 rounded-lg group-hover:scale-110 transition-transform">
+                                        <span className="text-base">{rule.icon}</span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className={`text-xs ${rule.color} leading-none mb-1`}>{rule.label}</div>
+                                        <div className="text-[9px] text-gray-500 font-medium normal-case tracking-normal">{rule.desc}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={() => setIsRulesModalOpen(false)}
+                            className="w-full mt-8 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-black py-4 rounded-2xl transition-all shadow-lg shadow-yellow-500/10 uppercase tracking-widest text-xs"
+                        >
+                            Entendido
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Draw Animation Modal */}
             <DrawAnimationModal

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { FaTrophy, FaCalendarAlt, FaSignInAlt, FaStar, FaFire, FaFutbol, FaHandPaper } from 'react-icons/fa';
+import { FaTrophy, FaCalendarAlt, FaSignInAlt, FaStar, FaFire, FaFutbol, FaHandPaper, FaTimes } from 'react-icons/fa';
 import { getLogoUrl } from '../utils/imageHelper';
 
 interface Championship {
@@ -88,6 +88,8 @@ const FanZone: React.FC = () => {
     const [topGoalkeepers, setTopGoalkeepers] = useState<PlayerStat[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
 
     // Local ticker for the LIVE match
     const [localTime, setLocalTime] = useState(0);
@@ -453,9 +455,17 @@ const FanZone: React.FC = () => {
                     {/* Mini Standings */}
                     {standings.length > 0 && (
                         <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6">
-                            <h3 className="text-lg font-black italic uppercase mb-4 flex items-center gap-2 text-yellow-500">
-                                <FaTrophy /> Classificação
-                            </h3>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-black italic uppercase flex items-center gap-2 text-yellow-500">
+                                    <FaTrophy /> Classificação
+                                </h3>
+                                <button
+                                    onClick={() => setIsRulesModalOpen(true)}
+                                    className="text-[9px] uppercase tracking-widest font-black text-yellow-500/40 hover:text-yellow-500 transition-colors"
+                                >
+                                    Critérios
+                                </button>
+                            </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm text-left">
                                     <thead>
@@ -664,6 +674,61 @@ const FanZone: React.FC = () => {
                 </div>
                 <p className="text-sm">© 2026 Futkings Manager. Todos os direitos reservados.</p>
             </footer>
+
+            {/* Tie-Breaker Rules Modal */}
+            {isRulesModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4 animate-fade-in">
+                    <div className="bg-[#0f172a] p-8 rounded-[32px] border border-yellow-500/20 shadow-2xl w-full max-w-md relative overflow-hidden">
+                        {/* Interactive Background */}
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-yellow-500/10 rounded-full -mr-20 -mt-20 blur-[80px]"></div>
+                        <div className="absolute bottom-0 left-0 w-60 h-60 bg-blue-500/10 rounded-full -ml-30 -mb-30 blur-[100px]"></div>
+
+                        <button
+                            onClick={() => setIsRulesModalOpen(false)}
+                            className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full"
+                        >
+                            <FaTimes size={20} />
+                        </button>
+
+                        <div className="relative z-10 text-center mb-8">
+                            <div className="w-16 h-16 bg-gradient-to-br from-yellow-500/20 to-orange-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-yellow-500/30 shadow-2xl shadow-yellow-500/10">
+                                <FaTrophy className="text-yellow-500 text-2xl" />
+                            </div>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tighter italic">Regras de Desempate</h2>
+                            <div className="h-1 w-12 bg-yellow-500 mx-auto mt-2 rounded-full"></div>
+                        </div>
+
+                        <div className="space-y-2.5 relative z-10">
+                            {[
+                                { label: 'Pontos Totais', icon: '💎', color: 'text-yellow-400', desc: 'Maior pontuação geral' },
+                                { label: 'Mais Vitórias', icon: '✅', color: 'text-green-400', desc: 'Número de jogos vencidos' },
+                                { label: 'Saldo de Gols', icon: '⚽', color: 'text-blue-400', desc: 'Gols Pró vs Gols Contra' },
+                                { label: 'Menos Vermelhos', icon: '🟥', color: 'text-red-500', desc: 'Disciplina Fair Play' },
+                                { label: 'Menos Amarelos', icon: '🟨', color: 'text-orange-400', desc: 'Disciplina Fair Play' },
+                                { label: 'Mais Gols Pró', icon: '🔥', color: 'text-white', desc: 'Volume de ataque' }
+                            ].map((rule, idx) => (
+                                <div key={idx} className="flex items-center gap-4 bg-white/5 p-3.5 rounded-2xl border border-white/5 group hover:border-yellow-500/20 transition-all">
+                                    <span className="text-xs font-black text-gray-600 w-4">#{(idx + 1)}</span>
+                                    <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                                        <span className="text-base">{rule.icon}</span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className={`text-xs font-bold ${rule.color} uppercase tracking-tight`}>{rule.label}</div>
+                                        <div className="text-[10px] text-gray-500 italic mt-0.5">{rule.desc}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={() => setIsRulesModalOpen(false)}
+                            className="w-full mt-8 bg-yellow-500 hover:bg-yellow-400 text-black font-black py-4 rounded-2xl transition-all shadow-xl shadow-yellow-500/20 uppercase tracking-widest text-xs"
+                        >
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
