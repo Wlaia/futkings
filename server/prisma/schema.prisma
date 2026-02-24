@@ -36,6 +36,7 @@ model Championship {
   startDate          DateTime?
   matches            Match[]
   teams              Team[]
+  championVotes      ChampionVote[]
 }
 
 model Team {
@@ -62,6 +63,7 @@ model Team {
   players               Player[]
   championship          Championship? @relation(fields: [championshipId], references: [id])
   manager               User?         @relation(fields: [managerId], references: [id])
+  championVotes         ChampionVote[]
 }
 
 model Player {
@@ -150,4 +152,16 @@ enum MatchStatus {
   SCHEDULED
   LIVE
   COMPLETED
+}
+
+model ChampionVote {
+  id             String       @id @default(uuid())
+  championshipId String
+  teamId         String
+  ipHash         String
+  createdAt      DateTime     @default(now())
+  championship   Championship @relation(fields: [championshipId], references: [id])
+  team           Team         @relation(fields: [teamId], references: [id])
+
+  @@unique([championshipId, ipHash])
 }

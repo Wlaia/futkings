@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import api from '../services/api';
 import { FaTrophy, FaCalendarAlt, FaSignInAlt, FaStar, FaFire, FaFutbol, FaHandPaper, FaTimes } from 'react-icons/fa';
 import { SPONSORS, SUPPORTERS } from '../constants/sponsors';
@@ -109,6 +110,11 @@ const FanZone: React.FC = () => {
         playerAvatar?: string;
         goalValue?: number;
     }>({ isOpen: false });
+
+    // Voting State
+    const [votedTeamId, setVotedTeamId] = useState<string | null>(null);
+    const [voteResults, setVoteResults] = useState<{ teamId: string, percentage: number, count: number }[]>([]);
+    const [totalVotes, setTotalVotes] = useState(0);
 
     const fetchData = async () => {
         try {
@@ -247,6 +253,44 @@ const FanZone: React.FC = () => {
         const interval = setInterval(fetchData, 10000); // Poll every 10s
         return () => clearInterval(interval);
     }, []);
+
+    // Voting Effects & Handlers
+    useEffect(() => {
+        if (activeChampionships.length > 0) {
+            const champId = activeChampionships[0].id;
+            const savedVote = localStorage.getItem(`votedChampion_${champId}`);
+            if (savedVote) setVotedTeamId(savedVote);
+            fetchVoteResults(champId);
+        }
+    }, [activeChampionships]);
+
+    const fetchVoteResults = async (champId: string) => {
+        try {
+            const res = await api.get(`/public/championships/${champId}/vote-results`);
+            setVoteResults(res.data.votes || []);
+            setTotalVotes(res.data.totalVotes || 0);
+        } catch (error) {
+            console.error('Error fetching vote results:', error);
+        }
+    };
+
+    const handleVote = async (teamId: string) => {
+        if (!activeChampionships.length) return;
+        const champId = activeChampionships[0].id;
+
+        try {
+            await api.post('/public/votes', { championshipId: champId, teamId });
+            localStorage.setItem(`votedChampion_${champId}`, teamId);
+            setVotedTeamId(teamId);
+            fetchVoteResults(champId);
+        } catch (error: any) {
+            if (error.response?.status === 400) {
+                localStorage.setItem(`votedChampion_${champId}`, teamId);
+                setVotedTeamId(teamId);
+            }
+            console.error('Vote error:', error);
+        }
+    };
 
     // Local Clock Effect
     useEffect(() => {
@@ -609,6 +653,75 @@ const FanZone: React.FC = () => {
                                         <span className="font-mono font-bold text-blue-400">{player.goalsConceded} Gols</span>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Champion Voting Section */}
+                    {activeChampionships.length > 0 && standings.length > 0 && (
+                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl p-6 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl"></div>
+                            <h3 className="text-xl font-black italic uppercase mb-4 flex items-center gap-2 text-white relative z-10">
+                                <FaStar className="text-yellow-500" /> Quem será o Rei?
+                            </h3>
+
+                            <p className="text-xs text-gray-400 mb-6 relative z-10">
+                                Dê seu palpite para o campeão do torneio e veja a opinião da galera!
+                            </p>
+
+                            <div className="space-y-4 relative z-10">
+                                {votedTeamId ? (
+                                    // Results View
+                                    <div className="space-y-4">
+                                        {standings.map(team => {
+                                            const result = voteResults.find(r => r.teamId === team.id);
+                                            const percentage = result ? Math.round(result.percentage) : 0;
+                                            return (
+                                                <div key={team.id} className="space-y-1">
+                                                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
+                                                        <span className={team.id === votedTeamId ? "text-yellow-500" : "text-gray-400"}>
+                                                            {team.name} {team.id === votedTeamId && "(Seu Voto)"}
+                                                        </span>
+                                                        <span className="text-white">{percentage}%</span>
+                                                    </div>
+                                                    <div className="h-2 bg-gray-800 rounded-full overflow-hidden border border-white/5">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${percentage}%` }}
+                                                            className={`h-full rounded-full ${team.id === votedTeamId ? 'bg-gradient-to-r from-yellow-600 to-yellow-400' : 'bg-gray-600'}`}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                        <div className="pt-4 text-center">
+                                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">
+                                                Total de {totalVotes} palpites
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    // Voting View
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {standings.map(team => (
+                                            <button
+                                                key={team.id}
+                                                onClick={() => handleVote(team.id)}
+                                                className="group relative bg-gray-800/50 border border-gray-700 p-3 rounded-xl hover:border-yellow-500/50 hover:bg-gray-800 transition-all text-center flex flex-col items-center gap-2"
+                                            >
+                                                <img
+                                                    src={getLogoUrl(team.logoUrl)}
+                                                    className="w-8 h-8 object-contain transition-transform group-hover:scale-110"
+                                                    alt={team.name}
+                                                    onError={handleImageError}
+                                                />
+                                                <span className="text-[10px] font-bold uppercase truncate w-full text-gray-300">
+                                                    {team.name}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
