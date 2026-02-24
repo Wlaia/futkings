@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { FaTrophy, FaCalendarAlt, FaSignInAlt, FaStar, FaFire, FaFutbol, FaHandPaper, FaTimes } from 'react-icons/fa';
 import { SPONSORS, SUPPORTERS } from '../constants/sponsors';
 import { getLogoUrl } from '../utils/imageHelper';
+import GoalAnimation from '../components/GoalAnimation';
 
 interface Championship {
     id: string;
@@ -23,6 +24,7 @@ interface Player {
     id: string;
     name: string;
     teamId: string;
+    avatarUrl?: string;
 }
 
 interface Match {
@@ -95,11 +97,24 @@ const FanZone: React.FC = () => {
     // Local ticker for the LIVE match
     const [localTime, setLocalTime] = useState(0);
 
+    // Goal Animation State
+    const prevScoresRef = useRef<{ home: number, away: number }>({ home: 0, away: 0 });
+    const prevPlayerStatsRef = useRef<Record<string, number>>({});
+    const isFirstFetchRef = useRef(true);
+    const [goalAnimation, setGoalAnimation] = useState<{
+        isOpen: boolean;
+        teamName?: string;
+        teamLogo?: string;
+        playerName?: string;
+        playerAvatar?: string;
+        goalValue?: number;
+    }>({ isOpen: false });
+
     const fetchData = async () => {
         try {
             const [champsRes, matchesRes] = await Promise.all([
-                api.get('/championships/public-list'),
-                api.get('/matches/public-list')
+                api.get('/public/championships/public-list'),
+                api.get('/public/matches/public-list')
             ]);
 
             // Safe assignment with filtering for null/undefined items
@@ -108,10 +123,10 @@ const FanZone: React.FC = () => {
 
             setActiveChampionships(championshipsData);
 
+            let featured: Match | null = null;
             if (matchesData.length > 0) {
                 // Priority: Latest LIVE match, then next upcoming match
                 const liveMatches = matchesData.filter((m: Match) => m.status === 'LIVE');
-                let featured = null;
 
                 if (liveMatches.length > 0) {
                     // Sort by startTime desc if available
@@ -125,11 +140,63 @@ const FanZone: React.FC = () => {
                 }
                 setFeaturedMatch(featured);
 
-                if (featured?.status === 'LIVE' && featured.elapsedTime !== undefined) {
+                if (featured && featured.status === 'LIVE' && featured.elapsedTime !== undefined) {
+                    const fMatch = featured;
                     // Sync local time but allow it to have slightly ticked forward if we were already ticking
-                    setLocalTime(prev => Math.max(prev, featured.elapsedTime || 0));
+                    setLocalTime(prev => Math.max(prev, fMatch.elapsedTime || 0));
+
+                    // Detection logic for GOOOOOL animation
+                    if (!isFirstFetchRef.current) {
+                        const homeScoreInc = featured.homeScore > prevScoresRef.current.home;
+                        const awayScoreInc = featured.awayScore > prevScoresRef.current.away;
+
+                        if (homeScoreInc || awayScoreInc) {
+                            // Try to find the specific player who scored by comparing stats
+                            let scorer = null;
+                            if (featured.playerStats) {
+                                scorer = featured.playerStats.find((ps: any) => {
+                                    const prevGoals = prevPlayerStatsRef.current[ps.playerId] || 0;
+                                    return ps.goals > prevGoals;
+                                })?.player;
+                            }
+
+                            const team = homeScoreInc ? featured.homeTeam : featured.awayTeam;
+                            const diff = homeScoreInc
+                                ? featured.homeScore - prevScoresRef.current.home
+                                : featured.awayScore - prevScoresRef.current.away;
+
+                            setGoalAnimation({
+                                isOpen: true,
+                                teamName: team?.name,
+                                teamLogo: team?.logoUrl,
+                                playerName: scorer?.name,
+                                playerAvatar: scorer?.avatarUrl,
+                                goalValue: diff
+                            });
+                        }
+                    }
+
+                    // Update refs
+                    prevScoresRef.current = {
+                        home: featured.homeScore,
+                        away: featured.awayScore
+                    };
+
+                    if (featured.playerStats) {
+                        const newStats: Record<string, number> = {};
+                        featured.playerStats.forEach((ps: any) => {
+                            newStats[ps.playerId] = ps.goals;
+                        });
+                        prevPlayerStatsRef.current = newStats;
+                    }
+
+                    isFirstFetchRef.current = false;
                 } else {
                     setLocalTime(0);
+                    // Also reset trackers if no live match to ensure fresh start when one begins
+                    prevScoresRef.current = { home: 0, away: 0 };
+                    prevPlayerStatsRef.current = {}; // Reset player stats tracker
+                    isFirstFetchRef.current = true;
                 }
 
                 // Upcoming Matches (excluding featured if it's scheduled)
@@ -145,9 +212,9 @@ const FanZone: React.FC = () => {
 
             // Fetch Standings and Stats for the first active championship or the featured match's championship
             let champIdToFetch = null;
-            if (featuredMatch?.championship) {
+            if (featured?.championship) {
                 // Try to find championship ID from active list matching name
-                const champ = championshipsData.find((c: Championship) => c.name === featuredMatch.championship?.name);
+                const champ = championshipsData.find((c: Championship) => c.name === featured.championship?.name);
                 if (champ) champIdToFetch = champ.id;
             }
 
@@ -699,7 +766,6 @@ const FanZone: React.FC = () => {
                 <p className="text-sm">© 2026 Futkings Manager. Todos os direitos reservados.</p>
             </footer>
 
-            {/* Tie-Breaker Rules Modal */}
             {isRulesModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4 animate-fade-in">
                     <div className="bg-[#0f172a] p-8 rounded-[32px] border border-yellow-500/20 shadow-2xl w-full max-w-md relative overflow-hidden">
@@ -754,6 +820,10 @@ const FanZone: React.FC = () => {
                 </div>
             )}
 
+            <GoalAnimation
+                {...goalAnimation}
+                onClose={() => setGoalAnimation(prev => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 };

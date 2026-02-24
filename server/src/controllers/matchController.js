@@ -87,7 +87,7 @@ const getPublicMatches = async (req, res) => {
                 championship: { select: { name: true } },
                 playerStats: {
                     include: {
-                        player: { select: { id: true, name: true, teamId: true } }
+                        player: { select: { id: true, name: true, teamId: true, avatarUrl: true } }
                     }
                 }
             },

@@ -6,6 +6,7 @@ import SponsorCarousel from '../components/SponsorCarousel';
 import SafeImage from '../components/SafeImage';
 import { SPONSORS } from '../constants/sponsors';
 import MatchLineupModal from '../components/MatchLineupModal';
+import GoalAnimation from '../components/GoalAnimation';
 
 interface Player {
     id: string;
@@ -13,6 +14,7 @@ interface Player {
     number: number;
     position: 'GOALKEEPER' | 'FIELD';
     isStarter?: boolean;
+    avatarUrl?: string;
 }
 
 interface Team {
@@ -113,6 +115,16 @@ const MatchSheet: React.FC = () => {
     const [selectedDirectorTeamId, setSelectedDirectorTeamId] = useState<string | null>(null);
     const [isLineupModalOpen, setIsLineupModalOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Goal Animation State
+    const [goalAnimation, setGoalAnimation] = useState<{
+        isOpen: boolean;
+        teamName?: string;
+        teamLogo?: string;
+        playerName?: string;
+        playerAvatar?: string;
+        goalValue?: number;
+    }>({ isOpen: false });
 
     // Shootout State
     const [isShootoutModalOpen, setIsShootoutModalOpen] = useState(false);
@@ -340,10 +352,21 @@ const MatchSheet: React.FC = () => {
     const handleDirectorGoal = () => {
         if (!selectedDirectorTeamId) return;
 
+        const team = selectedDirectorTeamId === match?.homeTeam.id ? match?.homeTeam : match?.awayTeam;
+
         setDirectorGoals(prev => ({
             ...prev,
             [selectedDirectorTeamId]: (prev[selectedDirectorTeamId] || 0) + 1
         }));
+
+        // Trigger Animation
+        setGoalAnimation({
+            isOpen: true,
+            teamName: team?.name,
+            teamLogo: team?.logoUrl,
+            goalValue: 1 // Director goal always 1
+        });
+
         setUnsavedChanges(true);
         setIsDirectorModalOpen(false);
     };
@@ -478,6 +501,20 @@ const MatchSheet: React.FC = () => {
             if (delta < 0 && currentVal <= 0) return prev;
 
             const appliedDelta = delta < 0 ? -1 : finalDelta;
+
+            // Trigger Animation for Goal
+            if (type === 'goals' && delta > 0) {
+                const team = isHome ? match?.homeTeam : match?.awayTeam;
+                const player = team?.players.find(p => p.id === playerId);
+                setGoalAnimation({
+                    isOpen: true,
+                    teamName: team?.name,
+                    teamLogo: team?.logoUrl,
+                    playerName: player?.name,
+                    playerAvatar: player?.avatarUrl,
+                    goalValue: finalDelta
+                });
+            }
 
             const newVal = Math.max(0, currentVal + appliedDelta);
             return {
@@ -1490,7 +1527,14 @@ const MatchSheet: React.FC = () => {
                     </div>
                 </div>
             )}
-        </div >
+
+            {renderCardModal()}
+
+            <GoalAnimation
+                {...goalAnimation}
+                onClose={() => setGoalAnimation(prev => ({ ...prev, isOpen: false }))}
+            />
+        </div>
     );
 };
 
