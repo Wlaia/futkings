@@ -1,0 +1,19 @@
+{
+  "users": [
+    {
+      "id": "5a801e9f-be8d-47fa-80f9-e490c27c0903",
+      "email": "wellingtonlaialopes@gmail.com",
+      "password": "$2b$10$pLwfHs6W84mrOB1tDNUrZOF3..CjI55jFjtXSOB4XRLp0Klnxc29S",
+      "name": "Wellington Laia",
+      "role": "ADMIN",
+      "createdAt": "2026-02-25T10:32:17.351Z",
+      "updatedAt": "2026-02-25T10:32:17.351Z"
+    }
+  ],
+  "championships": [],
+  "teams": [],
+  "players": [],
+  "matches": [],
+  "playerMatchStats": [],
+  "championVotes": []
+}

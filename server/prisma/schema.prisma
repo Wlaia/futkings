@@ -34,36 +34,36 @@ model Championship {
   logoUrl            String?
   qualifiersPerGroup Int?
   startDate          DateTime?
+  championVotes      ChampionVote[]
   matches            Match[]
   teams              Team[]
-  championVotes      ChampionVote[]
 }
 
 model Team {
-  id                    String        @id @default(uuid())
+  id                    String         @id @default(uuid())
   name                  String
   logoUrl               String?
   championshipId        String?
-  managerId             String?       @unique
-  matchesPlayed         Int           @default(0)
-  wins                  Int           @default(0)
-  draws                 Int           @default(0)
-  losses                Int           @default(0)
-  goalsFor              Int           @default(0)
-  goalsAgainst          Int           @default(0)
+  managerId             String?        @unique
+  matchesPlayed         Int            @default(0)
+  wins                  Int            @default(0)
+  draws                 Int            @default(0)
+  losses                Int            @default(0)
+  goalsFor              Int            @default(0)
+  goalsAgainst          Int            @default(0)
   coachName             String?
   directorName          String?
-  isPublicLinkActive    Boolean       @default(false)
-  publicCanAddPlayer    Boolean       @default(false)
-  publicCanEditPlayer   Boolean       @default(false)
-  publicCanImportPlayer Boolean       @default(false)
-  publicCanPrintPlayer  Boolean       @default(false)
-  awayMatches           Match[]       @relation("AwayTeam")
-  homeMatches           Match[]       @relation("HomeTeam")
-  players               Player[]
-  championship          Championship? @relation(fields: [championshipId], references: [id])
-  manager               User?         @relation(fields: [managerId], references: [id])
+  isPublicLinkActive    Boolean        @default(false)
+  publicCanAddPlayer    Boolean        @default(false)
+  publicCanEditPlayer   Boolean        @default(false)
+  publicCanImportPlayer Boolean        @default(false)
+  publicCanPrintPlayer  Boolean        @default(false)
   championVotes         ChampionVote[]
+  awayMatches           Match[]        @relation("AwayTeam")
+  homeMatches           Match[]        @relation("HomeTeam")
+  players               Player[]
+  championship          Championship?  @relation(fields: [championshipId], references: [id])
+  manager               User?          @relation(fields: [managerId], references: [id])
 }
 
 model Player {
@@ -91,23 +91,23 @@ model Player {
 }
 
 model Match {
-  id             String            @id @default(uuid())
-  championshipId String
-  homeTeamId     String?
-  awayTeamId     String?
-  homeScore      Int?
-  awayScore      Int?
-  round          String
-  startTime      DateTime?
-  status         MatchStatus       @default(SCHEDULED)
+  id                String            @id @default(uuid())
+  championshipId    String
+  homeTeamId        String?
+  awayTeamId        String?
+  homeScore         Int?
+  awayScore         Int?
+  round             String
+  startTime         DateTime?
+  status            MatchStatus       @default(SCHEDULED)
   homeShootoutScore Int?
   awayShootoutScore Int?
-  elapsedTime    Int               @default(0)
-  activeEvents   Json?
-  awayTeam       Team?             @relation("AwayTeam", fields: [awayTeamId], references: [id])
-  championship   Championship      @relation(fields: [championshipId], references: [id])
-  homeTeam       Team?             @relation("HomeTeam", fields: [homeTeamId], references: [id])
-  playerStats    PlayerMatchStat[]
+  elapsedTime       Int               @default(0)
+  activeEvents      Json?
+  awayTeam          Team?             @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  championship      Championship      @relation(fields: [championshipId], references: [id])
+  homeTeam          Team?             @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  playerStats       PlayerMatchStat[]
 }
 
 model PlayerMatchStat {
@@ -123,6 +123,18 @@ model PlayerMatchStat {
   fouls         Int    @default(0)
   match         Match  @relation(fields: [matchId], references: [id])
   player        Player @relation(fields: [playerId], references: [id])
+}
+
+model ChampionVote {
+  id             String       @id @default(uuid())
+  championshipId String
+  teamId         String
+  ipHash         String
+  createdAt      DateTime     @default(now())
+  championship   Championship @relation(fields: [championshipId], references: [id])
+  team           Team         @relation(fields: [teamId], references: [id])
+
+  @@unique([championshipId, ipHash])
 }
 
 enum UserRole {
@@ -152,16 +164,4 @@ enum MatchStatus {
   SCHEDULED
   LIVE
   COMPLETED
-}
-
-model ChampionVote {
-  id             String       @id @default(uuid())
-  championshipId String
-  teamId         String
-  ipHash         String
-  createdAt      DateTime     @default(now())
-  championship   Championship @relation(fields: [championshipId], references: [id])
-  team           Team         @relation(fields: [teamId], references: [id])
-
-  @@unique([championshipId, ipHash])
 }

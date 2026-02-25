@@ -278,17 +278,21 @@ const FanZone: React.FC = () => {
         if (!activeChampionships.length) return;
         const champId = activeChampionships[0].id;
 
+        console.log(`[VOTING] Attempting to vote for Team: ${teamId} in Champ: ${champId}`);
+        console.log(`[VOTING] API Base URL: ${api.defaults.baseURL}`);
+
         try {
-            await api.post('/public/votes', { championshipId: champId, teamId });
+            const response = await api.post('/public/votes', { championshipId: champId, teamId });
+            console.log('[VOTING] Response Success:', response.data);
             localStorage.setItem(`votedChampion_${champId}`, teamId);
             setVotedTeamId(teamId);
             fetchVoteResults(champId);
         } catch (error: any) {
+            console.error('[VOTING] Error details:', error.response?.data || error.message);
             if (error.response?.status === 400) {
                 localStorage.setItem(`votedChampion_${champId}`, teamId);
                 setVotedTeamId(teamId);
             }
-            console.error('Vote error:', error);
         }
     };
 
@@ -661,7 +665,7 @@ const FanZone: React.FC = () => {
                     {activeChampionships.length > 0 && standings.length > 0 && (
                         <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl p-6 relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl"></div>
-                            <h3 className="text-xl font-black italic uppercase mb-4 flex items-center gap-2 text-white relative z-10">
+                            <h3 className="text-xl font-black italic uppercase mb-2 flex items-center gap-2 text-white relative z-10">
                                 <FaStar className="text-yellow-500" /> Quem será o Rei?
                             </h3>
 

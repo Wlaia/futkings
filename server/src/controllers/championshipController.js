@@ -522,24 +522,37 @@ const deleteChampionship = async (req, res) => {
             return res.status(404).json({ message: 'Championship not found' });
         }
 
-        // Delete associated matches first (if any)
-        // Note: In a production app, we might want to cascade or just deactivate.
-        // But for "excluir", we'll do a hard delete of matches and the championship.
+        // 1. Delete PlayerMatchStats for all matches in this championship
+        await prisma.playerMatchStat.deleteMany({
+            where: {
+                match: {
+                    championshipId: id
+                }
+            }
+        });
+
+        // 2. Delete all matches
         await prisma.match.deleteMany({
             where: { championshipId: id }
         });
 
-        // Dissociate teams
+        // 3. Delete all champion votes
+        await prisma.championVote.deleteMany({
+            where: { championshipId: id }
+        });
+
+        // 4. Dissociate teams
         await prisma.team.updateMany({
             where: { championshipId: id },
             data: { championshipId: null }
         });
 
+        // 5. Finally delete the championship
         await prisma.championship.delete({
             where: { id }
         });
 
-        res.json({ message: 'Championship deleted successfully' });
+        res.json({ message: 'Campeonato excluído com sucesso!' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error deleting championship' });

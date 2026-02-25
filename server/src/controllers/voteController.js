@@ -8,10 +8,12 @@ const castVote = async (req, res) => {
         return res.status(400).json({ message: 'Championship ID e Team ID são obrigatórios.' });
     }
 
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
 
     // Hash IP to protect privacy while still limiting votes
-    const ipHash = crypto.createHash('sha256').update(ip).digest('hex');
+    const ipHash = crypto.createHash('sha256').update(String(ip)).digest('hex');
+
+    console.log(`[Vote] Attempting to vote: Champ=${championshipId}, Team=${teamId}, IP=${ip}`);
 
     try {
         // Check if vote already exists for this IP and Championship
@@ -36,6 +38,7 @@ const castVote = async (req, res) => {
             }
         });
 
+        console.log(`[Vote] Success: Vote ID=${vote.id}`);
         res.status(201).json(vote);
     } catch (error) {
         console.error('Error casting vote:', error);
