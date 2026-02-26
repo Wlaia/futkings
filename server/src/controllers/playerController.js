@@ -5,12 +5,22 @@ const createPlayer = async (req, res) => {
     try {
         const { name, number, position, teamId, birthDate, isStarter } = req.body;
 
-        // Authorization Check
+        // Authorization & Lock Check
         if (req.user.role !== 'ADMIN') {
-            const teamCheck = await prisma.team.findUnique({ where: { id: teamId } });
+            const teamCheck = await prisma.team.findUnique({
+                where: { id: teamId },
+                include: { championship: true }
+            });
+
             if (!teamCheck) return res.status(404).json({ message: 'Team not found' });
+
             if (teamCheck.managerId !== req.user.userId) {
                 return res.status(403).json({ message: 'Permission denied: You do not manage this team' });
+            }
+
+            // Registration Lock Check
+            if (teamCheck.championship && teamCheck.championship.registrationEnabled === false) {
+                return res.status(403).json({ message: 'Inscrições bloqueadas para este campeonato.' });
             }
         }
 

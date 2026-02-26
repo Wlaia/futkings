@@ -4,11 +4,23 @@ const { uploadToSupabase } = require('../services/storageService');
 const checkPublicPermission = async (teamId, permissionField) => {
     const team = await prisma.team.findUnique({
         where: { id: teamId },
-        select: { isPublicLinkActive: true, [permissionField]: true }
+        select: {
+            isPublicLinkActive: true,
+            [permissionField]: true,
+            championship: {
+                select: { registrationEnabled: true }
+            }
+        }
     });
 
     if (!team) return false;
     if (!team.isPublicLinkActive) return false;
+
+    // If championship registration is locked, block addition/editing
+    if (team.championship && team.championship.registrationEnabled === false) {
+        return false;
+    }
+
     return team[permissionField] === true;
 };
 

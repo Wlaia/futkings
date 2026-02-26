@@ -10,7 +10,8 @@ const {
     getChampionshipStandings,
     listPublicChampionships,
     deleteChampionship,
-    updateChampionshipStatus
+    updateChampionshipStatus,
+    updateChampionshipRegistration
 } = require('../controllers/championshipController');
 const { authenticateToken, authorizeRole } = require('../middleware/authMiddleware');
 const upload = require('../config/uploadConfig');
@@ -28,5 +29,6 @@ router.post('/:id/draw', authenticateToken, authorizeRole(['ADMIN']), generateDr
 router.get('/:id/stats', getChampionshipStats);
 router.delete('/:id', authenticateToken, authorizeRole(['ADMIN']), deleteChampionship);
 router.patch('/:id/status', authenticateToken, authorizeRole(['ADMIN']), updateChampionshipStatus);
+router.patch('/:id/registration', authenticateToken, authorizeRole(['ADMIN']), updateChampionshipRegistration);
 
 module.exports = router;

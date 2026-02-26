@@ -576,6 +576,23 @@ const updateChampionshipStatus = async (req, res) => {
     }
 };
 
+const updateChampionshipRegistration = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { registrationEnabled } = req.body;
+
+        const championship = await prisma.championship.update({
+            where: { id },
+            data: { registrationEnabled: registrationEnabled === 'true' || registrationEnabled === true }
+        });
+
+        res.json(championship);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error updating registration status' });
+    }
+};
+
 module.exports = {
     createChampionship,
     listChampionships,
@@ -587,5 +604,6 @@ module.exports = {
     getDashboardData,
     getChampionshipStandings,
     deleteChampionship,
-    updateChampionshipStatus
+    updateChampionshipStatus,
+    updateChampionshipRegistration
 };

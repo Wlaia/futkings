@@ -53,6 +53,7 @@ interface Team {
     // Manager
     managerId?: string;
     manager?: { name: string; email: string };
+    championship?: { id: string; registrationEnabled: boolean };
 }
 
 const TeamDetails: React.FC = () => {
@@ -149,6 +150,11 @@ const TeamDetails: React.FC = () => {
 
     // Add Player (Quick)
     const handleQuickAdd = async () => {
+        if (user?.role !== 'ADMIN' && team?.championship?.registrationEnabled === false) {
+            alert("As inscrições de jogadores estão bloqueadas para este campeonato.");
+            return;
+        }
+
         const name = prompt("Nome do novo jogador:");
         if (!name) return;
         try {
@@ -309,9 +315,13 @@ const TeamDetails: React.FC = () => {
                             </button>
                             <button
                                 onClick={handleQuickAdd}
-                                className="bg-gray-800 border border-white/20 text-white px-3 py-2 rounded-lg font-bold uppercase text-xs hover:bg-gray-700 transition flex items-center justify-center gap-2"
+                                disabled={user?.role !== 'ADMIN' && team.championship?.registrationEnabled === false}
+                                className={`bg-gray-800 border border-white/20 text-white px-3 py-2 rounded-lg font-bold uppercase text-xs hover:bg-gray-700 transition flex items-center justify-center gap-2 ${user?.role !== 'ADMIN' && team.championship?.registrationEnabled === false ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                title={user?.role !== 'ADMIN' && team.championship?.registrationEnabled === false ? "Inscrições Bloqueadas" : "Adicionar Jogador"}
                             >
-                                + Jogador
+                                <span className="flex items-center gap-2">
+                                    {user?.role !== 'ADMIN' && team.championship?.registrationEnabled === false ? '🔒 Bloqueado' : '+ Jogador'}
+                                </span>
                             </button>
                         </>
                     )}
@@ -458,10 +468,10 @@ const TeamDetails: React.FC = () => {
                                 {(user?.role === 'ADMIN' || (user?.role === 'MANAGER' && user.id === team.managerId)) && (
                                     <div
                                         onClick={handleQuickAdd}
-                                        className="w-[270px] h-[414px] scale-90 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 hover:border-yellow-500/50 transition opacity-60 hover:opacity-100"
+                                        className={`w-[270px] h-[414px] scale-90 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center transition ${user?.role !== 'ADMIN' && team.championship?.registrationEnabled === false ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer hover:bg-white/5 hover:border-yellow-500/50 opacity-60 hover:opacity-100'}`}
                                     >
-                                        <span className="text-4xl text-yellow-500 mb-2">+</span>
-                                        <span className="text-gray-400 font-bold uppercase">Novo Jogador</span>
+                                        <span className="text-4xl text-yellow-500 mb-2">{user?.role !== 'ADMIN' && team.championship?.registrationEnabled === false ? '🔒' : '+'}</span>
+                                        <span className="text-gray-400 font-bold uppercase">{user?.role !== 'ADMIN' && team.championship?.registrationEnabled === false ? 'Inscrições Bloqueadas' : 'Novo Jogador'}</span>
                                     </div>
                                 )}
                             </div>

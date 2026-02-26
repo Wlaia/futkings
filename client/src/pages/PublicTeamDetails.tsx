@@ -31,8 +31,9 @@ interface Team {
     isPublicLinkActive: boolean;
     publicCanAddPlayer: boolean;
     publicCanEditPlayer: boolean;
-    publicCanImportPlayer: boolean; // Not implemented yet
-    publicCanPrintPlayer: boolean;  // Not implemented yet
+    publicCanImportPlayer: boolean;
+    publicCanPrintPlayer: boolean;
+    championship?: { registrationEnabled: boolean };
 }
 
 const PublicTeamDetails: React.FC = () => {
@@ -150,13 +151,22 @@ const PublicTeamDetails: React.FC = () => {
                     {team.publicCanAddPlayer && (
                         <button
                             onClick={() => {
+                                if (team.championship?.registrationEnabled === false) {
+                                    alert("As inscrições de jogadores estão bloqueadas para este campeonato.");
+                                    return;
+                                }
                                 setModalMode('ADD');
                                 setSelectedPlayer(undefined);
                                 setIsModalOpen(true);
                             }}
-                            className="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-bold uppercase tracking-wider shadow-lg flex items-center gap-2 transition-transform hover:scale-105"
+                            className={`px-6 py-3 rounded-xl font-bold uppercase tracking-wider shadow-lg flex items-center gap-2 transition-transform hover:scale-105 ${team.championship?.registrationEnabled === false
+                                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-500 text-white'
+                                }`}
+                            title={team.championship?.registrationEnabled === false ? "Inscrições Bloqueadas" : "Adicionar Jogador"}
                         >
-                            <FaPlus /> Adicionar Jogador
+                            {team.championship?.registrationEnabled === false ? <FaLock /> : <FaPlus />}
+                            {team.championship?.registrationEnabled === false ? 'Inscrições Bloqueadas' : 'Adicionar Jogador'}
                         </button>
                     )}
                 </div>

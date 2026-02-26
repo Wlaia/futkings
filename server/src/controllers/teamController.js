@@ -58,7 +58,8 @@ const getTeam = async (req, res) => {
             where: { id },
             include: {
                 manager: { select: { name: true } },
-                players: true
+                players: true,
+                championship: true
             }
         });
 

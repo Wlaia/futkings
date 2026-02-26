@@ -13,6 +13,7 @@ interface Championship {
     type: string;
     teamsCount: number;
     status: string;
+    registrationEnabled: boolean;
     teams: Team[];
     matches: Match[];
 }
@@ -229,6 +230,23 @@ const ChampionshipDetails: React.FC = () => {
         }
     };
 
+    const handleToggleRegistration = async () => {
+        const newState = !championship?.registrationEnabled;
+        const confirmMsg = newState
+            ? 'Deseja habilitar as inscrições de jogadores para este campeonato?'
+            : 'Deseja bloquear novas inscrições de jogadores? Os times não poderão mais adicionar atletas.';
+
+        if (!window.confirm(confirmMsg)) return;
+
+        try {
+            await api.patch(`/championships/${id}/registration`, { registrationEnabled: newState });
+            fetchChampionship();
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao atualizar trava de inscrição.');
+        }
+    };
+
     if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white"><div className="animate-spin h-8 w-8 border-4 border-yellow-500 rounded-full border-t-transparent"></div></div>;
     if (!championship) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Campeonato não encontrado.</div>;
 
@@ -302,6 +320,16 @@ const ChampionshipDetails: React.FC = () => {
 
                     {user?.role === 'ADMIN' && (
                         <>
+                            <button
+                                onClick={handleToggleRegistration}
+                                className={`flex-1 md:flex-none items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all shadow-lg border ${championship.registrationEnabled
+                                    ? 'bg-gray-800 text-green-500 border-green-500/30 hover:bg-gray-700'
+                                    : 'bg-green-600 text-white border-green-500 hover:bg-green-500'
+                                    } flex text-center`}
+                                title={championship.registrationEnabled ? 'Bloquear Inscrições' : 'Liberar Inscrições'}
+                            >
+                                <FaShieldAlt /> {championship.registrationEnabled ? 'Bloquear Inscrições' : 'Liberar Inscrições'}
+                            </button>
                             <button
                                 onClick={handleToggleStatus}
                                 className={`flex-1 md:flex-none items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all shadow-lg border ${championship.status === 'DEACTIVATED'

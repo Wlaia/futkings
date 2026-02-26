@@ -34,6 +34,7 @@ model Championship {
   logoUrl            String?
   qualifiersPerGroup Int?
   startDate          DateTime?
+  registrationEnabled Boolean            @default(true)
   championVotes      ChampionVote[]
   matches            Match[]
   teams              Team[]
