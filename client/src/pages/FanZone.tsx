@@ -250,9 +250,13 @@ const FanZone: React.FC = () => {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 10000); // Poll every 10s
+        // Polling interval: 10s if live, 30s otherwise
+        const getInterval = () => (featuredMatch?.status === 'LIVE' ? 10000 : 30000);
+        let interval = setInterval(fetchData, getInterval());
+
+        // Re-setup interval if featuredMatch status changes
         return () => clearInterval(interval);
-    }, []);
+    }, [featuredMatch?.status]);
 
     // Voting Effects & Handlers
     useEffect(() => {

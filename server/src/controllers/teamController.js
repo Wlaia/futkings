@@ -41,10 +41,29 @@ const createTeam = async (req, res) => {
 
 const listTeams = async (req, res) => {
     try {
-        const teams = await prisma.team.findMany({
-            include: { manager: { select: { name: true, email: true } } }
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const [teams, total] = await Promise.all([
+            prisma.team.findMany({
+                skip,
+                take: limit,
+                include: { manager: { select: { name: true, email: true } } },
+                orderBy: { name: 'asc' }
+            }),
+            prisma.team.count()
+        ]);
+
+        res.json({
+            teams,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
         });
-        res.json(teams);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error listing teams' });

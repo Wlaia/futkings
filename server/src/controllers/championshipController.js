@@ -40,10 +40,28 @@ const createChampionship = async (req, res) => {
 
 const listChampionships = async (req, res) => {
     try {
-        const championships = await prisma.championship.findMany({
-            orderBy: { createdAt: 'desc' }
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const [championships, total] = await Promise.all([
+            prisma.championship.findMany({
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.championship.count()
+        ]);
+
+        res.json({
+            championships,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
         });
-        res.json(championships);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error listing championships' });
@@ -52,17 +70,28 @@ const listChampionships = async (req, res) => {
 
 const listPublicChampionships = async (req, res) => {
     try {
-        const championships = await prisma.championship.findMany({
-            where: {
-                status: { in: ['ACTIVE', 'COMPLETED', 'DRAFT'] } // Show all relevant for public
-            },
-            orderBy: { updatedAt: 'desc' },
-            include: {
-                teams: {
-                    select: { id: true }
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const where = {
+            status: { in: ['ACTIVE', 'COMPLETED', 'DRAFT'] }
+        };
+
+        const [championships, total] = await Promise.all([
+            prisma.championship.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { updatedAt: 'desc' },
+                include: {
+                    teams: {
+                        select: { id: true }
+                    }
                 }
-            }
-        });
+            }),
+            prisma.championship.count({ where })
+        ]);
 
         // Transform to include teamsCount based on actual teams or config
         const formatted = championships.map(c => ({
@@ -70,7 +99,15 @@ const listPublicChampionships = async (req, res) => {
             teamsCount: c.teams.length > 0 ? c.teams.length : c.teamsCount
         }));
 
-        res.json(formatted);
+        res.json({
+            championships: formatted,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error listing public championships' });
@@ -254,17 +291,20 @@ const getChampionshipStats = async (req, res) => {
             take: 5
         });
 
-        // Fetch Player Details for Scorers
-        const topScorers = await Promise.all(topScorersGroup.map(async (stat) => {
-            const player = await prisma.player.findUnique({
-                where: { id: stat.playerId },
-                include: { team: { select: { name: true, logoUrl: true } } }
-            });
+        // Fetch Player Details for Scorers in a single query
+        const scorerIds = topScorersGroup.map(s => s.playerId);
+        const playerDetails = await prisma.player.findMany({
+            where: { id: { in: scorerIds } },
+            include: { team: { select: { name: true, logoUrl: true } } }
+        });
+
+        const topScorers = topScorersGroup.map(stat => {
+            const player = playerDetails.find(p => p.id === stat.playerId);
             return {
                 ...player,
                 goals: stat._sum.goals
             };
-        }));
+        });
 
         // Top Goalkeepers (Least Conceded)
         // We filter for Goalkeepers who have played at least 1 match ideally, but simplify check matches
@@ -280,18 +320,21 @@ const getChampionshipStats = async (req, res) => {
             take: 5
         });
 
-        // Fetch Player Details for Goalkeepers
-        const topGoalkeepers = await Promise.all(topGoalkeepersGroup.map(async (stat) => {
-            const player = await prisma.player.findUnique({
-                where: { id: stat.playerId },
-                include: { team: { select: { name: true, logoUrl: true } } }
-            });
+        // Fetch Player Details for Goalkeepers in a single query
+        const gkIds = topGoalkeepersGroup.map(s => s.playerId);
+        const gkDetails = await prisma.player.findMany({
+            where: { id: { in: gkIds } },
+            include: { team: { select: { name: true, logoUrl: true } } }
+        });
+
+        const topGoalkeepers = topGoalkeepersGroup.map(stat => {
+            const player = gkDetails.find(p => p.id === stat.playerId);
             return {
                 ...player,
                 goalsConceded: stat._sum.goalsConceded,
                 matchesPlayed: stat._count.matchId
             };
-        }));
+        });
 
         // Top Assists
         const topAssistsGroup = await prisma.playerMatchStat.groupBy({
@@ -304,17 +347,20 @@ const getChampionshipStats = async (req, res) => {
             take: 5
         });
 
-        // Fetch Player Details for Assists
-        const topAssists = await Promise.all(topAssistsGroup.map(async (stat) => {
-            const player = await prisma.player.findUnique({
-                where: { id: stat.playerId },
-                include: { team: { select: { name: true, logoUrl: true } } }
-            });
+        // Fetch Player Details for Assists in a single query
+        const assisterIds = topAssistsGroup.map(s => s.playerId);
+        const assisterDetails = await prisma.player.findMany({
+            where: { id: { in: assisterIds } },
+            include: { team: { select: { name: true, logoUrl: true } } }
+        });
+
+        const topAssists = topAssistsGroup.map(stat => {
+            const player = assisterDetails.find(p => p.id === stat.playerId);
             return {
                 ...player,
                 assists: stat._sum.assists
             };
-        }));
+        });
 
         res.json({ topScorers, topGoalkeepers, topAssists });
 
