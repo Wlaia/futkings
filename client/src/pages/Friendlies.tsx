@@ -49,8 +49,9 @@ const Friendlies: React.FC = () => {
     const [drawMatches, setDrawMatches] = useState<any[]>([]); // Using any to bypass strict checks or cast properly
 
     useEffect(() => {
-        api.get('/teams').then(res => {
+        api.get('/teams?limit=100').then(res => {
             if (Array.isArray(res.data)) setTeams(res.data);
+            else if (res.data && res.data.teams) setTeams(res.data.teams);
         }).catch(console.error);
     }, []);
 

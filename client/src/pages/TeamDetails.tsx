@@ -104,8 +104,10 @@ const TeamDetails: React.FC = () => {
                 setTeam({ ...teamRes.data, players: playersResponse.data });
             } catch (e) {
                 // Fallback to searching list
-                const teamsResponse = await api.get('/teams');
-                const foundTeam = teamsResponse.data.find((t: any) => t.id === id);
+                const teamsResponse = await api.get('/teams?limit=100');
+                const data = teamsResponse.data;
+                const teamsList = Array.isArray(data) ? data : (data.teams || []);
+                const foundTeam = teamsList.find((t: any) => t.id === id);
                 if (foundTeam) {
                     setTeam({ ...foundTeam, players: playersResponse.data });
                 }

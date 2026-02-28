@@ -36,8 +36,9 @@ const Dashboard: React.FC = () => {
         try {
           // Fetch all teams to find which one matches user.id
           // Optimization: Backend should have an endpoint for this, but current listTeams includes manager info.
-          const response = await api.get('/teams');
-          const myTeam = response.data.find((t: any) => t.manager?.email === user.email || t.managerId === user.id);
+          const response = await api.get('/teams?limit=100');
+          const teamsList = Array.isArray(response.data) ? response.data : (response.data.teams || []);
+          const myTeam = teamsList.find((t: any) => t.manager?.email === user.email || t.managerId === user.id);
           // Note: user.id might be stored differently depending on login response. 
           // Let's assume listTeams returns manager object.
 

@@ -90,9 +90,11 @@ const ChampionshipDetails: React.FC = () => {
 
     const fetchTeams = async () => {
         try {
-            const response = await api.get('/teams');
+            const response = await api.get('/teams?limit=100');
             if (Array.isArray(response.data)) {
                 setAllTeams(response.data);
+            } else if (response.data && response.data.teams) {
+                setAllTeams(response.data.teams);
             }
         } catch (error) {
             console.error(error);

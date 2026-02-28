@@ -25,16 +25,27 @@ const ChampionshipsList: React.FC = () => {
     const fetchChampionships = (page = 1) => {
         setLoading(true);
         api.get(`/championships?page=${page}&limit=12`).then(response => {
-            const { championships: newChamps, pagination: pag } = response.data;
+            const data = response.data;
+            let fetchedChamps = [];
+            let pag = { page: 1, totalPages: 1 };
+
+            if (Array.isArray(data)) {
+                fetchedChamps = data;
+                pag = { page: 1, totalPages: 1 };
+            } else if (data && data.championships) {
+                fetchedChamps = data.championships;
+                pag = data.pagination;
+            }
+
             if (page === 1) {
-                setChampionships(newChamps);
+                setChampionships(fetchedChamps);
             } else {
-                setChampionships(prev => [...prev, ...newChamps]);
+                setChampionships(prev => [...prev, ...fetchedChamps]);
             }
             setPagination(pag);
             setLoading(false);
         }).catch(err => {
-            console.error(err);
+            console.error('Error fetching championships:', err);
             setLoading(false);
         });
     };

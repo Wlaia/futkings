@@ -26,16 +26,27 @@ const TeamList: React.FC = () => {
     const fetchTeams = (page = 1) => {
         setLoading(true);
         api.get(`/teams?page=${page}&limit=12`).then(response => {
-            const { teams: newTeams, pagination: pag } = response.data;
+            const data = response.data;
+            let fetchedTeams = [];
+            let pag = { page: 1, totalPages: 1 };
+
+            if (Array.isArray(data)) {
+                fetchedTeams = data;
+                pag = { page: 1, totalPages: 1 };
+            } else if (data && data.teams) {
+                fetchedTeams = data.teams;
+                pag = data.pagination;
+            }
+
             if (page === 1) {
-                setTeams(newTeams);
+                setTeams(fetchedTeams);
             } else {
-                setTeams(prev => [...prev, ...newTeams]);
+                setTeams(prev => [...prev, ...fetchedTeams]);
             }
             setPagination(pag);
             setLoading(false);
         }).catch(err => {
-            console.error(err);
+            console.error('Error fetching teams:', err);
             setLoading(false);
         });
     };

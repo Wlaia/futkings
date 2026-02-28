@@ -124,8 +124,17 @@ const FanZone: React.FC = () => {
             ]);
 
             // Safe assignment with filtering for null/undefined items
-            const matchesData = Array.isArray(matchesRes.data) ? matchesRes.data.filter((m: any) => m) : [];
-            const championshipsData = Array.isArray(champsRes.data) ? champsRes.data.filter((c: any) => c) : [];
+            const matchesData = Array.isArray(matchesRes.data)
+                ? matchesRes.data.filter((m: any) => m)
+                : [];
+
+            // Handle both legacy array and new paginated object for championships
+            let championshipsData = [];
+            if (Array.isArray(champsRes.data)) {
+                championshipsData = champsRes.data.filter((c: any) => c);
+            } else if (champsRes.data && Array.isArray(champsRes.data.championships)) {
+                championshipsData = champsRes.data.championships.filter((c: any) => c);
+            }
 
             setActiveChampionships(championshipsData);
 
