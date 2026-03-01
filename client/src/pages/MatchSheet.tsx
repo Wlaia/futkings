@@ -430,9 +430,9 @@ const MatchSheet: React.FC = () => {
             value = 2;
         }
 
-        // Final Minutes Rule (18:00 - 20:00)
-        // 18 min = 1080s, 20 min = 1200s
-        if (time >= 1080 && time < 1200) {
+        // Final Minutes Rule (18:00 onwards, including extra time)
+        // 18 min = 1080s
+        if (time >= 1080) {
             value = 2;
         }
 
