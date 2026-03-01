@@ -614,6 +614,8 @@ const MatchSheet: React.FC = () => {
             await api.put(`/matches/${id}`, {
                 homeScore,
                 awayScore,
+                homeShootoutScore,
+                awayShootoutScore,
                 status: matchStatus,
                 events: diffEvents,
                 elapsedTime: time,

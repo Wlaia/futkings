@@ -79,8 +79,14 @@ const handleLeagueProgression = async (match) => {
             standings[awayTeamId].points += 3;
             standings[awayTeamId].wins += 1;
         } else {
-            standings[homeTeamId].points += 1;
-            standings[awayTeamId].points += 1;
+            const homeShootout = m.homeShootoutScore || 0;
+            const awayShootout = m.awayShootoutScore || 0;
+
+            if (homeShootout > awayShootout) {
+                standings[homeTeamId].points += 1;
+            } else if (awayShootout > homeShootout) {
+                standings[awayTeamId].points += 1;
+            }
         }
 
         playerStats.forEach(stat => {
@@ -144,9 +150,13 @@ const handleKnockoutProgression = async (match) => {
     if (homeScore > awayScore) winnerId = homeTeamId;
     else if (awayScore > homeScore) winnerId = awayTeamId;
     else {
-        // Handle Draw? For now assuming there's a winner (penalties logic is client-side visually but score determines winner)
-        // If draw, we might need a tie-breaker logic or strictly require a winner.
-        return;
+        // Handle Draw via Shootout Score
+        const homeShootout = match.homeShootoutScore || 0;
+        const awayShootout = match.awayShootoutScore || 0;
+
+        if (homeShootout > awayShootout) winnerId = homeTeamId;
+        else if (awayShootout > homeShootout) winnerId = awayTeamId;
+        else return; // Still tied or no shootout info yet, cannot advance
     }
 
     if (!winnerId) return;

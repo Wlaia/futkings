@@ -509,14 +509,9 @@ const getChampionshipStandings = async (req, res) => {
                 const awayShootout = m.awayShootoutScore || 0;
 
                 if (homeShootout > awayShootout) {
-                    standings[homeTeamId].points += 2; // 1 (draw) + 1 (shootout win)
-                    standings[awayTeamId].points += 1; // 1 (draw)
+                    standings[homeTeamId].points += 1; // 1 (shootout win)
                 } else if (awayShootout > homeShootout) {
-                    standings[awayTeamId].points += 2; // 1 (draw) + 1 (shootout win)
-                    standings[homeTeamId].points += 1; // 1 (draw)
-                } else {
-                    standings[homeTeamId].points += 1;
-                    standings[awayTeamId].points += 1;
+                    standings[awayTeamId].points += 1; // 1 (shootout win)
                 }
             }
 
