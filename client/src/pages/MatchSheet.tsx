@@ -78,7 +78,7 @@ const SECRET_CARDS: SecretCard[] = [
     { id: 'double_goal', type: 'DOUBLE_GOAL', label: 'Gol em Dobro', description: 'Todos os gols do time valem 2', icon: <FaStar />, color: 'bg-purple-500', duration: 120 },
     { id: 'exclusion', type: 'EXCLUSION', label: 'Exclusão', description: 'Você escolhe um adversário pra sair 2 min', icon: <FaTimes />, color: 'bg-red-500', duration: 120 },
     { id: 'gk_surprise', type: 'GK_SURPRISE', label: 'Goleiro Surpresa', description: 'Jogador de linha vai pro gol', icon: <FaHandPaper />, color: 'bg-orange-500', duration: 120 },
-    { id: 'penalty', type: 'PENALTY_FUTKINGS', label: 'Pênalti FutKings', description: 'Shootout 1x1 imediato', icon: <FaBullseye />, color: 'bg-indigo-500', duration: 120 },
+    { id: 'penalty', type: 'PENALTY_FUTKINGS', label: 'Pênalti FutKings', description: 'Shootout 1x1 imediato', icon: <FaBullseye />, color: 'bg-indigo-500', duration: 0 },
 ];
 
 const MatchSheet: React.FC = () => {
@@ -128,6 +128,8 @@ const MatchSheet: React.FC = () => {
 
     // Shootout State
     const [isShootoutModalOpen, setIsShootoutModalOpen] = useState(false);
+    const [isPenaltyFutkingsModalOpen, setIsPenaltyFutkingsModalOpen] = useState(false);
+    const [penaltyFutkingsTeamId, setPenaltyFutkingsTeamId] = useState<string | null>(null);
     const [shootoutHistory, setShootoutHistory] = useState<{ home: ('GOAL' | 'MISS')[], away: ('GOAL' | 'MISS')[] }>({ home: [], away: [] });
 
     const homeShootoutScore = shootoutHistory.home.filter(r => r === 'GOAL').length;
@@ -396,6 +398,13 @@ const MatchSheet: React.FC = () => {
 
     const activateCard = (card: SecretCard, targetPlayerId?: string) => {
         if (!selectedTeamForCard) return;
+
+        if (card.type === 'PENALTY_FUTKINGS') {
+            setPenaltyFutkingsTeamId(selectedTeamForCard);
+            setIsPenaltyFutkingsModalOpen(true);
+            setIsCardModalOpen(false);
+            return;
+        }
 
         const now = Date.now();
         const newCard: ActiveCard = {
@@ -1376,6 +1385,61 @@ const MatchSheet: React.FC = () => {
                 homeTeam={match.homeTeam}
                 awayTeam={match.awayTeam}
             />
+
+            {/* Penalty FutKings Modal */}
+            {isPenaltyFutkingsModalOpen && match && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
+                    <div className="bg-gray-800 p-8 rounded-2xl border border-gray-700 shadow-2xl w-full max-w-md relative text-center">
+                        <div className="animate-pulse mb-6">
+                            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600 uppercase italic">
+                                Penalti Futkings
+                            </h2>
+                            <div className="flex justify-center mt-2">
+                                <FaBullseye className="text-indigo-500 text-4xl" />
+                            </div>
+                        </div>
+
+                        <p className="text-gray-400 mb-8 text-sm uppercase tracking-widest font-bold">
+                            Time: {penaltyFutkingsTeamId === match.homeTeam.id ? match.homeTeam.name : match.awayTeam.name}
+                        </p>
+
+                        <div className="flex gap-4 justify-center">
+                            <button
+                                onClick={() => {
+                                    setIsPenaltyFutkingsModalOpen(false);
+                                    setPenaltyFutkingsTeamId(null);
+                                }}
+                                className="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold py-4 rounded-xl shadow-lg border border-gray-600 transition-all hover:scale-105 uppercase"
+                            >
+                                ERROU
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (penaltyFutkingsTeamId) {
+                                        const team = penaltyFutkingsTeamId === match.homeTeam.id ? match.homeTeam : match.awayTeam;
+                                        setDirectorGoals(prev => ({
+                                            ...prev,
+                                            [penaltyFutkingsTeamId]: (prev[penaltyFutkingsTeamId] || 0) + 1
+                                        }));
+                                        setGoalAnimation({
+                                            isOpen: true,
+                                            teamName: team?.name,
+                                            teamLogo: team?.logoUrl,
+                                            goalValue: 1
+                                        });
+                                        setUnsavedChanges(true);
+                                    }
+                                    setIsPenaltyFutkingsModalOpen(false);
+                                    setPenaltyFutkingsTeamId(null);
+                                }}
+                                className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl shadow-lg border border-indigo-400 transition-all hover:scale-110 uppercase"
+                            >
+                                GOL !!!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Date Selection Modal */}
             {isDateModalOpen && (

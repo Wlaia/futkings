@@ -512,7 +512,7 @@ const FanZone: React.FC = () => {
                                         <div className="mt-6 pt-6 border-t border-white/5 flex gap-8 justify-between">
                                             {/* Home Team Cards */}
                                             <div className="flex-1 flex flex-col gap-2 items-end">
-                                                {featuredMatch.activeEvents.filter(e => e.teamId === featuredMatch.homeTeam?.id && e.endTime > Date.now()).map(e => {
+                                                {featuredMatch.activeEvents.filter(e => e.teamId === featuredMatch.homeTeam?.id && e.endTime > Date.now() && e.type !== 'PENALTY_FUTKINGS').map(e => {
                                                     const config = CARD_CONFIG[e.type] || { label: e.type, color: 'bg-gray-700 text-white', icon: <FaStar /> };
                                                     return (
                                                         <div key={e.cardId} className={`${config.color} px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-pulse`}>
@@ -523,7 +523,7 @@ const FanZone: React.FC = () => {
                                             </div>
                                             {/* Away Team Cards */}
                                             <div className="flex-1 flex flex-col gap-2 items-start">
-                                                {featuredMatch.activeEvents.filter(e => e.teamId === featuredMatch.awayTeam?.id && e.endTime > Date.now()).map(e => {
+                                                {featuredMatch.activeEvents.filter(e => e.teamId === featuredMatch.awayTeam?.id && e.endTime > Date.now() && e.type !== 'PENALTY_FUTKINGS').map(e => {
                                                     const config = CARD_CONFIG[e.type] || { label: e.type, color: 'bg-gray-700 text-white', icon: <FaStar /> };
                                                     return (
                                                         <div key={e.cardId} className={`${config.color} px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-pulse`}>
