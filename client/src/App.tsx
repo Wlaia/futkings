@@ -34,13 +34,17 @@ const Dashboard: React.FC = () => {
     if (user?.role === 'MANAGER') {
       const findAndRedirect = async () => {
         try {
-          // Fetch all teams to find which one matches user.id
-          // Optimization: Backend should have an endpoint for this, but current listTeams includes manager info.
+          // Priority 1: Instant redirect if managedTeamId is already in user object (New optimization)
+          if (user.managedTeamId) {
+            navigate(`/teams/${user.managedTeamId}`, { replace: true });
+            return;
+          }
+
+          // Fallback (Legacy): Fetch all teams to find which one matches user.id
+          // This only runs if the token was old or didn't include the ID yet.
           const response = await api.get('/teams?limit=100');
           const teamsList = Array.isArray(response.data) ? response.data : (response.data.teams || []);
           const myTeam = teamsList.find((t: any) => t.manager?.email === user.email || t.managerId === user.id);
-          // Note: user.id might be stored differently depending on login response. 
-          // Let's assume listTeams returns manager object.
 
           if (myTeam) {
             navigate(`/teams/${myTeam.id}`, { replace: true });

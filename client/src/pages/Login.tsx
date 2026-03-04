@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 const Login: React.FC = () => {
-    const { register, handleSubmit } = useForm();
+    const { register, handleSubmit, formState: { isSubmitting } } = useForm();
     const { signIn } = useAuth();
     const navigate = useNavigate();
 
@@ -14,8 +14,9 @@ const Login: React.FC = () => {
             const response = await api.post('/auth/login', data);
             signIn(response.data.token, response.data.user);
             navigate('/dashboard');
-        } catch (error) {
-            alert('Erro ao fazer login. Verifique suas credenciais.');
+        } catch (error: any) {
+            const message = error.response?.data?.message || 'Erro ao fazer login. Verifique suas credenciais.';
+            alert(message);
         }
     };
 
@@ -32,6 +33,7 @@ const Login: React.FC = () => {
                         <input
                             {...register('email')}
                             type="email"
+                            required
                             className="w-full px-4 py-2 bg-gray-700 rounded border border-gray-600 focus:border-yellow-500 focus:outline-none"
                             placeholder="seu@email.com"
                         />
@@ -41,15 +43,28 @@ const Login: React.FC = () => {
                         <input
                             {...register('password')}
                             type="password"
+                            required
                             className="w-full px-4 py-2 bg-gray-700 rounded border border-gray-600 focus:border-yellow-500 focus:outline-none"
                             placeholder="********"
                         />
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-gray-900 font-bold py-2 rounded hover:from-yellow-400 hover:to-orange-400 transition"
+                        disabled={isSubmitting}
+                        className={`w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-gray-900 font-bold py-2 rounded transition flex items-center justify-center ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:from-yellow-400 hover:to-orange-400'
+                            }`}
                     >
-                        Entrar
+                        {isSubmitting ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Entrando...
+                            </>
+                        ) : (
+                            'Entrar'
+                        )}
                     </button>
                 </form>
 

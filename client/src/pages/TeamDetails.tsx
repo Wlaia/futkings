@@ -441,7 +441,7 @@ const TeamDetails: React.FC = () => {
                                             <PlayerCard
                                                 player={player}
                                                 teamLogo={team.logoUrl || undefined}
-                                                onUpload={(file) => handleAvatarUpload(player.id, file)}
+                                                onUpload={(user?.role === 'ADMIN' || (user?.role === 'MANAGER' && user.id === team.managerId)) ? (file) => handleAvatarUpload(player.id, file) : undefined}
                                                 uploading={uploadingPlayerId === player.id}
                                             />
                                         </div>

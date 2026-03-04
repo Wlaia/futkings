@@ -384,38 +384,31 @@ const getDashboardData = async (req, res) => {
         const lastCompleted = await prisma.championship.findFirst({
             where: { status: 'COMPLETED' },
             orderBy: { updatedAt: 'desc' },
-            include: {
-                matches: {
-                    where: { status: 'COMPLETED' },
-                    orderBy: { startTime: 'desc' },
-                    include: { homeTeam: true, awayTeam: true }
-                }
-            }
         });
 
-        if (lastCompleted && lastCompleted.matches.length > 0) {
-            // Sort matches to find the "Final" one.
-            // Priority:
-            // 1. match.round === 'Final'
-            // 2. match.startTime (descending), treating null as oldest (0)
-            const sortedMatches = lastCompleted.matches.sort((a, b) => {
-                if (a.round === 'Final' && b.round !== 'Final') return -1;
-                if (b.round === 'Final' && a.round !== 'Final') return 1;
-
-                const timeA = a.startTime ? new Date(a.startTime).getTime() : 0;
-                const timeB = b.startTime ? new Date(b.startTime).getTime() : 0;
-                return timeB - timeA;
+        if (lastCompleted) {
+            // Optimized: Fetch only the most relevant "Final" or latest match separately
+            const finalMatch = await prisma.match.findFirst({
+                where: {
+                    championshipId: lastCompleted.id,
+                    status: 'COMPLETED'
+                },
+                orderBy: [
+                    { round: 'desc' },
+                    { startTime: 'desc' }
+                ],
+                include: { homeTeam: true, awayTeam: true }
             });
 
-            const finalMatch = sortedMatches[0];
-
-            if (finalMatch.homeScore > finalMatch.awayScore) {
-                lastChampion = { ...finalMatch.homeTeam, championshipName: lastCompleted.name };
-            } else if (finalMatch.awayScore > finalMatch.homeScore) {
-                lastChampion = { ...finalMatch.awayTeam, championshipName: lastCompleted.name };
-            } else {
-                // Penalties logic should be here, but for now take home or generic
-                lastChampion = { ...finalMatch.homeTeam, championshipName: lastCompleted.name, note: 'Won on penalties (simulated)' };
+            if (finalMatch) {
+                if (finalMatch.homeScore > finalMatch.awayScore) {
+                    lastChampion = { ...finalMatch.homeTeam, championshipName: lastCompleted.name };
+                } else if (finalMatch.awayScore > finalMatch.homeScore) {
+                    lastChampion = { ...finalMatch.awayTeam, championshipName: lastCompleted.name };
+                } else {
+                    // Penalties logic should be here, but for now take home or generic
+                    lastChampion = { ...finalMatch.homeTeam, championshipName: lastCompleted.name, note: 'Won on penalties (simulated)' };
+                }
             }
         }
 

@@ -6,6 +6,7 @@ interface User {
     name: string;
     email: string;
     role: 'ADMIN' | 'MANAGER' | 'PLAYER';
+    managedTeamId?: string;
 }
 
 interface AuthContextData {
@@ -28,6 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (storagedUser && storagedToken) {
             setUser(JSON.parse(storagedUser));
+            api.defaults.headers.common['Authorization'] = `Bearer ${storagedToken}`;
         }
         setLoading(false);
     }, []);
