@@ -361,6 +361,19 @@ const MatchSheet: React.FC = () => {
             [selectedDirectorTeamId]: (prev[selectedDirectorTeamId] || 0) + 1
         }));
 
+        // AUTOMATICALLY Increment Opposing Goalkeeper Conceded Goals
+        const opposingTeam = selectedDirectorTeamId === match?.homeTeam.id ? match?.awayTeam : match?.homeTeam;
+        const opposingGk = opposingTeam?.players.find(p => p.position === 'GOALKEEPER');
+        if (opposingGk) {
+            setStats(prev => ({
+                ...prev,
+                [opposingGk.id]: {
+                    ...(prev[opposingGk.id] || { goals: 0, assists: 0, yellow: 0, red: 0, fouls: 0, saves: 0, conceded: 0 }),
+                    conceded: (prev[opposingGk.id]?.conceded || 0) + 1
+                }
+            }));
+        }
+
         // Trigger Animation
         setGoalAnimation({
             isOpen: true,
@@ -523,6 +536,21 @@ const MatchSheet: React.FC = () => {
                     playerAvatar: player?.avatarUrl,
                     goalValue: finalDelta
                 });
+
+                // AUTOMATICALLY Increment Opposing Goalkeeper Conceded Goals
+                const opposingTeam = isHome ? match?.awayTeam : match?.homeTeam;
+                const opposingGk = opposingTeam?.players.find(p => p.position === 'GOALKEEPER');
+                if (opposingGk) {
+                    setTimeout(() => {
+                        setStats(latest => ({
+                            ...latest,
+                            [opposingGk.id]: {
+                                ...(latest[opposingGk.id] || { goals: 0, assists: 0, yellow: 0, red: 0, fouls: 0, saves: 0, conceded: 0 }),
+                                conceded: (latest[opposingGk.id]?.conceded || 0) + appliedDelta
+                            }
+                        }));
+                    }, 0);
+                }
             }
 
             const newVal = Math.max(0, currentVal + appliedDelta);
@@ -1421,6 +1449,20 @@ const MatchSheet: React.FC = () => {
                                             ...prev,
                                             [penaltyFutkingsTeamId]: (prev[penaltyFutkingsTeamId] || 0) + 1
                                         }));
+
+                                        // AUTOMATICALLY Increment Opposing Goalkeeper Conceded Goals
+                                        const opposingTeam = penaltyFutkingsTeamId === match.homeTeam.id ? match.awayTeam : match.homeTeam;
+                                        const opposingGk = opposingTeam.players.find(p => p.position === 'GOALKEEPER');
+                                        if (opposingGk) {
+                                            setStats(prev => ({
+                                                ...prev,
+                                                [opposingGk.id]: {
+                                                    ...(prev[opposingGk.id] || { goals: 0, assists: 0, yellow: 0, red: 0, fouls: 0, saves: 0, conceded: 0 }),
+                                                    conceded: (prev[opposingGk.id]?.conceded || 0) + 1
+                                                }
+                                            }));
+                                        }
+
                                         setGoalAnimation({
                                             isOpen: true,
                                             teamName: team?.name,
