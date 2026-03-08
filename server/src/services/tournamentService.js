@@ -79,6 +79,10 @@ const handleLeagueProgression = async (match) => {
             standings[awayTeamId].points += 3;
             standings[awayTeamId].wins += 1;
         } else {
+            // DRAW (Kings League Style: 1 point each + 1 extra for shootout winner)
+            standings[homeTeamId].points += 1;
+            standings[awayTeamId].points += 1;
+
             const homeShootout = m.homeShootoutScore || 0;
             const awayShootout = m.awayShootoutScore || 0;
 

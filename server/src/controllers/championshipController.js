@@ -387,27 +387,40 @@ const getDashboardData = async (req, res) => {
         });
 
         if (lastCompleted) {
-            // Optimized: Fetch only the most relevant "Final" or latest match separately
-            const finalMatch = await prisma.match.findFirst({
+            // Priority 1: Search for the "Final" match
+            let finalMatch = await prisma.match.findFirst({
                 where: {
                     championshipId: lastCompleted.id,
-                    status: 'COMPLETED'
+                    status: 'COMPLETED',
+                    round: 'Final'
                 },
-                orderBy: [
-                    { round: 'desc' },
-                    { startTime: 'desc' }
-                ],
                 include: { homeTeam: true, awayTeam: true }
             });
 
+            // Priority 2: Fallback to the latest match if no explicit "Final" is found
+            if (!finalMatch) {
+                finalMatch = await prisma.match.findFirst({
+                    where: {
+                        championshipId: lastCompleted.id,
+                        status: 'COMPLETED'
+                    },
+                    orderBy: { startTime: 'desc' },
+                    include: { homeTeam: true, awayTeam: true }
+                });
+            }
+
             if (finalMatch) {
-                if (finalMatch.homeScore > finalMatch.awayScore) {
+                const { homeScore, awayScore, homeShootoutScore, awayShootoutScore } = finalMatch;
+                let wonByHome = homeScore > awayScore;
+
+                if (homeScore === awayScore) {
+                    wonByHome = (homeShootoutScore || 0) > (awayShootoutScore || 0);
+                }
+
+                if (wonByHome) {
                     lastChampion = { ...finalMatch.homeTeam, championshipName: lastCompleted.name };
-                } else if (finalMatch.awayScore > finalMatch.homeScore) {
-                    lastChampion = { ...finalMatch.awayTeam, championshipName: lastCompleted.name };
                 } else {
-                    // Penalties logic should be here, but for now take home or generic
-                    lastChampion = { ...finalMatch.homeTeam, championshipName: lastCompleted.name, note: 'Won on penalties (simulated)' };
+                    lastChampion = { ...finalMatch.awayTeam, championshipName: lastCompleted.name };
                 }
             }
         }
@@ -438,6 +451,8 @@ const getChampionshipStandings = async (req, res) => {
                 status: 'COMPLETED'
             },
             include: {
+                homeTeam: true,
+                awayTeam: true,
                 playerStats: {
                     include: { player: true }
                 }
@@ -470,6 +485,26 @@ const getChampionshipStandings = async (req, res) => {
             const { homeTeamId, awayTeamId, homeScore, awayScore, playerStats } = m;
             if (!homeTeamId || !awayTeamId) return;
 
+            // Initialize teams dynamically if they were removed from championship.teams
+            if (!standings[homeTeamId]) {
+                standings[homeTeamId] = {
+                    id: homeTeamId,
+                    name: m.homeTeam?.name || 'Time Excluído',
+                    logoUrl: m.homeTeam?.logoUrl,
+                    points: 0, matchesPlayed: 0, wins: 0, draws: 0, losses: 0,
+                    goalsFor: 0, goalsAgainst: 0, goalDiff: 0, yellowCards: 0, redCards: 0
+                };
+            }
+            if (!standings[awayTeamId]) {
+                standings[awayTeamId] = {
+                    id: awayTeamId,
+                    name: m.awayTeam?.name || 'Time Excluído',
+                    logoUrl: m.awayTeam?.logoUrl,
+                    points: 0, matchesPlayed: 0, wins: 0, draws: 0, losses: 0,
+                    goalsFor: 0, goalsAgainst: 0, goalDiff: 0, yellowCards: 0, redCards: 0
+                };
+            }
+
             // Update Matches Played
             standings[homeTeamId].matchesPlayed += 1;
             standings[awayTeamId].matchesPlayed += 1;
@@ -493,18 +528,20 @@ const getChampionshipStandings = async (req, res) => {
                 standings[awayTeamId].wins += 1;
                 standings[homeTeamId].losses += 1;
             } else {
-                // DRAW
+                // DRAW (Kings League Style: 1 point each + 1 extra for shootout winner)
                 standings[homeTeamId].draws += 1;
                 standings[awayTeamId].draws += 1;
+                standings[homeTeamId].points += 1;
+                standings[awayTeamId].points += 1;
 
                 // Check Shootout for extra point
                 const homeShootout = m.homeShootoutScore || 0;
                 const awayShootout = m.awayShootoutScore || 0;
 
                 if (homeShootout > awayShootout) {
-                    standings[homeTeamId].points += 1; // 1 (shootout win)
+                    standings[homeTeamId].points += 1; // Total 2 (shootout win)
                 } else if (awayShootout > homeShootout) {
-                    standings[awayTeamId].points += 1; // 1 (shootout win)
+                    standings[awayTeamId].points += 1; // Total 2 (shootout win)
                 }
             }
 

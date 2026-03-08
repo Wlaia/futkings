@@ -228,7 +228,7 @@ const updateMatchResult = async (req, res) => {
         }
 
         // Update Team Stats (Wins/Losses) if completed
-        if (status === 'COMPLETED' && match.homeTeamId && match.awayTeamId) {
+        if (status === 'COMPLETED' && (match.status !== 'COMPLETED') && match.homeTeamId && match.awayTeamId) {
             let homeUpdate = { matchesPlayed: { increment: 1 }, goalsFor: { increment: homeScore }, goalsAgainst: { increment: awayScore } };
             let awayUpdate = { matchesPlayed: { increment: 1 }, goalsFor: { increment: awayScore }, goalsAgainst: { increment: homeScore } };
 
