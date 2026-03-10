@@ -105,6 +105,7 @@ model Match {
   awayShootoutScore Int?
   elapsedTime       Int               @default(0)
   activeEvents      Json?
+  metadata          Json?
   awayTeam          Team?             @relation("AwayTeam", fields: [awayTeamId], references: [id])
   championship      Championship      @relation(fields: [championshipId], references: [id])
   homeTeam          Team?             @relation("HomeTeam", fields: [homeTeamId], references: [id])

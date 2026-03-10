@@ -45,6 +45,7 @@ interface Match {
         yellowCards: number;
         redCards: number;
     }[];
+    metadata?: any;
 }
 
 // Map Card Types
@@ -432,26 +433,51 @@ const FanZone: React.FC = () => {
                                         {featuredMatch.championship?.name || 'Amistoso Oficial'}
                                     </div>
 
-                                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-                                        {/* Home Team */}
-                                        <div className="text-center md:text-right flex-1 w-full">
-                                            <img
-                                                src={getLogoUrl(featuredMatch.homeTeam?.logoUrl)}
-                                                className="w-16 h-16 md:w-20 md:h-20 mx-auto md:ml-auto md:mr-0 mb-3 drop-shadow-xl object-contain"
-                                                alt={featuredMatch.homeTeam?.name}
-                                                onError={handleImageError}
-                                            />
-                                            <h3 className="text-xl font-black uppercase italic tracking-tighter truncate">{featuredMatch.homeTeam?.name}</h3>
+                                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10 w-full">
+
+                                        {/* Home Team Side */}
+                                        <div className="flex-1 flex justify-end items-center gap-4 md:gap-8">
+                                            {/* Home Team Cards (FanZone) */}
+                                            {featuredMatch.metadata?.cardUsage && (
+                                                <div className="flex gap-1.5 md:gap-2">
+                                                    {[3, 2, 1].map(slot => {
+                                                        const side = 'home';
+                                                        const key = slot === 1 ? 'h1' : slot === 2 ? 'h2' : 'pres';
+                                                        const isUsed = featuredMatch.metadata?.cardUsage?.[side]?.[key];
+                                                        const isPre = slot === 3;
+                                                        const baseColor = isPre ? 'bg-cyan-400' : 'bg-green-500';
+
+                                                        return (
+                                                            <div
+                                                                key={side + slot}
+                                                                className={`w-4 h-10 md:w-6 md:h-14 lg:w-8 lg:h-16 rounded shadow-md transition-all flex items-center justify-center ${isUsed ? 'bg-gray-800/80 border-2 border-gray-700 opacity-50' : `${baseColor} border-2 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]`}`}
+                                                            >
+                                                                {isUsed && <span className="text-gray-400 font-black text-xs md:text-sm lg:text-base drop-shadow-md">X</span>}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            <div className="text-right flex flex-col items-end">
+                                                <img
+                                                    src={getLogoUrl(featuredMatch.homeTeam?.logoUrl)}
+                                                    className="w-16 h-16 md:w-20 md:h-20 mb-3 drop-shadow-xl object-contain min-w-[64px]"
+                                                    alt={featuredMatch.homeTeam?.name}
+                                                    onError={handleImageError}
+                                                />
+                                                <h3 className="text-lg md:text-xl font-black uppercase italic tracking-tighter truncate max-w-[120px] md:max-w-full">{featuredMatch.homeTeam?.name}</h3>
+                                            </div>
                                         </div>
 
-                                        {/* Score / VS */}
+                                        {/* Score / VS - CENTRALIZED */}
                                         <div className="flex flex-col items-center px-4 shrink-0 relative">
                                             {featuredMatch.status === 'LIVE' ? (
                                                 <div className="flex flex-col items-center gap-1 mb-2">
                                                     <div className="text-xs font-bold text-red-500 bg-red-500/10 px-3 py-1 rounded-full animate-pulse border border-red-500/20">
                                                         • AO VIVO •
                                                     </div>
-                                                    <div className="text-2xl font-mono font-black text-yellow-500 bg-black/50 px-4 py-1.5 rounded-xl border border-yellow-500/30 shadow-inner">
+                                                    <div className="text-2xl font-mono font-black text-yellow-500 bg-black/50 px-4 py-1.5 rounded-xl border border-yellow-500/30 shadow-inner tabular-nums">
                                                         {formatTime(localTime)}
                                                     </div>
                                                 </div>
@@ -462,24 +488,48 @@ const FanZone: React.FC = () => {
                                             )}
 
                                             <div className="flex items-center gap-4 text-5xl md:text-7xl font-black font-mono">
-                                                <span className="text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]">{featuredMatch.homeScore}</span>
+                                                <span className="text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)] tabular-nums">{featuredMatch.homeScore}</span>
                                                 <span className="text-gray-700 text-3xl md:text-5xl -translate-y-1">x</span>
-                                                <span className="text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]">{featuredMatch.awayScore}</span>
+                                                <span className="text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)] tabular-nums">{featuredMatch.awayScore}</span>
                                             </div>
                                             <div className="mt-3 text-gray-500 font-mono font-bold text-sm tracking-widest uppercase">
                                                 {featuredMatch.status === 'LIVE' ? 'Andamento' : featuredMatch.status === 'COMPLETED' ? 'Finalizado' : 'Agendado'}
                                             </div>
                                         </div>
 
-                                        {/* Away Team */}
-                                        <div className="text-center md:text-left flex-1 w-full">
-                                            <img
-                                                src={getLogoUrl(featuredMatch.awayTeam?.logoUrl)}
-                                                className="w-16 h-16 md:w-20 md:h-20 mx-auto md:mr-auto md:ml-0 mb-3 drop-shadow-xl object-contain"
-                                                alt={featuredMatch.awayTeam?.name}
-                                                onError={handleImageError}
-                                            />
-                                            <h3 className="text-xl font-black uppercase italic tracking-tighter truncate">{featuredMatch.awayTeam?.name}</h3>
+                                        {/* Away Team Side */}
+                                        <div className="flex-1 flex justify-start items-center gap-4 md:gap-8">
+                                            <div className="text-left flex flex-col items-start">
+                                                <img
+                                                    src={getLogoUrl(featuredMatch.awayTeam?.logoUrl)}
+                                                    className="w-16 h-16 md:w-20 md:h-20 mb-3 drop-shadow-xl object-contain min-w-[64px]"
+                                                    alt={featuredMatch.awayTeam?.name}
+                                                    onError={handleImageError}
+                                                />
+                                                <h3 className="text-lg md:text-xl font-black uppercase italic tracking-tighter truncate max-w-[120px] md:max-w-full">{featuredMatch.awayTeam?.name}</h3>
+                                            </div>
+
+                                            {/* Away Team Cards (FanZone) */}
+                                            {featuredMatch.metadata?.cardUsage && (
+                                                <div className="flex gap-1.5 md:gap-2">
+                                                    {[1, 2, 3].map(slot => {
+                                                        const side = 'away';
+                                                        const key = slot === 1 ? 'h1' : slot === 2 ? 'h2' : 'pres';
+                                                        const isUsed = featuredMatch.metadata?.cardUsage?.[side]?.[key];
+                                                        const isPre = slot === 3;
+                                                        const baseColor = isPre ? 'bg-cyan-400' : 'bg-green-500';
+
+                                                        return (
+                                                            <div
+                                                                key={side + slot}
+                                                                className={`w-4 h-10 md:w-6 md:h-14 lg:w-8 lg:h-16 rounded shadow-md transition-all flex items-center justify-center ${isUsed ? 'bg-gray-800/80 border-2 border-gray-700 opacity-50' : `${baseColor} border-2 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]`}`}
+                                                            >
+                                                                {isUsed && <span className="text-gray-400 font-black text-xs md:text-sm lg:text-base drop-shadow-md">X</span>}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
