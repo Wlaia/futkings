@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { FaSave, FaArrowLeft, FaFlag, FaPlay, FaPause, FaStar, FaBolt, FaTimes, FaHandPaper, FaExpand, FaShieldAlt, FaBullseye, FaCalendarCheck, FaStopwatch, FaCrown, FaUsers } from 'react-icons/fa';
 import SponsorCarousel from '../components/SponsorCarousel';
-// Import removed for unused SPONSORS
+import { SPONSORS } from '../constants/sponsors';
 import SafeImage from '../components/SafeImage';
 import MatchLineupModal from '../components/MatchLineupModal';
 import GoalAnimation from '../components/GoalAnimation';
@@ -1059,7 +1059,21 @@ const MatchSheet: React.FC = () => {
     };
 
     return (
-        <div className={`min-h-screen bg-[#0a0a0c] text-white flex flex-col ${isFullscreen ? 'p-0' : 'p-2 md:p-4'} transition-all duration-700`}>
+        <div className={`min-h-screen bg-[#0a0a0c] text-white flex flex-col relative ${isFullscreen ? 'p-0' : 'p-2 md:p-4'} transition-all duration-700`}>
+
+            {/* Left Sponsors (Fixed to empty side area) */}
+            <div className="hidden 2xl:flex fixed left-6 top-0 bottom-0 w-[18vw] max-w-[340px] flex-col justify-evenly items-center z-[50] pointer-events-none opacity-80">
+                {SPONSORS.slice(0, 4).map(s => (
+                    <img key={s.id} src={s.image} alt={s.name} className="w-full object-contain drop-shadow-[0_0_15px_rgba(0,0,0,0.8)]" />
+                ))}
+            </div>
+
+            {/* Right Sponsors (Fixed to empty side area) */}
+            <div className="hidden 2xl:flex fixed right-6 top-0 bottom-0 w-[18vw] max-w-[340px] flex-col justify-evenly items-center z-[50] pointer-events-none opacity-80">
+                {SPONSORS.slice(4, 8).map(s => (
+                    <img key={s.id} src={s.image} alt={s.name} className="w-full object-contain drop-shadow-[0_0_15px_rgba(0,0,0,0.8)]" />
+                ))}
+            </div>
             <div className="flex-1 flex flex-col w-full h-screen overflow-y-auto">
 
                 {/* NEW TV SCOREBOARD HEADER */}
